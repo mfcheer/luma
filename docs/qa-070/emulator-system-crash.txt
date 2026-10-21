@@ -1,0 +1,31 @@
+--------- beginning of crash
+10-21 21:30:38.057   531   558 E AndroidRuntime: *** FATAL EXCEPTION IN SYSTEM PROCESS: ActivityManager
+10-21 21:30:38.057   531   558 E AndroidRuntime: java.lang.NullPointerException: Attempt to invoke virtual method 'void com.android.internal.app.procstats.UidState.updateCombinedState(int, long)' on a null object reference
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.internal.app.procstats.ProcessState.setCombinedState(ProcessState.java:476)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.internal.app.procstats.ProcessState.setState(ProcessState.java:443)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.ProcessProfileRecord.setProcessTrackerState(ProcessProfileRecord.java:621)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.ActivityManagerService.setProcessTrackerStateLOSP(ActivityManagerService.java:15387)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.AppProfiler.lambda$updateLowMemStateLSP$4$com-android-server-am-AppProfiler(AppProfiler.java:1114)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.AppProfiler$$ExternalSyntheticLambda2.accept(Unknown Source:8)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.ProcessList.forEachLruProcessesLOSP(ProcessList.java:3805)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.AppProfiler.updateLowMemStateLSP(AppProfiler.java:1109)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.OomAdjuster.updateAndTrimProcessLSP(OomAdjuster.java:1147)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.OomAdjuster.updateOomAdjInnerLSP(OomAdjuster.java:860)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.OomAdjuster.performUpdateOomAdjPendingTargetsLocked(OomAdjuster.java:730)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.OomAdjuster.updateOomAdjPendingTargetsLocked(OomAdjuster.java:710)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.ActivityManagerService.updateOomAdjPendingTargetsLocked(ActivityManagerService.java:15505)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.BroadcastQueue.processNextBroadcastLocked(BroadcastQueue.java:1246)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.BroadcastQueue.processNextBroadcast(BroadcastQueue.java:1139)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.BroadcastQueue.-$$Nest$mprocessNextBroadcast(Unknown Source:0)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.am.BroadcastQueue$BroadcastHandler.handleMessage(BroadcastQueue.java:222)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at android.os.Looper.loopOnce(Looper.java:201)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at android.os.Looper.loop(Looper.java:288)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+10-21 21:30:38.057   531   558 E AndroidRuntime: 	at com.android.server.ServiceThread.run(ServiceThread.java:44)
+10-21 21:30:38.195  7312  7312 E AndroidRuntime: FATAL EXCEPTION: main
+10-21 21:30:38.195  7312  7312 E AndroidRuntime: Process: com.jianping.tv, PID: 7312
+10-21 21:30:38.195  7312  7312 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause
+10-21 21:30:39.294  8985  9017 E AndroidRuntime: FATAL EXCEPTION: lowpool[0]
+10-21 21:30:39.294  8985  9017 E AndroidRuntime: Process: com.google.android.gms, PID: 8985
+10-21 21:30:39.294  8985  9017 E AndroidRuntime: DeadSystemException: The system died; earlier logs will point to the root cause

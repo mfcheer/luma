@@ -28,7 +28,8 @@ public final class AppRepository {
                 new AppEntry(
                     new ComponentName(a.packageName, a.name),
                     info.loadLabel(pm).toString(),
-                    loadBestIcon(pm, info)));
+                    loadBestIcon(pm, info),
+                    loadBanner(pm, info)));
           } catch (RuntimeException ignored) {
           }
       }
@@ -49,6 +50,21 @@ public final class AppRepository {
       // Some vendor packages expose nonstandard resources. Keep the system fallback.
     }
     return info.loadIcon(pm);
+  }
+
+  private android.graphics.drawable.Drawable loadBanner(PackageManager pm, ResolveInfo info) {
+    try {
+      int id =
+          info.activityInfo.banner != 0
+              ? info.activityInfo.banner
+              : info.activityInfo.applicationInfo.banner;
+      if (id != 0)
+        return pm.getResourcesForApplication(info.activityInfo.applicationInfo)
+            .getDrawableForDensity(id, android.util.DisplayMetrics.DENSITY_XXXHIGH, null);
+    } catch (RuntimeException | PackageManager.NameNotFoundException ignored) {
+      // TV banners are optional; the icon remains a complete, usable fallback.
+    }
+    return null;
   }
 
   public Intent launchIntent(AppEntry e) {

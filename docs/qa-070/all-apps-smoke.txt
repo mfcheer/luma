@@ -1,0 +1,6 @@
+/var/folders/8d/b8tggg111xv1t5_0_p3jtkh40000gn/T/tmp0b3xb1ec.xml: 1 file pushed, 0 skipped. 1.1 MB/s (126 bytes in 0.000s)
+PASS: fresh home renders all 28 apps without a separate all-apps entry
+/var/folders/8d/b8tggg111xv1t5_0_p3jtkh40000gn/T/tmpuu98zjms.xml: 1 file pushed, 0 skipped. 3.4 MB/s (373 bytes in 0.000s)
+PASS: legacy prefix migrates to full list; menu only moves/info; cancel/save/restart
+PASS: update preserves position; uninstall removes entry; new install appends automatically without losing focus
+PASS: package events during reorder, full membership retained, launch/info and exact return, label/boot settings preserved

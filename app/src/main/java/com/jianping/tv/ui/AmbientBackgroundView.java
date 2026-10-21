@@ -6,22 +6,25 @@ import android.graphics.*;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
 
-/** A finite, focus-driven light transition. No continuous rendering while the desktop is idle. */
+/** Cached light mask, tinted during finite focus transitions; no idle rendering loop. */
 public final class AmbientBackgroundView extends View {
-  private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+  private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+  private final RectF viewport = new RectF();
   private int accent = Color.rgb(103, 139, 200);
   private ValueAnimator transition;
+  private Bitmap lightMask;
 
   public AmbientBackgroundView(Context context) {
     super(context);
-    paint.setDither(true);
     setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+    applyTint();
   }
 
   public void illuminate(int color, boolean animated) {
     if (transition != null) transition.cancel();
     if (!animated || accent == color) {
       accent = color;
+      applyTint();
       invalidate();
       return;
     }
@@ -37,48 +40,47 @@ public final class AmbientBackgroundView extends View {
                   mix(Color.red(from), Color.red(color), t),
                   mix(Color.green(from), Color.green(color), t),
                   mix(Color.blue(from), Color.blue(color), t));
+          applyTint();
           invalidate();
         });
     transition.start();
+  }
+
+  private void applyTint() {
+    paint.setColorFilter(new PorterDuffColorFilter(accent, PorterDuff.Mode.SRC_IN));
   }
 
   private int mix(int a, int b, float t) {
     return Math.round(a + (b - a) * t);
   }
 
-  private int alpha(int value) {
-    return Color.argb(value, Color.red(accent), Color.green(accent), Color.blue(accent));
+  @Override
+  protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+    super.onSizeChanged(w, h, oldw, oldh);
+    viewport.set(0, 0, w, h);
+    if (lightMask != null) lightMask.recycle();
+    // Soft light needs no full-resolution texture. Build geometry once, never inside onDraw.
+    lightMask = Bitmap.createBitmap(480, 270, Bitmap.Config.ARGB_8888);
+    Canvas c = new Canvas(lightMask);
+    Paint mask = new Paint(Paint.ANTI_ALIAS_FLAG);
+    mask.setDither(true);
+    float x = 240, y = 70;
+    mask.setShader(
+        new RadialGradient(
+            x,
+            y,
+            250,
+            new int[] {0x1EFFFFFF, 0x0BFFFFFF, 0x00FFFFFF},
+            new float[] {0, .5f, 1},
+            Shader.TileMode.CLAMP));
+    c.drawRect(0, 0, 480, 270, mask);
   }
 
   @Override
   protected void onDraw(Canvas c) {
     super.onDraw(c);
-    float w = getWidth(), h = getHeight();
-    c.drawColor(0xFF080D17);
-    // Main ambient source is aligned to the selected hero icon, not a corner wallpaper.
-    paint.setShader(
-        new RadialGradient(
-            w * .5f,
-            h * .282f,
-            w * .38f,
-            new int[] {alpha(104), alpha(37), alpha(0)},
-            new float[] {0, .44f, 1},
-            Shader.TileMode.CLAMP));
-    c.drawRect(0, 0, w, h, paint);
-    paint.setShader(
-        new RadialGradient(
-            w * .5f,
-            h * .37f,
-            w * .19f,
-            new int[] {alpha(44), alpha(0)},
-            null,
-            Shader.TileMode.CLAMP));
-    c.drawRect(0, 0, w, h, paint);
-    paint.setShader(
-        new LinearGradient(
-            0, h * .46f, 0, h, new int[] {0x00000000, 0xA0080D17}, null, Shader.TileMode.CLAMP));
-    c.drawRect(0, 0, w, h, paint);
-    paint.setShader(null);
+    c.drawColor(0xFF0B0F17);
+    if (lightMask != null) c.drawBitmap(lightMask, null, viewport, paint);
   }
 
   @Override

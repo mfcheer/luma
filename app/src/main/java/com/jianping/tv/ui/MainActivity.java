@@ -5,7 +5,9 @@ import android.app.role.RoleManager;
 import android.content.*;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.*;
 import android.provider.Settings;
 import android.view.*;
@@ -17,22 +19,29 @@ import java.text.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-/** Native remote-first UI. System access and persistent state live outside this Activity. */
+/** Native TV launcher; persistent data remains independent from its remote-driven presentation. */
 public final class MainActivity extends Activity {
   private Preferences prefs;
   private AppRepository repository;
   private final ExecutorService worker = Executors.newSingleThreadExecutor();
   private final Handler handler = new Handler(Looper.getMainLooper());
   private List<AppEntry> apps = new ArrayList<>();
-  private FrameLayout root;
-  private TextView clock;
-  private ImageView heroIcon;
-  private FrameLayout heroFrame;
+  private FrameLayout root, desktop;
+  private AppActionMenuView actionLayer;
+  private TextView clock, moveHint;
+  private GridWallView homeWall;
+  private View menuReturn;
+  private String selectedSetting = "默认桌面", selectedId = "", page = "home";
   private AmbientBackgroundView ambient;
   private final Map<String, Integer> paletteCache = new HashMap<>();
+  private final Map<String, Drawable> artworkCache = new HashMap<>(),
+      previewCache = new HashMap<>();
   private float scale = 1;
-  private String page = "home", selectedId = "";
-  private boolean loading = true;
+  private boolean loading = true, pendingRender;
+  private List<String> draftOrder;
+  private String movingId;
+  private int loadGeneration;
+  private int homeOffset;
   private final Runnable ticker =
       new Runnable() {
         public void run() {
@@ -43,7 +52,10 @@ public final class MainActivity extends Activity {
       };
   private final BroadcastReceiver packageChanges =
       new BroadcastReceiver() {
-        public void onReceive(Context c, Intent i) {
+        public void onReceive(Context c, Intent intent) {
+          // An APK replacement briefly removes its old entry; retain its slot until added.
+          if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())
+              && intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)) return;
           reload();
         }
       };
@@ -56,15 +68,17 @@ public final class MainActivity extends Activity {
     if (state != null) {
       page = state.getString("page", "home");
       selectedId = state.getString("selected", "");
+      homeOffset = state.getInt("homeOffset", 0);
     }
     recordEntry(getIntent());
-    IntentFilter f = new IntentFilter();
-    f.addAction(Intent.ACTION_PACKAGE_ADDED);
-    f.addAction(Intent.ACTION_PACKAGE_REMOVED);
-    f.addAction(Intent.ACTION_PACKAGE_CHANGED);
-    f.addDataScheme("package");
-    if (Build.VERSION.SDK_INT >= 33) registerReceiver(packageChanges, f, Context.RECEIVER_EXPORTED);
-    else registerReceiver(packageChanges, f);
+    IntentFilter filter = new IntentFilter();
+    filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+    filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+    filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+    filter.addDataScheme("package");
+    if (Build.VERSION.SDK_INT >= 33)
+      registerReceiver(packageChanges, filter, Context.RECEIVER_EXPORTED);
+    else registerReceiver(packageChanges, filter);
     render();
     reload();
     handler.post(ticker);
@@ -75,6 +89,8 @@ public final class MainActivity extends Activity {
     super.onNewIntent(intent);
     setIntent(intent);
     recordEntry(intent);
+    draftOrder = null;
+    movingId = null;
     page = "home";
     render();
   }
@@ -89,6 +105,7 @@ public final class MainActivity extends Activity {
   protected void onSaveInstanceState(Bundle b) {
     b.putString("page", page);
     b.putString("selected", selectedId);
+    b.putInt("homeOffset", homeWall == null ? homeOffset : homeWall.getScrollY());
     super.onSaveInstanceState(b);
   }
 
@@ -113,23 +130,42 @@ public final class MainActivity extends Activity {
   }
 
   private void reload() {
+    final int generation = ++loadGeneration;
     worker.execute(
         () -> {
           List<AppEntry> result = repository.load();
+          Map<String, Drawable> art = new HashMap<>(), soft = new HashMap<>();
+          Map<String, Integer> colors = new HashMap<>();
+          for (AppEntry app : result) {
+            if (Thread.currentThread().isInterrupted()) return;
+            try {
+              int color = IconPalette.accent(app.icon);
+              Drawable card = IconArtwork.landscape(getResources(), app.icon, app.banner, color);
+              colors.put(app.id, color);
+              art.put(app.id, card);
+              soft.put(app.id, IconArtwork.preview(getResources(), card));
+            } catch (RuntimeException e) {
+              colors.put(app.id, 0xFF7092CC);
+              art.put(app.id, app.icon);
+              soft.put(app.id, app.icon);
+            }
+          }
           runOnUiThread(
               () -> {
-                if (isDestroyed()) return;
+                if (isDestroyed() || generation != loadGeneration) return;
                 apps = result;
+                artworkCache.clear();
+                artworkCache.putAll(art);
+                previewCache.clear();
+                previewCache.putAll(soft);
+                paletteCache.clear();
+                paletteCache.putAll(colors);
                 loading = false;
-                if (!prefs.initialized()) {
-                  List<String> first = new ArrayList<>();
-                  for (AppEntry a : apps) {
-                    if (first.size() == 5) break;
-                    first.add(a.id);
-                  }
-                  prefs.initialize(first);
-                }
-                render();
+                List<String> order = AppOrder.reconcile(prefs.appOrder(), installedIds());
+                if (!prefs.hasAppOrder() || !order.equals(prefs.appOrder()))
+                  prefs.saveAppOrder(order);
+                if (draftOrder != null || actionLayer != null) pendingRender = true;
+                else render();
               });
         });
   }
@@ -144,49 +180,28 @@ public final class MainActivity extends Activity {
     t.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, px(size));
     t.setTextColor(color);
     t.setGravity(Gravity.CENTER);
-    t.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
     t.setIncludeFontPadding(false);
+    t.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
     t.setFontFeatureSettings("'kern' 1");
     return t;
   }
 
-  private void put(View v, float x, float y, float w, float h) {
+  private void place(FrameLayout parent, View view, float x, float y, float w, float h) {
     FrameLayout.LayoutParams p = new FrameLayout.LayoutParams(px(w), px(h));
     p.leftMargin = px(x);
     p.topMargin = px(y);
-    root.addView(v, p);
+    parent.addView(view, p);
   }
 
-  private GradientDrawable surface(boolean focus) {
+  private void put(View v, float x, float y, float w, float h) {
+    place(desktop, v, x, y, w, h);
+  }
+
+  private GradientDrawable rounded(int color, float radius) {
     GradientDrawable d = new GradientDrawable();
-    d.setColor(focus ? 0xDD30445D : 0x70303D50);
-    d.setCornerRadius(px(16));
-    if (focus) d.setStroke(px(2), 0xFFF1F7FF);
+    d.setColor(color);
+    d.setCornerRadius(px(radius));
     return d;
-  }
-
-  private void focusable(View v) {
-    v.setFocusable(true);
-    v.setClickable(true);
-    v.setBackground(surface(false));
-    v.setOnFocusChangeListener(
-        (view, focused) -> {
-          view.setBackground(surface(focused));
-          view.animate()
-              .scaleX(focused && !(view instanceof TextView) ? 1.10f : 1f)
-              .scaleY(focused && !(view instanceof TextView) ? 1.10f : 1f)
-              .setDuration(160)
-              .start();
-          view.setElevation(focused ? px(8) : 0);
-        });
-  }
-
-  private TextView button(String title, Runnable action) {
-    TextView b = text(title, 17, Color.WHITE);
-    b.setPadding(px(18), px(8), px(18), px(8));
-    focusable(b);
-    b.setOnClickListener(v -> action.run());
-    return b;
   }
 
   private View headerAction(boolean home, Runnable action) {
@@ -202,16 +217,12 @@ public final class MainActivity extends Activity {
     button.setContentDescription(home ? "设置" : "返回");
     button.setOnFocusChangeListener(
         (v, focus) -> {
-          GradientDrawable bg = new GradientDrawable();
-          bg.setColor(focus ? 0x20FFFFFF : Color.TRANSPARENT);
-          bg.setCornerRadius(px(18));
-          button.setBackground(bg);
+          button.setBackground(rounded(focus ? 0x20FFFFFF : Color.TRANSPARENT, 18));
           glyph.setColorFilter(focus ? Color.WHITE : 0xFFBBC7D9);
           button
               .animate()
               .scaleX(focus ? 1.12f : 1)
               .scaleY(focus ? 1.12f : 1)
-              .translationY(focus ? -px(1) : 0)
               .setDuration(180)
               .start();
         });
@@ -219,392 +230,376 @@ public final class MainActivity extends Activity {
     return button;
   }
 
-  private android.graphics.drawable.Drawable appIcon(AppEntry app) {
-    android.graphics.drawable.Drawable icon =
-        app == null ? getDrawable(R.drawable.apps_icon) : app.icon;
-    android.graphics.drawable.Drawable.ConstantState state = icon.getConstantState();
-    return state == null ? icon : state.newDrawable(getResources()).mutate();
+  private int appAccent(AppEntry app) {
+    Integer color = paletteCache.get(app.id);
+    return color == null ? 0xFF7092CC : color;
+  }
+
+  private Drawable artwork(AppEntry app, boolean soft) {
+    String key = app.id;
+    if (!artworkCache.containsKey(key)) {
+      Drawable source = app.icon;
+      int color = IconPalette.accent(source);
+      paletteCache.put(key, color);
+      Drawable art = IconArtwork.landscape(getResources(), source, app.banner, color);
+      artworkCache.put(key, art);
+      previewCache.put(key, IconArtwork.preview(getResources(), art));
+    }
+    Drawable image = (soft ? previewCache : artworkCache).get(key);
+    Drawable.ConstantState state = image.getConstantState();
+    return state == null ? image : state.newDrawable(getResources()).mutate();
   }
 
   private void render() {
+    if (homeWall != null && homeWall.isAttachedToWindow()) homeOffset = homeWall.getScrollY();
+    homeWall = null;
+    menuReturn = null;
     scale = getResources().getDisplayMetrics().widthPixels / 960f;
     root = new FrameLayout(this);
-    root.setBackgroundColor(0xFF0C1523);
+    root.setBackgroundColor(0xFF0B1019);
     setContentView(root);
+    desktop = new FrameLayout(this);
+    root.addView(desktop, new FrameLayout.LayoutParams(-1, -1));
+    actionLayer = null;
+    pendingRender = false;
     ambient = new AmbientBackgroundView(this);
-    root.addView(ambient, new FrameLayout.LayoutParams(-1, -1));
-    TextView brand = text("Luma", 23, 0xFFE3E9F3);
-    brand.setGravity(Gravity.CENTER_VERTICAL);
-    brand.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
-    brand.setLetterSpacing(.07f);
-    put(brand, 44, 25, 160, 38);
-    clock = text(new SimpleDateFormat("HH:mm", Locale.CHINA).format(new Date()), 18, 0xFFAAB6C9);
+    desktop.addView(ambient, new FrameLayout.LayoutParams(-1, -1));
+    clock = text(new SimpleDateFormat("HH:mm", Locale.CHINA).format(new Date()), 18, 0xFFB2BCCD);
     clock.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
     clock.setFontFeatureSettings("'tnum' 1");
-    clock.setLetterSpacing(.035f);
-    put(clock, 786, 30, 74, 28);
+    put(clock, 800, 30, 74, 28);
     View settings =
         headerAction(
             page.equals("home"),
             () -> {
+              if (draftOrder != null) {
+                finishMove(false);
+                return;
+              }
               page = page.equals("home") ? "settings" : "home";
               render();
             });
-    put(settings, 884, 23, 42, 42);
     settings.setId(R.id.settings_button);
-    settings.setNextFocusDownId(R.id.first_app);
-    if (page.equals("home")) home(settings);
-    else if (page.equals("apps")) allApps();
-    else settingsPage();
-  }
-
-  private List<AppEntry> favorites() {
-    List<AppEntry> r = new ArrayList<>();
-    for (String id : prefs.favorites())
-      for (AppEntry a : apps)
-        if (a.id.equals(id)) {
-          r.add(a);
-          break;
-        }
-    return r;
-  }
-
-  private void showHero(AppEntry a, String title, String hint) {
-    heroIcon.setContentDescription(title);
-    heroIcon.animate().cancel();
-    heroIcon.setAlpha(.4f);
-    heroIcon.setImageDrawable(appIcon(a));
-    String key = a == null ? "all-apps" : a.id;
-    Integer color = paletteCache.get(key);
-    if (color == null) {
-      color = IconPalette.accent(appIcon(a));
-      paletteCache.put(key, color);
+    put(settings, 884, 23, 42, 42);
+    if (page.equals("home")) {
+      home(settings);
+    } else {
+      settings.setNextFocusDownId(R.id.first_app);
+      settingsPage();
     }
-    ambient.illuminate(color, true);
-    heroFrame.setBackground(new FocusHaloDrawable(px(26), px(28), color));
-    heroIcon.animate().alpha(1).setDuration(180).start();
+  }
+
+  private List<String> installedIds() {
+    List<String> ids = new ArrayList<>();
+    for (AppEntry app : apps) ids.add(app.id);
+    return ids;
+  }
+
+  private List<AppEntry> orderedApps() {
+    Map<String, AppEntry> byId = new HashMap<>();
+    for (AppEntry app : apps) byId.put(app.id, app);
+    List<AppEntry> result = new ArrayList<>();
+    for (String id :
+        AppOrder.reconcile(draftOrder == null ? prefs.appOrder() : draftOrder, installedIds()))
+      result.add(byId.get(id));
+    return result;
+  }
+
+  private GridWallView.Listener wallListener() {
+    return new GridWallView.Listener() {
+      public Drawable artwork(AppEntry app) {
+        return MainActivity.this.artwork(app, false);
+      }
+
+      public Drawable preview(AppEntry app) {
+        return MainActivity.this.artwork(app, true);
+      }
+
+      public int accent(AppEntry app) {
+        return appAccent(app);
+      }
+
+      public void focused(AppEntry app, String key) {
+        if (!loading) selectedId = key;
+        ambient.illuminate(appAccent(app), true);
+      }
+
+      public void activate(AppEntry app) {
+        if (draftOrder != null) finishMove(true);
+        else launch(app);
+      }
+
+      public void hold(AppEntry app, View source) {
+        if (draftOrder == null) manage(app, source);
+      }
+
+      public boolean key(int code, KeyEvent event) {
+        if (draftOrder == null || event.getAction() != KeyEvent.ACTION_DOWN) return false;
+        return moveKey(code);
+      }
+    };
   }
 
   private void home(View settings) {
-    FrameLayout hero = new FrameLayout(this);
-    heroFrame = hero;
-    hero.setBackground(new FocusHaloDrawable(px(26), px(28)));
-    put(hero, 388, 60, 184, 184);
-    heroIcon = new ImageView(this);
-    heroIcon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-    heroIcon.setBackground(surface(false));
-    heroIcon.setClipToOutline(true);
-    hero.addView(heroIcon, new FrameLayout.LayoutParams(px(128), px(128), Gravity.CENTER));
-
-    List<AppEntry> fav = favorites();
-    ScrollView scroll = new FavoritesScrollView(this, px(120));
-    scroll.setPadding(0, px(12), 0, px(12));
-    scroll.setClipToPadding(true);
-    scroll.setClipChildren(false);
-    scroll.setVerticalScrollBarEnabled(false);
-    scroll.setVerticalFadingEdgeEnabled(true);
-    scroll.setFadingEdgeLength(px(16));
-    put(scroll, 48, 244, 864, 264);
-    LinearLayout grid = new LinearLayout(this);
-    grid.setOrientation(LinearLayout.VERTICAL);
-    grid.setPadding(px(8), 0, px(8), 0);
-    grid.setClipChildren(false);
-    grid.setClipToPadding(false);
-    scroll.addView(grid);
-    List<View> cells = new ArrayList<>();
-    View initial = null;
-    int count = fav.size() + 1;
-    for (int start = 0; start < count; start += 6) {
-      LinearLayout row = new LinearLayout(this);
-      row.setClipChildren(false);
-      row.setPadding(0, px(4), 0, px(4));
-      grid.addView(row, new LinearLayout.LayoutParams(-1, px(120)));
-      for (int j = start; j < Math.min(start + 6, count); j++) {
-        AppEntry app = j < fav.size() ? fav.get(j) : null;
-        View cell =
-            tile(
-                app,
-                app == null ? "全部应用" : app.label,
-                () -> {
-                  if (app == null) {
-                    page = "apps";
-                    render();
-                  } else launch(app);
-                });
-        cell.setId(j == 0 ? R.id.first_app : View.generateViewId());
-        if (app != null)
-          cell.setOnLongClickListener(
-              v -> {
-                manage(app, true);
-                return true;
-              });
-        row.addView(cell, new LinearLayout.LayoutParams(0, px(112), 1));
-        cells.add(cell);
-        bindHero(cell, app, app == null ? "全部应用" : app.label, "");
-        if (initial == null || (app != null && app.id.equals(selectedId))) initial = cell;
-      }
-      for (int j = Math.min(start + 6, count); j < start + 6; j++)
-        row.addView(new View(this), new LinearLayout.LayoutParams(0, px(112), 1));
+    moveHint = text("", 14, 0xFFD5DFEC);
+    put(moveHint, 210, 36, 540, 30);
+    homeWall = new GridWallView(this, scale, 156, wallListener());
+    homeWall.showNames(prefs.showAppNames());
+    put(homeWall, 42, 86, 876, 420);
+    String previous = selectedId;
+    homeWall.setEntries(orderedApps(), selectedId, false);
+    if (previous.equals(selectedId)) homeWall.restoreFocus(selectedId, homeOffset);
+    homeWall.upperFocus(settings.getId());
+    if (apps.isEmpty()) {
+      TextView empty = text(loading ? "正在读取应用…" : "暂无可启动的应用", 19, 0xFFC6D1E1);
+      put(empty, 200, 225, 560, 45);
+      settings.requestFocus();
     }
-    for (int i = 0; i < cells.size(); i++) {
-      View cell = cells.get(i);
-      int rowStart = i / 6 * 6, rowEnd = Math.min(rowStart + 5, cells.size() - 1);
-      cell.setNextFocusLeftId(cells.get(Math.max(rowStart, i - 1)).getId());
-      cell.setNextFocusRightId(cells.get(Math.min(rowEnd, i + 1)).getId());
-      cell.setNextFocusUpId(i >= 6 ? cells.get(i - 6).getId() : R.id.settings_button);
-      cell.setNextFocusDownId(
-          rowStart + 6 < cells.size()
-              ? cells.get(Math.min(i + 6, cells.size() - 1)).getId()
-              : cell.getId());
-    }
+    settings.setNextFocusDownId(apps.isEmpty() ? settings.getId() : homeWall.firstId());
     settings.setNextFocusLeftId(settings.getId());
     settings.setNextFocusRightId(settings.getId());
-    initial.requestFocus();
   }
 
-  private void bindHero(View tile, AppEntry a, String title, String hint) {
-    View.OnFocusChangeListener original = tile.getOnFocusChangeListener();
-    tile.setOnFocusChangeListener(
-        (v, f) -> {
-          original.onFocusChange(v, f);
-          if (f) {
-            if (a != null) selectedId = a.id;
-            showHero(a, title, hint);
-          }
-        });
-  }
-
-  private View tile(AppEntry a, String label, Runnable action) {
-    LinearLayout tile = new LinearLayout(this);
-    tile.setOrientation(LinearLayout.VERTICAL);
-    tile.setGravity(Gravity.CENTER);
-    tile.setClipChildren(false);
-    FrameLayout iconFrame = new FrameLayout(this);
-    iconFrame.setClipChildren(false);
-    ImageView icon = new ImageView(this);
-    icon.setImageDrawable(appIcon(a));
-    icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-    icon.setBackground(surface(false));
-    icon.setClipToOutline(true);
-    iconFrame.addView(icon, new FrameLayout.LayoutParams(px(56), px(56), Gravity.CENTER));
-    tile.addView(iconFrame, new LinearLayout.LayoutParams(px(88), px(88)));
-    TextView name = text(label, 14, 0xFFB5C3D6);
-    name.setSingleLine(true);
-    name.setEllipsize(android.text.TextUtils.TruncateAt.END);
-    tile.addView(name, new LinearLayout.LayoutParams(-1, px(24)));
-    tile.setFocusable(true);
-    tile.setClickable(true);
-    tile.setOnFocusChangeListener(
-        (view, focused) -> {
-          iconFrame.setBackground(focused ? new FocusHaloDrawable(px(14), px(17)) : null);
-          iconFrame
-              .animate()
-              .scaleX(focused ? 1.10f : 1f)
-              .scaleY(focused ? 1.10f : 1f)
-              .setDuration(160)
-              .start();
-          name.setTextColor(focused ? Color.WHITE : 0xFFB5C3D6);
-        });
-    tile.setOnClickListener(v -> action.run());
-    tile.setContentDescription(label);
-    return tile;
-  }
-
-  private void launch(AppEntry a) {
+  private void launch(AppEntry app) {
     try {
-      startActivity(repository.launchIntent(a));
+      startActivity(repository.launchIntent(app));
     } catch (RuntimeException e) {
       toast("无法打开此应用，请刷新应用列表");
       reload();
     }
   }
 
-  private void allApps() {
-    TextView title = text("全部应用", 28, Color.WHITE);
-    title.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-    put(title, 48, 82, 600, 48);
-    ScrollView sc = new ScrollView(this);
-    sc.setClipChildren(false);
-    sc.setClipToPadding(false);
-    sc.setVerticalFadingEdgeEnabled(true);
-    sc.setFadingEdgeLength(px(12));
-    put(sc, 32, 144, 896, 344);
-    LinearLayout list = new LinearLayout(this);
-    list.setOrientation(LinearLayout.VERTICAL);
-    list.setClipChildren(false);
-    list.setClipToPadding(false);
-    list.setPadding(px(16), px(12), px(16), px(12));
-    sc.addView(list);
-    View initial = null;
-    List<String> ids = prefs.favorites();
-    List<View> tiles = new ArrayList<>();
-    for (int i = 0; i < apps.size(); i += 6) {
-      LinearLayout row = new LinearLayout(this);
-      row.setClipChildren(false);
-      row.setClipToPadding(false);
-      list.addView(row, new LinearLayout.LayoutParams(-1, px(146)));
-      for (int j = i; j < Math.min(i + 6, apps.size()); j++) {
-        AppEntry a = apps.get(j);
-        View t = tile(a, (ids.contains(a.id) ? "已收藏 · " : "") + a.label, () -> launch(a));
-        t.setId(j == 0 ? R.id.first_app : View.generateViewId());
-        tiles.add(t);
-        t.setOnLongClickListener(
-            v -> {
-              manage(a, false);
-              return true;
-            });
-        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, px(112), 1);
-        p.setMargins(px(6), px(6), px(6), px(6));
-        row.addView(t, p);
-        if (initial == null || a.id.equals(selectedId)) initial = t;
-      }
-    }
-    for (int i = 0; i < tiles.size(); i++) {
-      View t = tiles.get(i);
-      int rowStart = i / 6 * 6;
-      int rowEnd = Math.min(rowStart + 5, tiles.size() - 1);
-      t.setNextFocusLeftId(tiles.get(Math.max(rowStart, i - 1)).getId());
-      t.setNextFocusRightId(tiles.get(Math.min(rowEnd, i + 1)).getId());
-      t.setNextFocusUpId(i >= 6 ? tiles.get(i - 6).getId() : R.id.settings_button);
-      t.setNextFocusDownId(i + 6 < tiles.size() ? tiles.get(i + 6).getId() : t.getId());
-    }
-    if (apps.isEmpty()) {
-      TextView empty = text(loading ? "正在读取应用…" : "暂无可启动的应用", 20, Color.WHITE);
-      list.addView(empty);
-    }
-    put(text("长按确定收藏应用   ·   返回键回首页", 14, 0xFF9FB1C8), 180, 504, 600, 26);
-    if (initial != null) initial.requestFocus();
+  private void manage(AppEntry app, View source) {
+    if (actionLayer != null) return;
+    menuReturn = source;
+    if (source instanceof AppCardView) ((AppCardView) source).contextSelected(true);
+    desktop.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+    List<AppActionMenuView.Item> items = new ArrayList<>();
+    items.add(
+        new AppActionMenuView.Item("移动位置", R.drawable.menu_move, false, () -> beginMove(app)));
+    items.add(
+        new AppActionMenuView.Item(
+            "应用信息",
+            R.drawable.menu_info,
+            false,
+            () ->
+                safeStart(
+                    new Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:" + app.component.getPackageName())))));
+    actionLayer =
+        new AppActionMenuView(
+            this, scale, app.label, artwork(app, false), items, action -> closeMenu(false, action));
+    root.addView(actionLayer, new FrameLayout.LayoutParams(-1, -1));
+    actionLayer.reveal();
   }
 
-  private void manage(AppEntry a, boolean home) {
-    List<String> ids = prefs.favorites();
-    boolean saved = ids.contains(a.id);
-    String[] options =
-        saved ? new String[] {"移到最前", "向左移动", "向右移动", "移出常用"} : new String[] {"添加到常用"};
-    new AlertDialog.Builder(this)
-        .setTitle(a.label)
-        .setItems(
-            options,
-            (d, n) -> {
-              int position = ids.indexOf(a.id);
-              if (!saved) ids.add(a.id);
-              else if (n == 3) ids.remove(a.id);
-              else if (n == 0) {
-                ids.remove(a.id);
-                ids.add(0, a.id);
-              } else if (n == 1 && position > 0) Collections.swap(ids, position, position - 1);
-              else if (n == 2 && position < ids.size() - 1)
-                Collections.swap(ids, position, position + 1);
-              prefs.saveFavorites(ids);
-              selectedId = a.id;
-              render();
-            })
-        .setNegativeButton("取消", null)
-        .show();
+  private void closeMenu(boolean restore) {
+    closeMenu(restore, null);
+  }
+
+  private void closeMenu(boolean restore, Runnable action) {
+    if (actionLayer == null) return;
+    AppActionMenuView old = actionLayer;
+    View target = menuReturn;
+    old.dismiss(
+        () -> {
+          // Home or a new intent may have replaced the entire root during dismissal.
+          if (actionLayer != old) return;
+          root.removeView(old);
+          actionLayer = null;
+          menuReturn = null;
+          desktop.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+          if (pendingRender) render();
+          else if (restore && target != null && target.isAttachedToWindow()) target.requestFocus();
+          if (target instanceof AppCardView) ((AppCardView) target).contextSelected(false);
+          if (action != null) action.run();
+        });
+  }
+
+  private void beginMove(AppEntry app) {
+    draftOrder = AppOrder.reconcile(prefs.appOrder(), installedIds());
+    if (!draftOrder.contains(app.id)) {
+      draftOrder = null;
+      render();
+      return;
+    }
+    movingId = app.id;
+    selectedId = app.id;
+    moveHint.setText("方向键移动位置 · 确定保存 · 返回取消");
+    homeWall.setEntries(orderedApps(), movingId, false);
+  }
+
+  private boolean moveKey(int code) {
+    int delta;
+    switch (code) {
+      case KeyEvent.KEYCODE_DPAD_LEFT:
+        delta = -1;
+        break;
+      case KeyEvent.KEYCODE_DPAD_RIGHT:
+        delta = 1;
+        break;
+      case KeyEvent.KEYCODE_DPAD_UP:
+        delta = -GridWallView.COLUMNS;
+        break;
+      case KeyEvent.KEYCODE_DPAD_DOWN:
+        delta = GridWallView.COLUMNS;
+        break;
+      default:
+        return false;
+    }
+    draftOrder = AppOrder.reconcile(draftOrder, installedIds());
+    List<AppEntry> visible = orderedApps();
+    int from = -1;
+    for (int i = 0; i < visible.size(); i++) if (visible.get(i).id.equals(movingId)) from = i;
+    if (from < 0) {
+      finishMove(false);
+      return true;
+    }
+    int target = Math.max(0, Math.min(visible.size() - 1, from + delta));
+    if (from == target) return true;
+    int to = draftOrder.indexOf(visible.get(target).id);
+    draftOrder.remove(movingId);
+    draftOrder.add(to, movingId);
+    homeWall.setEntries(orderedApps(), movingId, true);
+    return true;
+  }
+
+  private void finishMove(boolean save) {
+    if (draftOrder == null) return;
+    if (save) prefs.saveAppOrder(AppOrder.reconcile(draftOrder, installedIds()));
+    draftOrder = null;
+    movingId = null;
+    moveHint.setText("");
+    if (pendingRender) render();
+    else homeWall.setEntries(orderedApps(), selectedId, true);
+    if (save) toast("顺序已保存");
   }
 
   private void settingsPage() {
     ScrollView sc = new ScrollView(this);
     sc.setClipChildren(false);
     sc.setClipToPadding(false);
-    sc.setVerticalFadingEdgeEnabled(true);
-    sc.setFadingEdgeLength(px(12));
-    put(sc, 164, 98, 632, 400);
+    sc.setVerticalScrollBarEnabled(false);
+    put(sc, 194, 78, 572, 424);
     LinearLayout list = new LinearLayout(this);
     list.setOrientation(LinearLayout.VERTICAL);
     list.setClipChildren(false);
     list.setClipToPadding(false);
-    list.setPadding(px(12), px(12), px(12), px(20));
+    list.setPadding(px(8), px(8), px(8), px(8));
     sc.addView(list);
-    TextView heading = text("桌面与应用", 17, 0xFF9AAEC6);
-    heading.setGravity(Gravity.START);
-    list.addView(heading, new LinearLayout.LayoutParams(-1, px(48)));
-    View first = settingButton(list, "设置默认桌面", this::requestHome);
-    settingButton(
-        list,
-        "开机启动实验：" + (prefs.bootEnabled() ? "已开启" : "已关闭"),
-        () -> {
+    TextView heading = text("设置", 22, 0xFFECF0F6);
+    heading.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+    list.addView(heading, new LinearLayout.LayoutParams(-1, px(34)));
+    Map<String, SettingsRowView> rows = new LinkedHashMap<>();
+    LinearLayout desktop = settingsGroup(list, "桌面", false);
+    String home = DeviceDiagnostics.homePackage(this).equals(getPackageName()) ? "Still" : "系统桌面";
+    SettingsRowView first =
+        settingsRow(desktop, rows, "默认桌面", R.drawable.settings_home, home, false);
+    first.setId(R.id.first_app);
+    first.setOnClickListener(v -> requestHome());
+    SettingsRowView boot =
+        settingsRow(desktop, rows, "开机启动", R.drawable.settings_power_settings_new, "", true);
+    boot.checked(prefs.bootEnabled());
+    boot.setOnClickListener(
+        v -> {
           prefs.bootEnabled(!prefs.bootEnabled());
-          render();
+          boot.checked(prefs.bootEnabled());
         });
-    settingButton(list, "打开系统设置", () -> safeStart(new Intent(Settings.ACTION_SETTINGS)));
-    settingButton(list, "刷新应用列表", this::reload);
-    settingButton(
-        list,
-        "设备与启动信息",
-        () ->
+    SettingsRowView names =
+        settingsRow(desktop, rows, "显示应用名称", R.drawable.settings_description, "", true);
+    names.checked(prefs.showAppNames());
+    names.setOnClickListener(
+        v -> {
+          prefs.showAppNames(!prefs.showAppNames());
+          names.checked(prefs.showAppNames());
+        });
+    LinearLayout application = settingsGroup(list, "应用", true);
+    SettingsRowView system =
+        settingsRow(application, rows, "系统设置", R.drawable.settings_settings, "", false);
+    system.setOnClickListener(v -> safeStart(new Intent(Settings.ACTION_SETTINGS)));
+    SettingsRowView refresh =
+        settingsRow(application, rows, "刷新应用列表", R.drawable.settings_refresh, "", false);
+    refresh.setOnClickListener(
+        v -> {
+          reload();
+          toast("应用列表已刷新");
+        });
+    LinearLayout device = settingsGroup(list, "设备", true);
+    SettingsRowView info =
+        settingsRow(device, rows, "设备与启动信息", R.drawable.settings_description, "", false);
+    info.setOnClickListener(
+        v ->
             new AlertDialog.Builder(this)
                 .setTitle("设备与启动信息")
                 .setMessage(DeviceDiagnostics.report(this) + "\n\n开机实验可能被系统拦截；待机唤醒与重新开机需要分别验证。")
                 .setPositiveButton(
                     "复制报告",
-                    (dialog, which) -> {
+                    (d, w) -> {
                       android.content.ClipboardManager cb =
                           (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                       cb.setPrimaryClip(
-                          ClipData.newPlainText("Luma 设备报告", DeviceDiagnostics.report(this)));
+                          ClipData.newPlainText("Still 设备报告", DeviceDiagnostics.report(this)));
                       toast("已复制报告");
                     })
                 .setNegativeButton("关闭", null)
                 .show());
-    first.requestFocus();
+    List<SettingsRowView> order = new ArrayList<>(rows.values());
+    for (int i = 0; i < order.size(); i++) {
+      SettingsRowView row = order.get(i);
+      row.setNextFocusUpId(i == 0 ? R.id.settings_button : order.get(i - 1).getId());
+      row.setNextFocusDownId(order.get(Math.min(i + 1, order.size() - 1)).getId());
+      row.setNextFocusLeftId(row.getId());
+      row.setNextFocusRightId(row.getId());
+    }
+    (rows.containsKey(selectedSetting) ? rows.get(selectedSetting) : first).requestFocus();
   }
 
-  private View settingButton(LinearLayout parent, String label, Runnable action) {
-    int iconRes = R.drawable.settings_description, tint = 0xFF596882;
-    if (label.startsWith("设置默认")) {
-      iconRes = R.drawable.settings_home;
-      tint = 0xFF4F6D92;
-    } else if (label.startsWith("开机")) {
-      iconRes = R.drawable.settings_power_settings_new;
-      tint = 0xFF527C75;
-    } else if (label.startsWith("打开系统")) {
-      iconRes = R.drawable.settings_settings;
-      tint = 0xFF697B94;
-    } else if (label.startsWith("刷新")) {
-      iconRes = R.drawable.settings_refresh;
-      tint = 0xFF85735F;
+  private LinearLayout settingsGroup(LinearLayout list, String title, boolean gap) {
+    TextView caption = text(title, 14, 0xFF8F9EB3);
+    caption.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+    LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(-1, px(22));
+    cp.topMargin = gap ? px(10) : 0;
+    caption.setPadding(px(10), 0, 0, 0);
+    list.addView(caption, cp);
+    LinearLayout group = new LinearLayout(this);
+    group.setOrientation(LinearLayout.VERTICAL);
+    group.setClipChildren(false);
+    group.setClipToPadding(false);
+    GradientDrawable background =
+        new GradientDrawable(
+            GradientDrawable.Orientation.TL_BR, new int[] {0xC1242E3D, 0xB11C2532});
+    background.setCornerRadius(px(12));
+    group.setBackground(background);
+    list.addView(group, new LinearLayout.LayoutParams(-1, -2));
+    return group;
+  }
+
+  private SettingsRowView settingsRow(
+      LinearLayout group,
+      Map<String, SettingsRowView> rows,
+      String title,
+      int icon,
+      String detail,
+      boolean toggle) {
+    if (group.getChildCount() > 0) {
+      View divider = new View(this);
+      divider.setBackgroundColor(0x192E4058);
+      LinearLayout.LayoutParams dp = new LinearLayout.LayoutParams(-1, px(1));
+      dp.leftMargin = px(68);
+      dp.rightMargin = px(20);
+      group.addView(divider, dp);
     }
-    LinearLayout row = new LinearLayout(this);
-    row.setGravity(Gravity.CENTER_VERTICAL);
-    row.setPadding(px(12), 0, px(16), 0);
-    FrameLayout iconBox = new FrameLayout(this);
-    GradientDrawable badge = new GradientDrawable();
-    badge.setColor(tint);
-    badge.setCornerRadius(px(10));
-    iconBox.setBackground(badge);
-    ImageView icon = new ImageView(this);
-    icon.setImageResource(iconRes);
-    iconBox.addView(icon, new FrameLayout.LayoutParams(px(23), px(23), Gravity.CENTER));
-    row.addView(iconBox, new LinearLayout.LayoutParams(px(38), px(38)));
-    TextView name = text(label, 17, Color.WHITE);
-    name.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-    name.setSingleLine(true);
-    name.setEllipsize(android.text.TextUtils.TruncateAt.END);
-    LinearLayout.LayoutParams np = new LinearLayout.LayoutParams(0, -1, 1);
-    np.leftMargin = px(14);
-    row.addView(name, np);
-    row.setFocusable(true);
-    row.setClickable(true);
-    row.setContentDescription(label);
-    row.setBackground(surface(false));
+    SettingsRowView row = new SettingsRowView(this, scale, title, icon, detail, toggle);
+    row.setId(View.generateViewId());
+    View.OnFocusChangeListener visual = row.getOnFocusChangeListener();
     row.setOnFocusChangeListener(
-        (v, focused) -> {
-          GradientDrawable bg = new GradientDrawable();
-          bg.setColor(focused ? 0xFFF0F4FA : 0x88313F53);
-          bg.setCornerRadius(px(15));
-          row.setBackground(bg);
-          name.setTextColor(focused ? 0xFF152235 : 0xFFF0F3FA);
-          row.animate()
-              .scaleX(focused ? 1.025f : 1)
-              .scaleY(focused ? 1.025f : 1)
-              .setDuration(170)
-              .start();
+        (v, f) -> {
+          visual.onFocusChange(v, f);
+          if (f) selectedSetting = title;
         });
-    row.setOnClickListener(v -> action.run());
-    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(-1, px(56));
-    lp.setMargins(0, px(4), 0, px(4));
-    parent.addView(row, lp);
+    group.addView(row, new LinearLayout.LayoutParams(-1, px(46)));
+    rows.put(title, row);
     return row;
   }
 
@@ -639,7 +634,9 @@ public final class MainActivity extends Activity {
 
   @Override
   public void onBackPressed() {
-    if (!page.equals("home")) {
+    if (actionLayer != null) closeMenu(true);
+    else if (draftOrder != null) finishMove(false);
+    else if (!page.equals("home")) {
       page = "home";
       render();
     } else toast("已在首页；按 Home 返回默认桌面");

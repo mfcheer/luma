@@ -1,0 +1,19 @@
+{
+  "selectedWhiteBannerBoundsInCrop": [
+    37,
+    39,
+    321,
+    221
+  ],
+  "cropOrigin": [
+    780,
+    140
+  ],
+  "unfocusedCardWidthPx": 240,
+  "selectedWhiteWidthPx": 284,
+  "topCornerPixel": [
+    46,
+    24,
+    30
+  ]
+}

@@ -12,27 +12,24 @@ public final class Preferences {
     prefs = c.getSharedPreferences("launcher", Context.MODE_PRIVATE);
   }
 
-  public List<String> favorites() {
+  public List<String> appOrder() {
     List<String> r = new ArrayList<>();
     try {
-      JSONArray a = new JSONArray(prefs.getString("favorites", "[]"));
+      // Existing favorites become the initial order prefix, never an inclusion filter.
+      String key = prefs.contains("appOrder") ? "appOrder" : "favorites";
+      JSONArray a = new JSONArray(prefs.getString(key, "[]"));
       for (int i = 0; i < a.length(); i++) r.add(a.getString(i));
     } catch (Exception ignored) {
     }
     return r;
   }
 
-  public void saveFavorites(List<String> ids) {
-    prefs.edit().putString("favorites", new JSONArray(ids).toString()).apply();
+  public void saveAppOrder(List<String> ids) {
+    prefs.edit().putString("appOrder", new JSONArray(ids).toString()).apply();
   }
 
-  public boolean initialized() {
-    return prefs.getBoolean("initialized", false);
-  }
-
-  public void initialize(List<String> ids) {
-    saveFavorites(ids);
-    prefs.edit().putBoolean("initialized", true).apply();
+  public boolean hasAppOrder() {
+    return prefs.contains("appOrder");
   }
 
   public boolean bootEnabled() {
@@ -41,6 +38,14 @@ public final class Preferences {
 
   public void bootEnabled(boolean v) {
     prefs.edit().putBoolean("bootEnabled", v).apply();
+  }
+
+  public boolean showAppNames() {
+    return prefs.getBoolean("showAppNames", true);
+  }
+
+  public void showAppNames(boolean visible) {
+    prefs.edit().putBoolean("showAppNames", visible).apply();
   }
 
   public void record(String key, String value) {
