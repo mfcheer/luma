@@ -1,0 +1,20 @@
+.gradle/
+**/build/
+local.properties
+*.iml
+.DS_Store
+.idea/
+*.log
+*.jks
+*.keystore
+output/
+# Local QA history and build logs; keep only the current product previews below.
+docs/*-result.txt
+docs/assets/
+docs/design-target.png
+docs/design-comparison.jpg
+docs/screenshots/*
+!docs/screenshots/luma-home-red.png
+!docs/screenshots/luma-home-blue.png
+!docs/screenshots/luma-settings.png
+docs/recordings/*.mp4
