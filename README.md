@@ -5,6 +5,7 @@
 <h1 align="center">Still</h1>
 <p align="center">A quiet home for your TV.</p>
 <p align="center">原生 Android 电视桌面 · 遥控器优先 · 图标联动环境光</p>
+<p align="center"><a href="https://mfcheer.github.io/luma/">访问 Still 官网</a> · <a href="https://mfcheer.github.io/luma/#film">观看实机演示</a> · <a href="https://mfcheer.github.io/luma/downloads/Still-0.8.1.apk">下载预览版</a></p>
 
 Still 是一个简洁的 Android 电视桌面应用。首页自动展示所有可启动的应用，支持手动调整顺序；选中图标时，周围的环境光会随应用主色柔和变化。没有内容推荐流、广告 SDK 或统计服务，也不申请联网权限。
 
@@ -253,6 +254,8 @@ app/src/main/java/com/jianping/tv/
 ## 官网维护
 
 官网源码在 `website/`，采用原生 HTML/CSS/JavaScript，无运行依赖。真实电视素材、预览 APK 和校验和集中在该目录，网页与 README 复用同一批画面。网页支持浅深主题预览、实机视频播放、安装说明展开和 APK 下载；兼顾移动端、键盘操作与减少动态效果偏好。
+
+官网地址：[https://mfcheer.github.io/luma/](https://mfcheer.github.io/luma/)。仓库已公开，Pages 使用 GitHub Actions 发布。
 
 本地预览：
 
