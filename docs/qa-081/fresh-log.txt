@@ -1,0 +1,2 @@
+--------- beginning of main
+10-22 08:05:36.228 19868 19891 I StillCatalog: refresh apps=28 prepared=28 reused=0 queryMs=22 artworkMs=192

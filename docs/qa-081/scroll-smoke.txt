@@ -1,0 +1,23 @@
+PASS: exact one-pixel samples across two row boundaries reproduce the old flash and show continuous light-theme rendering after the fix
+/sdcard/still081-scroll-light.mp4: 1 file pulled, 0 skipped. 51.2 MB/s (593398 bytes in 0.011s)
+PASS: light recorded down/up scrolling, rapid reversals, exact focus/offset restoration, finite idle pixels, cross-row move/cancel and external app return
+/sdcard/still081-scroll-dark.mp4: 1 file pulled, 0 skipped. 43.3 MB/s (695415 bytes in 0.015s)
+PASS: dark recorded down/up scrolling, rapid reversals, exact focus/offset restoration, finite idle pixels, cross-row move/cancel and external app return
+警告: [options] 未与 -source 8 一起设置引导类路径
+警告: [options] 源值 8 已过时，将在未来发行版中删除
+警告: [options] 目标值 8 已过时，将在未来发行版中删除
+警告: [options] 要隐藏有关已过时选项的警告, 请使用 -Xlint:-options。
+4 个警告
+Performing Streamed Install
+Success
+s_glBindAttribLocation: bind attrib 0 name position
+s_glBindAttribLocation: bind attrib 1 name color
+s_glBindAttribLocation: bind attrib 2 name localCoord
+/sdcard/Android/data/com.jianping.tv/files/scroll-probe/dark/: 11 files pulled, 0 skipped. 16.5 MB/s (1367538 bytes in 0.079s)
+Success
+Starting: Intent { cmp=com.jianping.tv/.ui.MainActivity }
+INSTRUMENTATION_RESULT: directory=/storage/emulated/0/Android/data/com.jianping.tv/files/scroll-probe/dark
+INSTRUMENTATION_RESULT: result=PASS: captured exact row-boundary pixels and fading strengths
+INSTRUMENTATION_CODE: -1
+
+PASS: dark-theme row-boundary pixels also remain continuous

@@ -1,0 +1,28 @@
+{
+  "version": "0.8.1",
+  "device": "Xiaomi TV 5 Pro 55 / MiTV-ANSP0",
+  "android": 9,
+  "api": 28,
+  "applicationCount": 41,
+  "sourceResolution": [
+    1920,
+    1080
+  ],
+  "captureDate": "2026-10-22",
+  "source": "Direct ADB screen capture and screenrecord on the real television",
+  "videoEdit": "Three native clips joined at original playback speed, no frame interpolation, audio omitted",
+  "video": {
+    "programs": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080
+      }
+    ],
+    "format": {
+      "duration": "75.933000",
+      "size": "3101674"
+    }
+  }
+}

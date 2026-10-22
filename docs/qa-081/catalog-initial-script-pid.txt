@@ -1,0 +1,19 @@
+PASS: empty-cache preparation completes; all 28 launchers and atomic disk snapshot ready
+PASS: 4 launch/Back cycles keep the same process, exact focused card/bounds and zero catalog work
+Warning: Activity not started, its current task has been brought to the front
+Traceback (most recent call last):
+  File "/Users/mfcheer/Library/CloudStorage/OneDrive-个人/文档/AndroidTV/scripts/catalog-081-smoke.py", line 95, in <module>
+    for _ in range(3): key(20)
+               ^^^^^^^^^^^^^^^
+  File "/Users/mfcheer/Library/CloudStorage/OneDrive-个人/文档/AndroidTV/scripts/theme-080-smoke.py", line 26, in adb
+    return subprocess.check_output([*BASE, *args], text=True).strip()
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 473, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               **kwargs).stdout
+               ^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/Users/mfcheer/Library/Android/sdk/platform-tools/adb', '-s', 'emulator-5554', 'shell', 'pidof', 'com.jianping.tv']' returned non-zero exit status 1.

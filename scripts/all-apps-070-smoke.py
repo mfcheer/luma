@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Dedicated 28-app emulator only: all-app home, migration, transactional order and package events."""
 import json
+import os
 import subprocess
 import tempfile
 import time
@@ -11,7 +12,8 @@ ROOT = Path(__file__).resolve().parents[1]
 BASE = ['/Users/mfcheer/Library/Android/sdk/platform-tools/adb', '-s', 'emulator-5554']
 PKG = 'com.jianping.tv'
 FIXTURES = Path('/Users/mfcheer/.cache/jianping-tools/fixtures')
-SHOTS = ROOT / 'docs/screenshots'
+SHOTS = Path(os.environ.get('STILL_QA_SHOTS', str(ROOT / 'docs/screenshots')))
+SHOTS.mkdir(parents=True, exist_ok=True)
 
 
 def adb(*args):
@@ -24,8 +26,13 @@ def key(code, pause=.3, long=False):
 
 
 def tree():
-    adb('shell', 'uiautomator', 'dump', '/sdcard/qa070.xml')
-    return ET.fromstring(adb('shell', 'cat', '/sdcard/qa070.xml'))
+    for _ in range(4):
+        adb('shell', 'rm', '-f', '/sdcard/qa070.xml')
+        result = adb('shell', 'uiautomator', 'dump', '/sdcard/qa070.xml')
+        if 'dumped to' in result:
+            return ET.fromstring(adb('shell', 'cat', '/sdcard/qa070.xml'))
+        time.sleep(.4)
+    raise AssertionError('UIAutomator did not return a fresh hierarchy')
 
 
 def focus():
@@ -50,12 +57,28 @@ def start():
     adb('shell', 'am', 'start', '-n', PKG + '/.ui.MainActivity')
     time.sleep(1.1)
     wait_count(28)
+    for _ in range(8):
+        current = focus()
+        if current.get('package') == PKG and current.get('long-clickable') == 'true':
+            return
+        time.sleep(.4)
+    raise AssertionError('Home did not finish loading')
 
 
 def shot(name):
     time.sleep(.5)
     with (SHOTS / name).open('wb') as f:
         subprocess.run([*BASE, 'exec-out', 'screencap', '-p'], stdout=f, check=True)
+
+
+def wait_order(expected):
+    # SharedPreferences.apply() persists asynchronously; wait for the observable saved state.
+    for _ in range(20):
+        actual = order()
+        if actual == expected:
+            return
+        time.sleep(.25)
+    raise AssertionError(f'Expected saved order {expected}, actual {order()}, focused {desc()}')
 
 
 def wait_count(count):
@@ -124,7 +147,7 @@ try:
     key(4); assert order() == initial
     key(23, long=True); key(23); key(20); key(23)
     expected = initial.copy(); moving = expected.pop(0); expected.insert(5, moving)
-    assert order() == expected
+    wait_order(expected)
     start(); assert order() == expected
     print('PASS: legacy prefix migrates to full list; menu only moves/info; cancel/save/restart', flush=True)
 
@@ -162,7 +185,8 @@ try:
     wait_count(28)
     key(20); key(23)
     expected = before_draft.copy(); moving = expected.pop(0); expected.insert(6, moving)
-    assert order() == expected and len(set(order())) == 28
+    wait_order(expected)
+    assert len(set(order())) == 28
     start(); assert order() == expected
     for _ in range(5): key(20, .1)
     key(22); key(22)

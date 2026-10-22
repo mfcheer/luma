@@ -1,0 +1,38 @@
+--------- beginning of crash
+10-22 00:18:39.423   826  1036 F libc    : Fatal signal 6 (SIGABRT), code -1 (SI_QUEUE) in tid 1036 (bt_stack_manage), pid 826 (droid.bluetooth)
+10-22 00:18:39.915  1104  1104 F DEBUG   : *** *** *** *** *** *** *** *** *** *** *** *** *** *** *** ***
+10-22 00:18:39.916  1104  1104 F DEBUG   : Build fingerprint: 'google/sdk_google_atv64_arm64/emu64a:13/TTT5.221206.003/9379539:user/dev-keys'
+10-22 00:18:39.916  1104  1104 F DEBUG   : Revision: '0'
+10-22 00:18:39.916  1104  1104 F DEBUG   : ABI: 'arm64'
+10-22 00:18:39.916  1104  1104 F DEBUG   : Timestamp: 2026-10-22 00:18:39.491255465+0800
+10-22 00:18:39.916  1104  1104 F DEBUG   : Process uptime: 0s
+10-22 00:18:39.916  1104  1104 F DEBUG   : Cmdline: com.android.bluetooth
+10-22 00:18:39.916  1104  1104 F DEBUG   : pid: 826, tid: 1036, name: bt_stack_manage  >>> com.android.bluetooth <<<
+10-22 00:18:39.916  1104  1104 F DEBUG   : uid: 1002
+10-22 00:18:39.916  1104  1104 F DEBUG   : tagged_addr_ctrl: 0000000000000001 (PR_TAGGED_ADDR_ENABLE)
+10-22 00:18:39.916  1104  1104 F DEBUG   : pac_enabled_keys: 000000000000000f (PR_PAC_APIAKEY, PR_PAC_APIBKEY, PR_PAC_APDAKEY, PR_PAC_APDBKEY)
+10-22 00:18:39.916  1104  1104 F DEBUG   : signal 6 (SIGABRT), code -1 (SI_QUEUE), fault addr --------
+10-22 00:18:39.916  1104  1104 F DEBUG   : Abort message: 'assertion 'reset_complete.IsValid()' failed'
+10-22 00:18:39.916  1104  1104 F DEBUG   :     x0  0000000000000000  x1  000000000000040c  x2  0000000000000006  x3  0000007b5d8fff10
+10-22 00:18:39.916  1104  1104 F DEBUG   :     x4  686b605572482d64  x5  686b605572482d64  x6  686b605572482d64  x7  7f7f7f7f7f7f7f7f
+10-22 00:18:39.916  1104  1104 F DEBUG   :     x8  00000000000000f0  x9  0000007e8daa3a00  x10 0000000000000001  x11 0000007e8dae1ce4
+10-22 00:18:39.916  1104  1104 F DEBUG   :     x12 0000007b5d8fedc0  x13 000000000000002c  x14 0000007b5d900130  x15 000003d1e790df14
+10-22 00:18:39.916  1104  1104 F DEBUG   :     x16 0000007e8db46d60  x17 0000007e8db23b70  x18 0000007b4cdc6038  x19 000000000000033a
+10-22 00:18:39.916  1104  1104 F DEBUG   :     x20 000000000000040c  x21 00000000ffffffff  x22 0000007be3215000  x23 0000007be3216000
+10-22 00:18:39.916  1104  1104 F DEBUG   :     x24 0000000000000000  x25 0000000000000000  x26 b400007c36c63f8c  x27 0000000000000001
+10-22 00:18:39.916  1104  1104 F DEBUG   :     x28 0000000000000000  x29 0000007b5d8fff90
+10-22 00:18:39.916  1104  1104 F DEBUG   :     lr  0000007e8dad3868  sp  0000007b5d8ffef0  pc  0000007e8dad3894  pst 0000000000001000
+10-22 00:18:39.916  1104  1104 F DEBUG   : backtrace:
+10-22 00:18:39.916  1104  1104 F DEBUG   :       #00 pc 0000000000051894  /apex/com.android.runtime/lib64/bionic/libc.so (abort+164) (BuildId: 058e3ec96fa600fb840a6a6956c6b64e)
+10-22 00:18:39.916  1104  1104 F DEBUG   :       #01 pc 00000000006d2a68  /apex/com.android.art/lib64/libart.so (art::Runtime::Abort(char const*)+108) (BuildId: f63a480ae5c413d179fcbd3d736d9fb1)
+10-22 00:18:39.916  1104  1104 F DEBUG   :       #02 pc 0000000000016ea8  /apex/com.android.art/lib64/libbase.so (android::base::SetAborter(std::__1::function<void (char const*)>&&)::$_3::__invoke(char const*)+80) (BuildId: b77c57f68a484ed93d5a7eda59d83bf9)
+10-22 00:18:39.916  1104  1104 F DEBUG   :       #03 pc 0000000000009de0  /system/lib64/liblog.so (__android_log_assert+292) (BuildId: 1f951eeceedbbe038f287e24d36cbd34)
+10-22 00:18:39.916  1104  1104 F DEBUG   :       #04 pc 0000000000851544  /apex/com.android.btservices/lib64/libbluetooth_jni.so (bluetooth::hci::fail_if_reset_complete_not_success(bluetooth::hci::CommandCompleteView)+540) (BuildId: 6aaac6bed7900c97965f54d76e737290)
+10-22 00:18:39.916  1104  1104 F DEBUG   :       #05 pc 00000000007e97c0  /apex/com.android.btservices/lib64/libbluetooth_jni.so (void base::internal::FunctorTraits<void (*)(bluetooth::hci::CommandCompleteView), void>::Invoke<void (*)(bluetooth::hci::CommandCompleteView), bluetooth::hci::CommandCompleteView>(void (*&&)(bluetooth::hci::CommandCompleteView), bluetooth::hci::CommandCompleteView&&)+268) (BuildId: 6aaac6bed7900c97965f54d76e737290)
+10-22 00:18:39.916  1104  1104 F DEBUG   :       #06 pc 000000000085d284  /apex/com.android.btservices/lib64/libbluetooth_jni.so (void base::internal::FunctorTraits<base::OnceCallback<void (bluetooth::hci::CommandCompleteView)>, void>::Invoke<base::OnceCallback<void (bluetooth::hci::CommandCompleteView)>, bluetooth::hci::CommandCompleteView>(base::OnceCallback<void (bluetooth::hci::CommandCompleteView)>&&, bluetooth::hci::CommandCompleteView&&)+280) (BuildId: 6aaac6bed7900c97965f54d76e737290)
+10-22 00:18:39.916  1104  1104 F DEBUG   :       #07 pc 0000000000943bf8  /apex/com.android.btservices/lib64/libbluetooth_jni.so (bluetooth::os::Handler::handle_next_event()+236) (BuildId: 6aaac6bed7900c97965f54d76e737290)
+10-22 00:18:39.916  1104  1104 F DEBUG   :       #08 pc 00000000009985bc  /apex/com.android.btservices/lib64/libbluetooth_jni.so (bluetooth::os::Reactor::Run()+584) (BuildId: 6aaac6bed7900c97965f54d76e737290)
+10-22 00:18:39.916  1104  1104 F DEBUG   :       #09 pc 00000000009992b8  /apex/com.android.btservices/lib64/libbluetooth_jni.so (bluetooth::os::Thread::run(bluetooth::os::Thread::Priority)+176) (BuildId: 6aaac6bed7900c97965f54d76e737290)
+10-22 00:18:39.916  1104  1104 F DEBUG   :       #10 pc 0000000000999440  /apex/com.android.btservices/lib64/libbluetooth_jni.so (void* std::__1::__thread_proxy<std::__1::tuple<std::__1::unique_ptr<std::__1::__thread_struct, std::__1::default_delete<std::__1::__thread_struct> >, void (bluetooth::os::Thread::*)(bluetooth::os::Thread::Priority), bluetooth::os::Thread*, bluetooth::os::Thread::Priority> >(void*)+68) (BuildId: 6aaac6bed7900c97965f54d76e737290)
+10-22 00:18:39.916  1104  1104 F DEBUG   :       #11 pc 00000000000b62b8  /apex/com.android.runtime/lib64/bionic/libc.so (__pthread_start(void*)+208) (BuildId: 058e3ec96fa600fb840a6a6956c6b64e)
+10-22 00:18:39.916  1104  1104 F DEBUG   :       #12 pc 0000000000052fb8  /apex/com.android.runtime/lib64/bionic/libc.so (__start_thread+64) (BuildId: 058e3ec96fa600fb840a6a6956c6b64e)

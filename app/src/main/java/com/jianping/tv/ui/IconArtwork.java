@@ -32,7 +32,7 @@ public final class IconArtwork {
       input.setBounds(old);
     }
     Rect visible = new Rect(bw, bh, 0, 0);
-    int solid = 0, colorful = 0;
+    int solid = 0, colorful = 0, sampled = 0;
     float luminance = 0;
     int[] pixels = new int[bw * bh];
     image.getPixels(pixels, 0, bw, 0, 0, bw, bh);
@@ -46,11 +46,15 @@ public final class IconArtwork {
         visible.top = Math.min(visible.top, y);
         visible.bottom = Math.max(visible.bottom, y + 1);
         solid++;
-        Color.colorToHSV(color, hsv);
-        if (hsv[1] > .45f) colorful++;
-        luminance +=
-            (.2126f * Color.red(color) + .7152f * Color.green(color) + .0722f * Color.blue(color))
-                / 255;
+        // Bounds retain full pixel precision; surface classification only needs sparse samples.
+        if ((x & 3) == 0 && (y & 3) == 0) {
+          sampled++;
+          Color.colorToHSV(color, hsv);
+          if (hsv[1] > .45f) colorful++;
+          luminance +=
+              (.2126f * Color.red(color) + .7152f * Color.green(color) + .0722f * Color.blue(color))
+                  / 255;
+        }
       }
     if (visible.isEmpty()) {
       image.recycle();
@@ -62,7 +66,7 @@ public final class IconArtwork {
             || (aspect > .88f
                 && aspect < 1.14f
                 && (float) solid / (visible.width() * visible.height()) > .84f);
-    boolean light = colorful > solid * .4f && luminance / solid < .62f;
+    boolean light = sampled > 0 && colorful > sampled * .4f && luminance / sampled < .62f;
     int top = light ? tint(accent, .025f, 0xFFFAFCFF) : tint(accent, .22f, 0xFF273343);
     int bottom = light ? tint(accent, .055f, 0xFFE6EAF1) : tint(accent, .10f, 0xFF171E2B);
     if (full) {
@@ -180,7 +184,7 @@ public final class IconArtwork {
 
   /** Low-resolution separable box blur, prepared once off the UI thread for edge previews. */
   public static Drawable preview(Resources resources, Drawable art) {
-    int w = 96, h = 62;
+    int w = 128, h = 83;
     Bitmap image = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
     Rect old = new Rect(art.getBounds());
     try {
@@ -189,30 +193,30 @@ public final class IconArtwork {
     } finally {
       art.setBounds(old);
     }
-    int[] pixels = new int[w * h], temp = new int[w * h];
+    int[] pixels = new int[w * h];
     image.getPixels(pixels, 0, w, 0, 0, w, h);
-    for (int pass = 0; pass < 2; pass++) {
-      for (int y = 0; y < h; y++)
-        for (int x = 0; x < w; x++) temp[y * w + x] = average(pixels, w, h, x, y, true);
-      for (int y = 0; y < h; y++)
-        for (int x = 0; x < w; x++) pixels[y * w + x] = average(temp, w, h, x, y, false);
-    }
+    ArgbBlur.apply(pixels, w, h);
     image.setPixels(pixels, 0, w, 0, 0, w, h);
     return new BitmapDrawable(resources, image);
   }
 
-  private static int average(int[] p, int w, int h, int x, int y, boolean horizontal) {
-    int a = 0, r = 0, g = 0, b = 0;
-    for (int d = -2; d <= 2; d++) {
-      int xx = horizontal ? Math.max(0, Math.min(w - 1, x + d)) : x;
-      int yy = horizontal ? y : Math.max(0, Math.min(h - 1, y + d));
-      int c = p[yy * w + xx];
-      a += Color.alpha(c);
-      r += Color.red(c);
-      g += Color.green(c);
-      b += Color.blue(c);
+  /** Cheap normalized fallback retains the real mark without expensive surface analysis. */
+  public static Drawable fallback(Resources resources, Drawable source) {
+    Bitmap image = Bitmap.createBitmap(384, 250, Bitmap.Config.ARGB_8888);
+    Canvas canvas = new Canvas(image);
+    canvas.drawColor(0xFF263244);
+    int width = Math.max(1, source.getIntrinsicWidth()),
+        height = Math.max(1, source.getIntrinsicHeight());
+    float scale = Math.min(276f / width, 180f / height);
+    int w = Math.round(width * scale), h = Math.round(height * scale);
+    Rect old = new Rect(source.getBounds());
+    try {
+      source.setBounds((384 - w) / 2, (250 - h) / 2, (384 + w) / 2, (250 + h) / 2);
+      source.draw(canvas);
+    } finally {
+      source.setBounds(old);
     }
-    return Color.argb(a / 5, r / 5, g / 5, b / 5);
+    return new BitmapDrawable(resources, image);
   }
 
   private static int tint(int accent, float amount, int base) {

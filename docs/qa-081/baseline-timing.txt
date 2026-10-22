@@ -1,0 +1,2 @@
+--------- beginning of main
+10-22 07:54:15.374 18454 18548 I StillCatalog: baseline apps=28 queryMs=1086 artworkMs=1708

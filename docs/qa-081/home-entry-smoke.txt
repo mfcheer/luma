@@ -1,0 +1,5 @@
+PASS: default-home click always opens a visible state/options panel; close restores row focus
+PASS: system desktop settings opens a visible system surface or explains an unavailable picker
+PASS: alternate Home entry opens the original TV launcher explicitly without disabling it or changing defaults
+PASS: diagnostics distinguishes resolver from real launcher, lists Home components and preserves all preferences
+Warning: Activity not started, intent has been delivered to currently running top-most instance.

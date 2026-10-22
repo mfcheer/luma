@@ -32,6 +32,14 @@ public final class Preferences {
     return prefs.contains("appOrder");
   }
 
+  public boolean lightTheme() {
+    return !"dark".equals(prefs.getString("appearance", "light"));
+  }
+
+  public void lightTheme(boolean light) {
+    prefs.edit().putString("appearance", light ? "light" : "dark").apply();
+  }
+
   public boolean bootEnabled() {
     return prefs.getBoolean("bootEnabled", false);
   }

@@ -22,22 +22,27 @@ import java.util.concurrent.*;
 /** Native TV launcher; persistent data remains independent from its remote-driven presentation. */
 public final class MainActivity extends Activity {
   private Preferences prefs;
+  private UiPalette palette;
   private AppRepository repository;
+  private AppCatalogCache catalog;
+  private AppCatalogCache.Snapshot snapshot;
+  private Future<?> loadTask;
+  private final Set<String> invalidatedPackages = new HashSet<>();
+  private SettingsRowView homeSetting;
+  private boolean waitingForHomeSettings;
+  private final Runnable packageReload = () -> reload(false);
   private final ExecutorService worker = Executors.newSingleThreadExecutor();
   private final Handler handler = new Handler(Looper.getMainLooper());
   private List<AppEntry> apps = new ArrayList<>();
   private FrameLayout root, desktop;
   private AppActionMenuView actionLayer;
-  private TextView clock, moveHint;
+  private TextView clock, calendarDate, moveHint;
   private GridWallView homeWall;
   private View menuReturn;
   private String selectedSetting = "默认桌面", selectedId = "", page = "home";
   private AmbientBackgroundView ambient;
-  private final Map<String, Integer> paletteCache = new HashMap<>();
-  private final Map<String, Drawable> artworkCache = new HashMap<>(),
-      previewCache = new HashMap<>();
   private float scale = 1;
-  private boolean loading = true, pendingRender;
+  private boolean loading = true, pendingRender, catalogError;
   private List<String> draftOrder;
   private String movingId;
   private int loadGeneration;
@@ -45,8 +50,7 @@ public final class MainActivity extends Activity {
   private final Runnable ticker =
       new Runnable() {
         public void run() {
-          if (clock != null)
-            clock.setText(new SimpleDateFormat("HH:mm", Locale.CHINA).format(new Date()));
+          updateClock();
           handler.postDelayed(this, 1000);
         }
       };
@@ -56,15 +60,27 @@ public final class MainActivity extends Activity {
           // An APK replacement briefly removes its old entry; retain its slot until added.
           if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())
               && intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)) return;
-          reload();
+          String changed =
+              intent.getData() == null ? null : intent.getData().getSchemeSpecificPart();
+          if (changed != null) invalidatedPackages.add(changed);
+          handler.removeCallbacks(packageReload);
+          handler.postDelayed(packageReload, 180);
         }
       };
 
   @Override
   public void onCreate(Bundle state) {
-    super.onCreate(state);
     prefs = new Preferences(this);
+    palette = UiPalette.from(prefs.lightTheme());
+    setTheme(palette.light ? R.style.AppThemeLight : R.style.AppTheme);
+    super.onCreate(state);
     repository = new AppRepository(this);
+    catalog = new AppCatalogCache(this);
+    snapshot = catalog.memory();
+    if (snapshot != null) {
+      apps = snapshot.apps;
+      loading = false;
+    }
     if (state != null) {
       page = state.getString("page", "home");
       selectedId = state.getString("selected", "");
@@ -80,7 +96,7 @@ public final class MainActivity extends Activity {
       registerReceiver(packageChanges, filter, Context.RECEIVER_EXPORTED);
     else registerReceiver(packageChanges, filter);
     render();
-    reload();
+    reload(true);
     handler.post(ticker);
   }
 
@@ -89,10 +105,11 @@ public final class MainActivity extends Activity {
     super.onNewIntent(intent);
     setIntent(intent);
     recordEntry(intent);
+    boolean needsRender = !page.equals("home") || actionLayer != null || draftOrder != null;
     draftOrder = null;
     movingId = null;
     page = "home";
-    render();
+    if (needsRender) render();
   }
 
   private void recordEntry(Intent i) {
@@ -118,7 +135,17 @@ public final class MainActivity extends Activity {
             View.SYSTEM_UI_FLAG_FULLSCREEN
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-    if (!loading) reload();
+    // Returning from another app keeps the existing wall and decoded artwork intact.
+    if (page.equals("home") && homeWall != null && root.findFocus() == null)
+      homeWall.restoreFocus(selectedId, homeWall.getScrollY());
+    if (homeSetting != null && page.equals("settings"))
+      homeSetting.detail(DeviceDiagnostics.homeLabel(this));
+  }
+
+  @Override
+  protected void onPause() {
+    waitingForHomeSettings = false;
+    super.onPause();
   }
 
   @Override
@@ -129,45 +156,110 @@ public final class MainActivity extends Activity {
     super.onDestroy();
   }
 
-  private void reload() {
+  private void reload(boolean allowDisk) {
     final int generation = ++loadGeneration;
-    worker.execute(
-        () -> {
-          List<AppEntry> result = repository.load();
-          Map<String, Drawable> art = new HashMap<>(), soft = new HashMap<>();
-          Map<String, Integer> colors = new HashMap<>();
-          for (AppEntry app : result) {
-            if (Thread.currentThread().isInterrupted()) return;
-            try {
-              int color = IconPalette.accent(app.icon);
-              Drawable card = IconArtwork.landscape(getResources(), app.icon, app.banner, color);
-              colors.put(app.id, color);
-              art.put(app.id, card);
-              soft.put(app.id, IconArtwork.preview(getResources(), card));
-            } catch (RuntimeException e) {
-              colors.put(app.id, 0xFF7092CC);
-              art.put(app.id, app.icon);
-              soft.put(app.id, app.icon);
-            }
-          }
-          runOnUiThread(
-              () -> {
-                if (isDestroyed() || generation != loadGeneration) return;
-                apps = result;
-                artworkCache.clear();
-                artworkCache.putAll(art);
-                previewCache.clear();
-                previewCache.putAll(soft);
-                paletteCache.clear();
-                paletteCache.putAll(colors);
-                loading = false;
-                List<String> order = AppOrder.reconcile(prefs.appOrder(), installedIds());
-                if (!prefs.hasAppOrder() || !order.equals(prefs.appOrder()))
-                  prefs.saveAppOrder(order);
-                if (draftOrder != null || actionLayer != null) pendingRender = true;
-                else render();
-              });
-        });
+    if (loadTask != null) loadTask.cancel(true);
+    final Set<String> invalidated = new HashSet<>(invalidatedPackages);
+    final AppCatalogCache.Snapshot previous = snapshot;
+    loadTask =
+        worker.submit(
+            () -> {
+              try {
+                long began = SystemClock.elapsedRealtime();
+                AppCatalogCache.Snapshot cached = previous;
+                if (cached == null && allowDisk) {
+                  cached = catalog.read();
+                  if (cached != null) {
+                    final AppCatalogCache.Snapshot disk = cached;
+                    runOnUiThread(() -> acceptCatalog(disk, generation, false));
+                    android.util.Log.i(
+                        "StillCatalog",
+                        "diskReady apps="
+                            + disk.apps.size()
+                            + " elapsedMs="
+                            + (SystemClock.elapsedRealtime() - began));
+                  }
+                }
+                if (Thread.currentThread().isInterrupted()) return;
+                List<AppEntry> result = repository.load();
+                if (Thread.currentThread().isInterrupted()) return;
+                long queried = SystemClock.elapsedRealtime();
+                Map<String, AppCatalogCache.Visual> visuals = new HashMap<>();
+                int prepared = 0, reused = 0;
+                for (AppEntry app : result) {
+                  if (Thread.currentThread().isInterrupted()) return;
+                  AppCatalogCache.Visual visual =
+                      cached == null ? null : cached.visuals.get(app.id);
+                  boolean dirty = invalidated.contains(app.component.getPackageName());
+                  if (dirty || (visual != null && !app.fingerprint.equals(visual.fingerprint)))
+                    visual = null;
+                  if (visual == null && !dirty) visual = catalog.readVisual(app);
+                  if (visual == null) {
+                    AppRepository.Artwork raw = repository.artwork(app);
+                    int color = IconPalette.accent(raw.icon);
+                    Drawable art;
+                    try {
+                      art = IconArtwork.landscape(getResources(), raw.icon, raw.banner, color);
+                    } catch (RuntimeException e) {
+                      art = IconArtwork.fallback(getResources(), raw.icon);
+                    }
+                    Drawable soft = IconArtwork.preview(getResources(), art);
+                    visual = new AppCatalogCache.Visual(app.fingerprint, color, art, soft);
+                    prepared++;
+                  } else reused++;
+                  visuals.put(app.id, visual);
+                }
+                if (Thread.currentThread().isInterrupted()) return;
+                AppCatalogCache.Snapshot next = new AppCatalogCache.Snapshot(result, visuals);
+                boolean changed = !next.samePresentation(cached);
+                runOnUiThread(
+                    () -> {
+                      if (isDestroyed() || generation != loadGeneration) return;
+                      invalidatedPackages.removeAll(invalidated);
+                      acceptCatalog(next, generation, true);
+                    });
+                android.util.Log.i(
+                    "StillCatalog",
+                    "refresh apps="
+                        + result.size()
+                        + " prepared="
+                        + prepared
+                        + " reused="
+                        + reused
+                        + " queryMs="
+                        + (queried - began)
+                        + " artworkMs="
+                        + (SystemClock.elapsedRealtime() - queried));
+                if (changed && !Thread.currentThread().isInterrupted()) catalog.write(next);
+              } catch (RuntimeException error) {
+                android.util.Log.w("StillCatalog", "Unable to refresh application catalog", error);
+                runOnUiThread(
+                    () -> {
+                      if (isDestroyed() || generation != loadGeneration) return;
+                      loading = false;
+                      catalogError = true;
+                      if (apps.isEmpty()) render();
+                      toast("读取应用失败，可在设置中重试");
+                    });
+              }
+            });
+  }
+
+  private void acceptCatalog(AppCatalogCache.Snapshot next, int generation, boolean fresh) {
+    if (isDestroyed() || generation != loadGeneration) return;
+    boolean changed = !next.samePresentation(snapshot);
+    snapshot = next;
+    catalog.remember(next);
+    apps = next.apps;
+    loading = false;
+    catalogError = false;
+    if (fresh) {
+      List<String> order = AppOrder.reconcile(prefs.appOrder(), installedIds());
+      if (!prefs.hasAppOrder() || !order.equals(prefs.appOrder())) prefs.saveAppOrder(order);
+    }
+    if (!changed) return;
+    if (draftOrder != null || actionLayer != null) pendingRender = true;
+    else render();
   }
 
   private int px(float n) {
@@ -207,18 +299,18 @@ public final class MainActivity extends Activity {
   private View headerAction(boolean home, Runnable action) {
     FrameLayout button = new FrameLayout(this);
     ImageView glyph = new ImageView(this);
-    glyph.setImageResource(home ? R.drawable.settings_settings : R.drawable.nav_back);
-    glyph.setColorFilter(0xFFBBC7D9);
+    glyph.setImageResource(home ? R.drawable.nav_settings : R.drawable.nav_back);
+    glyph.setColorFilter(palette.icon);
     button.addView(
         glyph,
-        new FrameLayout.LayoutParams(px(home ? 19 : 25), px(home ? 19 : 25), Gravity.CENTER));
+        new FrameLayout.LayoutParams(px(home ? 18 : 24), px(home ? 18 : 24), Gravity.CENTER));
     button.setFocusable(true);
     button.setClickable(true);
     button.setContentDescription(home ? "设置" : "返回");
     button.setOnFocusChangeListener(
         (v, focus) -> {
-          button.setBackground(rounded(focus ? 0x20FFFFFF : Color.TRANSPARENT, 18));
-          glyph.setColorFilter(focus ? Color.WHITE : 0xFFBBC7D9);
+          button.setBackground(rounded(focus ? palette.headerFocus : Color.TRANSPARENT, 18));
+          glyph.setColorFilter(focus ? palette.headerFocusIcon : palette.icon);
           button
               .animate()
               .scaleX(focus ? 1.12f : 1)
@@ -231,23 +323,27 @@ public final class MainActivity extends Activity {
   }
 
   private int appAccent(AppEntry app) {
-    Integer color = paletteCache.get(app.id);
-    return color == null ? 0xFF7092CC : color;
+    AppCatalogCache.Visual visual = snapshot == null ? null : snapshot.visuals.get(app.id);
+    return visual == null ? 0xFF7092CC : visual.accent;
   }
 
   private Drawable artwork(AppEntry app, boolean soft) {
-    String key = app.id;
-    if (!artworkCache.containsKey(key)) {
-      Drawable source = app.icon;
-      int color = IconPalette.accent(source);
-      paletteCache.put(key, color);
-      Drawable art = IconArtwork.landscape(getResources(), source, app.banner, color);
-      artworkCache.put(key, art);
-      previewCache.put(key, IconArtwork.preview(getResources(), art));
-    }
-    Drawable image = (soft ? previewCache : artworkCache).get(key);
+    AppCatalogCache.Visual visual = snapshot.visuals.get(app.id);
+    if (visual == null) return getDrawable(android.R.drawable.sym_def_app_icon);
+    Drawable image = soft ? visual.preview : visual.card;
     Drawable.ConstantState state = image.getConstantState();
     return state == null ? image : state.newDrawable(getResources()).mutate();
+  }
+
+  private void updateClock() {
+    if (clock == null || calendarDate == null) return;
+    // Use the same instant and the device's current timezone for both lines, including midnight.
+    Date now = new Date();
+    String time = new SimpleDateFormat("HH:mm", Locale.CHINA).format(now);
+    String date = new SimpleDateFormat("yyyy年M月d日  EEEE", Locale.CHINA).format(now);
+    // Keep the one-second time-change response without relaying out unchanged text every tick.
+    if (!time.contentEquals(clock.getText())) clock.setText(time);
+    if (!date.contentEquals(calendarDate.getText())) calendarDate.setText(date);
   }
 
   private void render() {
@@ -256,18 +352,27 @@ public final class MainActivity extends Activity {
     menuReturn = null;
     scale = getResources().getDisplayMetrics().widthPixels / 960f;
     root = new FrameLayout(this);
-    root.setBackgroundColor(0xFF0B1019);
+    root.setBackgroundColor(palette.background);
+    getWindow()
+        .setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(palette.background));
     setContentView(root);
     desktop = new FrameLayout(this);
     root.addView(desktop, new FrameLayout.LayoutParams(-1, -1));
     actionLayer = null;
     pendingRender = false;
-    ambient = new AmbientBackgroundView(this);
+    ambient = new AmbientBackgroundView(this, palette);
     desktop.addView(ambient, new FrameLayout.LayoutParams(-1, -1));
-    clock = text(new SimpleDateFormat("HH:mm", Locale.CHINA).format(new Date()), 18, 0xFFB2BCCD);
-    clock.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
+    clock = text("", 18, palette.secondary);
+    clock.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
+    clock.setLetterSpacing(.015f);
     clock.setFontFeatureSettings("'tnum' 1");
-    put(clock, 800, 30, 74, 28);
+    clock.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+    put(clock, 698, 20, 176, 25);
+    calendarDate = text("", 12, palette.muted);
+    calendarDate.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+    calendarDate.setFontFeatureSettings("'tnum' 1");
+    put(calendarDate, 698, 46, 176, 18);
+    updateClock();
     View settings =
         headerAction(
             page.equals("home"),
@@ -324,6 +429,10 @@ public final class MainActivity extends Activity {
         ambient.illuminate(appAccent(app), true);
       }
 
+      public void anchor(float x, float y, boolean animated) {
+        ambient.follow(x, y, animated);
+      }
+
       public void activate(AppEntry app) {
         if (draftOrder != null) finishMove(true);
         else launch(app);
@@ -341,19 +450,25 @@ public final class MainActivity extends Activity {
   }
 
   private void home(View settings) {
-    moveHint = text("", 14, 0xFFD5DFEC);
-    put(moveHint, 210, 36, 540, 30);
-    homeWall = new GridWallView(this, scale, 156, wallListener());
+    moveHint = text("", 14, palette.secondary);
+    put(moveHint, 210, 36, 480, 30);
+    homeWall = new GridWallView(this, scale, 156, palette, wallListener());
     homeWall.showNames(prefs.showAppNames());
-    put(homeWall, 42, 86, 876, 420);
+    put(homeWall, 42, 82, 876, 424);
     String previous = selectedId;
     homeWall.setEntries(orderedApps(), selectedId, false);
     if (previous.equals(selectedId)) homeWall.restoreFocus(selectedId, homeOffset);
     homeWall.upperFocus(settings.getId());
     if (apps.isEmpty()) {
-      TextView empty = text(loading ? "正在读取应用…" : "暂无可启动的应用", 19, 0xFFC6D1E1);
+      TextView empty =
+          text(
+              loading ? "正在读取应用…" : (catalogError ? "读取失败，请在设置中重试" : "暂无可启动的应用"),
+              19,
+              palette.secondary);
       put(empty, 200, 225, 560, 45);
       settings.requestFocus();
+      // An empty loading wall must not overwrite the saved scroll position on cache restore.
+      homeWall = null;
     }
     settings.setNextFocusDownId(apps.isEmpty() ? settings.getId() : homeWall.firstId());
     settings.setNextFocusLeftId(settings.getId());
@@ -365,7 +480,7 @@ public final class MainActivity extends Activity {
       startActivity(repository.launchIntent(app));
     } catch (RuntimeException e) {
       toast("无法打开此应用，请刷新应用列表");
-      reload();
+      reload(false);
     }
   }
 
@@ -389,7 +504,13 @@ public final class MainActivity extends Activity {
                         Uri.parse("package:" + app.component.getPackageName())))));
     actionLayer =
         new AppActionMenuView(
-            this, scale, app.label, artwork(app, false), items, action -> closeMenu(false, action));
+            this,
+            scale,
+            app.label,
+            artwork(app, false),
+            items,
+            action -> closeMenu(false, action),
+            palette);
     root.addView(actionLayer, new FrameLayout.LayoutParams(-1, -1));
     actionLayer.reveal();
   }
@@ -411,7 +532,8 @@ public final class MainActivity extends Activity {
           menuReturn = null;
           desktop.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
           if (pendingRender) render();
-          else if (restore && target != null && target.isAttachedToWindow()) target.requestFocus();
+          else if ((restore || action != null) && target != null && target.isAttachedToWindow())
+            target.requestFocus();
           if (target instanceof AppCardView) ((AppCardView) target).contextSelected(false);
           if (action != null) action.run();
         });
@@ -428,6 +550,7 @@ public final class MainActivity extends Activity {
     selectedId = app.id;
     moveHint.setText("方向键移动位置 · 确定保存 · 返回取消");
     homeWall.setEntries(orderedApps(), movingId, false);
+    homeWall.movingKey(movingId);
   }
 
   private boolean moveKey(int code) {
@@ -470,6 +593,7 @@ public final class MainActivity extends Activity {
     if (save) prefs.saveAppOrder(AppOrder.reconcile(draftOrder, installedIds()));
     draftOrder = null;
     movingId = null;
+    homeWall.movingKey(null);
     moveHint.setText("");
     if (pendingRender) render();
     else homeWall.setEntries(orderedApps(), selectedId, true);
@@ -488,14 +612,15 @@ public final class MainActivity extends Activity {
     list.setClipToPadding(false);
     list.setPadding(px(8), px(8), px(8), px(8));
     sc.addView(list);
-    TextView heading = text("设置", 22, 0xFFECF0F6);
+    TextView heading = text("设置", 22, palette.text);
     heading.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-    list.addView(heading, new LinearLayout.LayoutParams(-1, px(34)));
+    list.addView(heading, new LinearLayout.LayoutParams(-1, px(30)));
     Map<String, SettingsRowView> rows = new LinkedHashMap<>();
     LinearLayout desktop = settingsGroup(list, "桌面", false);
-    String home = DeviceDiagnostics.homePackage(this).equals(getPackageName()) ? "Still" : "系统桌面";
+    String home = DeviceDiagnostics.homeLabel(this);
     SettingsRowView first =
         settingsRow(desktop, rows, "默认桌面", R.drawable.settings_home, home, false);
+    homeSetting = first;
     first.setId(R.id.first_app);
     first.setOnClickListener(v -> requestHome());
     SettingsRowView boot =
@@ -514,6 +639,10 @@ public final class MainActivity extends Activity {
           prefs.showAppNames(!prefs.showAppNames());
           names.checked(prefs.showAppNames());
         });
+    SettingsRowView appearance =
+        settingsRow(
+            desktop, rows, "外观主题", R.drawable.settings_theme, palette.light ? "浅色" : "深色", false);
+    appearance.setOnClickListener(v -> showThemePicker());
     LinearLayout application = settingsGroup(list, "应用", true);
     SettingsRowView system =
         settingsRow(application, rows, "系统设置", R.drawable.settings_settings, "", false);
@@ -522,8 +651,8 @@ public final class MainActivity extends Activity {
         settingsRow(application, rows, "刷新应用列表", R.drawable.settings_refresh, "", false);
     refresh.setOnClickListener(
         v -> {
-          reload();
-          toast("应用列表已刷新");
+          reload(false);
+          toast("正在后台刷新应用列表");
         });
     LinearLayout device = settingsGroup(list, "设备", true);
     SettingsRowView info =
@@ -556,10 +685,10 @@ public final class MainActivity extends Activity {
   }
 
   private LinearLayout settingsGroup(LinearLayout list, String title, boolean gap) {
-    TextView caption = text(title, 14, 0xFF8F9EB3);
+    TextView caption = text(title, 14, palette.muted);
     caption.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
-    LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(-1, px(22));
-    cp.topMargin = gap ? px(10) : 0;
+    LinearLayout.LayoutParams cp = new LinearLayout.LayoutParams(-1, px(20));
+    cp.topMargin = gap ? px(8) : 0;
     caption.setPadding(px(10), 0, 0, 0);
     list.addView(caption, cp);
     LinearLayout group = new LinearLayout(this);
@@ -568,7 +697,8 @@ public final class MainActivity extends Activity {
     group.setClipToPadding(false);
     GradientDrawable background =
         new GradientDrawable(
-            GradientDrawable.Orientation.TL_BR, new int[] {0xC1242E3D, 0xB11C2532});
+            GradientDrawable.Orientation.TL_BR,
+            new int[] {palette.surfaceTop, palette.surfaceBottom});
     background.setCornerRadius(px(12));
     group.setBackground(background);
     list.addView(group, new LinearLayout.LayoutParams(-1, -2));
@@ -584,13 +714,13 @@ public final class MainActivity extends Activity {
       boolean toggle) {
     if (group.getChildCount() > 0) {
       View divider = new View(this);
-      divider.setBackgroundColor(0x192E4058);
+      divider.setBackgroundColor(palette.divider);
       LinearLayout.LayoutParams dp = new LinearLayout.LayoutParams(-1, px(1));
       dp.leftMargin = px(68);
       dp.rightMargin = px(20);
       group.addView(divider, dp);
     }
-    SettingsRowView row = new SettingsRowView(this, scale, title, icon, detail, toggle);
+    SettingsRowView row = new SettingsRowView(this, scale, title, icon, detail, toggle, palette);
     row.setId(View.generateViewId());
     View.OnFocusChangeListener visual = row.getOnFocusChangeListener();
     row.setOnFocusChangeListener(
@@ -598,12 +728,80 @@ public final class MainActivity extends Activity {
           visual.onFocusChange(v, f);
           if (f) selectedSetting = title;
         });
-    group.addView(row, new LinearLayout.LayoutParams(-1, px(46)));
+    group.addView(row, new LinearLayout.LayoutParams(-1, px(42)));
     rows.put(title, row);
     return row;
   }
 
+  private void showThemePicker() {
+    new AlertDialog.Builder(this)
+        .setTitle("外观主题")
+        .setSingleChoiceItems(
+            new String[] {"浅色", "深色"},
+            palette.light ? 0 : 1,
+            (dialog, which) -> {
+              dialog.dismiss();
+              boolean light = which == 0;
+              if (light == palette.light) return;
+              prefs.lightTheme(light);
+              palette = UiPalette.from(light);
+              setTheme(light ? R.style.AppThemeLight : R.style.AppTheme);
+              render();
+            })
+        .setNegativeButton("取消", null)
+        .show();
+  }
+
   private void requestHome() {
+    AlertDialog.Builder dialog =
+        new AlertDialog.Builder(this)
+            .setTitle("默认桌面")
+            .setMessage(
+                "当前检测："
+                    + DeviceDiagnostics.homeLabel(this)
+                    + "\n\n请以从其他应用按 Home 后实际进入的界面为准。可打开系统设置选择默认桌面，或临时打开其他桌面。")
+            .setPositiveButton("系统桌面设置", (d, w) -> openHomeSettings())
+            .setNegativeButton("关闭", null);
+    if (!otherHomes().isEmpty()) dialog.setNeutralButton("打开其他桌面", (d, w) -> openOtherHome());
+    dialog.show();
+  }
+
+  private List<android.content.pm.ResolveInfo> otherHomes() {
+    List<android.content.pm.ResolveInfo> result = new ArrayList<>();
+    for (android.content.pm.ResolveInfo info : DeviceDiagnostics.homeCandidates(this))
+      if (!getPackageName().equals(info.activityInfo.packageName)
+          && DeviceDiagnostics.usableHome(info)) result.add(info);
+    return result;
+  }
+
+  private void openOtherHome() {
+    List<android.content.pm.ResolveInfo> candidates = otherHomes();
+    if (candidates.isEmpty()) {
+      toast("未发现其他可打开的桌面");
+      return;
+    }
+    String[] labels = new String[candidates.size()];
+    for (int i = 0; i < labels.length; i++)
+      labels[i] = candidates.get(i).loadLabel(getPackageManager()).toString();
+    new AlertDialog.Builder(this)
+        .setTitle("打开其他桌面")
+        .setItems(
+            labels,
+            (d, which) -> {
+              android.content.pm.ActivityInfo activity = candidates.get(which).activityInfo;
+              safeStart(
+                  DeviceDiagnostics.homeIntent()
+                      .setComponent(new ComponentName(activity.packageName, activity.name))
+                      .addFlags(
+                          Intent.FLAG_ACTIVITY_NEW_TASK
+                              | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
+            })
+        .setNegativeButton("取消", null)
+        .show();
+  }
+
+  private void openHomeSettings() {
+    waitingForHomeSettings = true;
     try {
       if (Build.VERSION.SDK_INT >= 29) {
         RoleManager roles = getSystemService(RoleManager.class);
@@ -611,13 +809,48 @@ public final class MainActivity extends Activity {
             && roles.isRoleAvailable(RoleManager.ROLE_HOME)
             && !roles.isRoleHeld(RoleManager.ROLE_HOME)) {
           startActivityForResult(roles.createRequestRoleIntent(RoleManager.ROLE_HOME), 50);
+          watchHomeSettings();
           return;
         }
       }
-      startActivity(new Intent(Settings.ACTION_HOME_SETTINGS));
-    } catch (RuntimeException e) {
-      toast("系统未开放桌面选择，请查看安装说明中的 ADB 检查步骤");
+    } catch (RuntimeException ignored) {
     }
+    List<String> actions = new ArrayList<>();
+    actions.add(Settings.ACTION_HOME_SETTINGS);
+    if (Build.VERSION.SDK_INT >= 24) actions.add(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS);
+    for (String action : actions) {
+      try {
+        Intent intent = new Intent(action);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+          startActivity(intent);
+          watchHomeSettings();
+          return;
+        }
+      } catch (RuntimeException ignored) {
+      }
+    }
+    waitingForHomeSettings = false;
+    homeSettingsUnavailable();
+  }
+
+  private void watchHomeSettings() {
+    handler.postDelayed(
+        () -> {
+          if (waitingForHomeSettings && hasWindowFocus() && !isFinishing()) {
+            waitingForHomeSettings = false;
+            homeSettingsUnavailable();
+          }
+        },
+        1200);
+  }
+
+  private void homeSettingsUnavailable() {
+    new AlertDialog.Builder(this)
+        .setTitle("系统未显示桌面选择页")
+        .setMessage("可以尝试在电视系统设置中查找“默认应用”或“桌面”。若从其他应用按 Home 已经回到 Still，可继续使用；开机自动进入需要另外验证。")
+        .setPositiveButton("打开系统设置", (d, w) -> safeStart(new Intent(Settings.ACTION_SETTINGS)))
+        .setNegativeButton("关闭", null)
+        .show();
   }
 
   private void safeStart(Intent i) {
@@ -639,6 +872,6 @@ public final class MainActivity extends Activity {
     else if (!page.equals("home")) {
       page = "home";
       render();
-    } else toast("已在首页；按 Home 返回默认桌面");
+    } else toast("已在 Still 首页；可在“默认桌面”中打开其他桌面");
   }
 }

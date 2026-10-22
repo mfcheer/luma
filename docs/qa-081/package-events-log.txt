@@ -1,0 +1,42 @@
+--------- beginning of main
+10-22 08:06:40.700 20840 20862 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=19 artworkMs=49
+10-22 08:07:28.981 20938 20960 I StillCatalog: diskReady apps=28 elapsedMs=54
+10-22 08:07:28.997 20938 20960 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=70 artworkMs=0
+10-22 08:07:51.431 21212 21233 I StillCatalog: diskReady apps=28 elapsedMs=53
+10-22 08:07:51.453 21212 21233 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=74 artworkMs=1
+10-22 08:08:10.028 21448 21470 I StillCatalog: diskReady apps=28 elapsedMs=46
+10-22 08:08:10.047 21448 21470 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=65 artworkMs=0
+10-22 08:08:36.411 21675 21697 I StillCatalog: diskReady apps=28 elapsedMs=50
+10-22 08:08:36.429 21675 21697 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=68 artworkMs=0
+10-22 08:08:54.617 21917 21938 I StillCatalog: diskReady apps=28 elapsedMs=54
+10-22 08:08:54.643 21917 21938 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=80 artworkMs=0
+10-22 08:09:18.577 22216 22237 I StillCatalog: diskReady apps=28 elapsedMs=58
+10-22 08:09:18.600 22216 22237 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=81 artworkMs=0
+10-22 08:09:32.964 22451 22473 I StillCatalog: diskReady apps=28 elapsedMs=51
+10-22 08:09:32.992 22451 22473 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=78 artworkMs=1
+10-22 08:09:41.005 22451 22473 I StillCatalog: refresh apps=28 prepared=1 reused=27 queryMs=10 artworkMs=23
+10-22 08:09:44.161 22451 22473 I StillCatalog: refresh apps=27 prepared=0 reused=27 queryMs=9 artworkMs=0
+10-22 08:09:45.268 22451 22473 I StillCatalog: refresh apps=28 prepared=1 reused=27 queryMs=40 artworkMs=8
+10-22 08:09:51.361 22451 22473 I StillCatalog: refresh apps=27 prepared=0 reused=27 queryMs=10 artworkMs=0
+10-22 08:09:52.206 22451 22473 I StillCatalog: refresh apps=28 prepared=1 reused=27 queryMs=11 artworkMs=5
+10-22 08:09:53.426 22874 22896 I StillCatalog: diskReady apps=28 elapsedMs=50
+10-22 08:09:53.445 22874 22896 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=69 artworkMs=0
+10-22 08:10:13.494 23178 23199 I StillCatalog: diskReady apps=28 elapsedMs=50
+10-22 08:10:13.513 23178 23199 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=69 artworkMs=0
+10-22 08:12:09.467 23295 23316 I StillCatalog: diskReady apps=28 elapsedMs=176
+10-22 08:12:09.573 23295 23316 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=282 artworkMs=0
+10-22 08:12:31.947 23543 23565 I StillCatalog: diskReady apps=28 elapsedMs=293
+10-22 08:12:32.073 23543 23565 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=418 artworkMs=1
+10-22 08:13:01.193 23841 23862 I StillCatalog: diskReady apps=28 elapsedMs=155
+10-22 08:13:01.285 23841 23862 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=246 artworkMs=1
+10-22 08:13:20.036 24075 24096 I StillCatalog: diskReady apps=28 elapsedMs=177
+10-22 08:13:20.122 24075 24096 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=260 artworkMs=3
+10-22 08:13:29.577 24075 24096 I StillCatalog: refresh apps=28 prepared=1 reused=27 queryMs=106 artworkMs=196
+10-22 08:13:33.428 24075 24096 I StillCatalog: refresh apps=27 prepared=0 reused=27 queryMs=221 artworkMs=1
+10-22 08:13:35.480 24075 24096 I StillCatalog: refresh apps=28 prepared=1 reused=27 queryMs=248 artworkMs=39
+10-22 08:13:43.181 24075 24096 I StillCatalog: refresh apps=27 prepared=0 reused=27 queryMs=51 artworkMs=0
+10-22 08:13:44.303 24075 24096 I StillCatalog: refresh apps=28 prepared=1 reused=27 queryMs=34 artworkMs=22
+10-22 08:13:46.401 24458 24479 I StillCatalog: diskReady apps=28 elapsedMs=227
+10-22 08:13:46.461 24458 24479 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=286 artworkMs=1
+10-22 08:14:13.466 24765 24786 I StillCatalog: diskReady apps=28 elapsedMs=326
+10-22 08:14:13.626 24765 24786 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=485 artworkMs=1

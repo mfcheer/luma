@@ -49,13 +49,14 @@ public final class AppActionMenuView extends FrameLayout {
       String title,
       Drawable artwork,
       List<Item> items,
-      Selection selection) {
+      Selection selection,
+      UiPalette palette) {
     super(c);
     this.unit = unit;
     setClipChildren(false);
     setContentDescription("应用操作");
     scrim = new View(c);
-    scrim.setBackgroundColor(0xAD040810);
+    scrim.setBackgroundColor(palette.scrim);
     scrim.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
     addView(scrim, new LayoutParams(-1, -1));
     panel = new LinearLayout(c);
@@ -65,41 +66,32 @@ public final class AppActionMenuView extends FrameLayout {
     panel.setClipToPadding(false);
     GradientDrawable glass =
         new GradientDrawable(
-            GradientDrawable.Orientation.TL_BR, new int[] {0xFF293546, 0xFF192331});
-    glass.setCornerRadius(px(24));
-    glass.setStroke(Math.max(1, px(.5f)), 0x36CFDCEE);
+            GradientDrawable.Orientation.TL_BR, new int[] {palette.menuTop, palette.menuBottom});
+    glass.setCornerRadius(px(22));
+    glass.setStroke(Math.max(1, px(.5f)), palette.outline);
     panel.setBackground(glass);
-    panel.setElevation(px(24));
-    LayoutParams pp = new LayoutParams(px(352), -2, Gravity.CENTER);
+    palette.styleShadow(panel);
+    panel.setElevation(px(18));
+    LayoutParams pp = new LayoutParams(px(332), -2, Gravity.CENTER);
     addView(panel, pp);
     FrameLayout header = new FrameLayout(c);
     ImageView thumb = new ImageView(c);
     thumb.setImageDrawable(artwork);
     thumb.setScaleType(ImageView.ScaleType.FIT_XY);
-    thumb.setBackground(round(0xFF28364A, 9));
+    thumb.setBackground(round(palette.cardFallback, 9));
     thumb.setClipToOutline(true);
     thumb.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
-    LayoutParams tp = new LayoutParams(px(76), px(50));
+    LayoutParams tp = new LayoutParams(px(64), px(42));
     tp.leftMargin = px(8);
-    tp.topMargin = px(9);
+    tp.topMargin = px(6);
     header.addView(thumb, tp);
-    TextView heading = text(c, title, 20, 0xFFF3F6FA);
+    TextView heading = text(c, title, 20, palette.text);
     heading.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-    LayoutParams hp = new LayoutParams(px(214), px(30));
-    hp.leftMargin = px(101);
-    hp.topMargin = px(8);
+    LayoutParams hp = new LayoutParams(px(204), px(42));
+    hp.leftMargin = px(87);
+    hp.topMargin = px(6);
     header.addView(heading, hp);
-    TextView subtitle = text(c, "快捷操作", 12, 0xFF9FADC0);
-    LayoutParams sp = new LayoutParams(px(214), px(20));
-    sp.leftMargin = px(101);
-    sp.topMargin = px(40);
-    header.addView(subtitle, sp);
-    panel.addView(header, new LinearLayout.LayoutParams(-1, px(76)));
-    View separator = new View(c);
-    separator.setBackgroundColor(0x1AF2F6FF);
-    LinearLayout.LayoutParams dp = new LinearLayout.LayoutParams(-1, Math.max(1, px(.5f)));
-    dp.setMargins(px(8), 0, px(8), px(12));
-    panel.addView(separator, dp);
+    panel.addView(header, new LinearLayout.LayoutParams(-1, px(64)));
     List<View> controls = new ArrayList<>();
     for (Item item : items) {
       LinearLayout row = new LinearLayout(c);
@@ -112,19 +104,21 @@ public final class AppActionMenuView extends FrameLayout {
       row.setId(View.generateViewId());
       ImageView icon = new ImageView(c);
       icon.setImageResource(item.icon);
-      icon.setColorFilter(item.destructive ? 0xFFE6C2C2 : 0xFFBECBDD);
+      icon.setColorFilter(item.destructive ? 0xFFC17171 : palette.icon);
       icon.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
       row.addView(icon, new LinearLayout.LayoutParams(px(22), px(22)));
-      TextView label = text(c, item.label, 17, 0xFFE4EAF3);
+      TextView label = text(c, item.label, 17, palette.text);
       LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, -1, 1);
       lp.leftMargin = px(15);
       row.addView(label, lp);
       GradientDrawable focus =
           new GradientDrawable(
-              GradientDrawable.Orientation.TL_BR, new int[] {0xFFF6F8FB, 0xFFDDE5EF});
+              GradientDrawable.Orientation.TL_BR,
+              new int[] {palette.menuFocusTop, palette.menuFocusBottom});
       focus.setCornerRadius(px(13));
       focus.setAlpha(0);
       row.setBackground(focus);
+      palette.styleShadow(row);
       row.setOnFocusChangeListener(
           (v, focused) -> {
             row.animate().cancel();
@@ -142,11 +136,14 @@ public final class AppActionMenuView extends FrameLayout {
                       focus.setAlpha(alpha);
                       float amount = alpha / 255f;
                       label.setTextColor(
-                          blend(0xFFE4EAF3, item.destructive ? 0xFF713D40 : 0xFF172538, amount));
+                          blend(
+                              palette.text,
+                              item.destructive ? 0xFF713D40 : palette.rowFocusText,
+                              amount));
                       icon.setColorFilter(
                           blend(
-                              item.destructive ? 0xFFE6C2C2 : 0xFFBECBDD,
-                              item.destructive ? 0xFF875155 : 0xFF334760,
+                              item.destructive ? 0xFFC17171 : palette.icon,
+                              item.destructive ? 0xFF875155 : palette.rowFocusIcon,
                               amount));
                     })
                 .start();

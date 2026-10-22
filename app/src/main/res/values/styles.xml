@@ -2,6 +2,13 @@
 <style name="AppTheme" parent="android:style/Theme.Material.NoActionBar">
 <item name="android:fontFamily">sans</item><item name="android:windowActionModeOverlay">true</item>
 <item name="android:windowFullscreen">true</item><item name="android:colorAccent">#BDD9F0</item>
-<item name="android:windowBackground">#0C1523</item><item name="android:windowLightStatusBar">false</item>
+<item name="android:windowBackground">#0B0F17</item><item name="android:windowLightStatusBar">false</item>
+<item name="android:windowDisablePreview">true</item>
+</style>
+<style name="AppThemeLight" parent="android:style/Theme.Material.Light.NoActionBar">
+<item name="android:fontFamily">sans</item><item name="android:windowActionModeOverlay">true</item>
+<item name="android:windowFullscreen">true</item><item name="android:colorAccent">#536B89</item>
+<item name="android:windowBackground">#F6F5F2</item><item name="android:windowLightStatusBar">true</item>
+<item name="android:windowDisablePreview">true</item>
 </style>
 </resources>

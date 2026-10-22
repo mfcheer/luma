@@ -1,0 +1,6 @@
+PASS: 24 rapid reversals preserve focus/bounds; card and positional light settle to identical idle pixels
+PASS: equal-colour fixtures change blank background pixels when focus position moves
+PASS: compact two-item menu, interrupted entrance/Back, trapped focus, unique move badge across rows, draft-only order and exact cancel restoration
+PASS: scrolled and last-row states captured; label preference survives edit/cancel; app order and boot preference unchanged
+/sdcard/still072.mp4: 1 file pulled, 0 skipped. 36.7 MB/s (553163 bytes in 0.014s)
+PASS: actual input/animation recording captured

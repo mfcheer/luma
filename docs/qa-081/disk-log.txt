@@ -1,0 +1,3 @@
+--------- beginning of main
+10-22 08:06:20.546 20441 20463 I StillCatalog: diskReady apps=28 elapsedMs=51
+10-22 08:06:20.567 20441 20463 I StillCatalog: refresh apps=28 prepared=0 reused=28 queryMs=72 artworkMs=0

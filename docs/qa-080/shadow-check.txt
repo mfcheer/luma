@@ -1,0 +1,2 @@
+PASS: final light home/idle pixels/menu/moving/scroll/settings; order/options preserved
+PASS: final dark home/idle pixels/menu/moving/scroll/settings; order/options preserved

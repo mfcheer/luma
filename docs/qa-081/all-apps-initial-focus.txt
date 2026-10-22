@@ -1,0 +1,15 @@
+/var/folders/8d/b8tggg111xv1t5_0_p3jtkh40000gn/T/tmp2oefem0d.xml: 1 file pushed, 0 skipped. 0.8 MB/s (130 bytes in 0.000s)
+PASS: fresh home renders all 28 apps without a separate all-apps entry
+/var/folders/8d/b8tggg111xv1t5_0_p3jtkh40000gn/T/tmpaid_d92d.xml: 1 file pushed, 0 skipped. 4.2 MB/s (377 bytes in 0.000s)
+PASS: legacy prefix migrates to full list; menu only moves/info; cancel/save/restart
+PASS: update preserves position; uninstall removes entry; new install appends automatically without losing focus
+Traceback (most recent call last):
+  File "/Users/mfcheer/Library/CloudStorage/OneDrive-个人/文档/AndroidTV/scripts/all-apps-070-smoke.py", line 200, in <module>
+    key(4, .8); assert desc() == '测试应用 24'
+                       ~~~~^^
+  File "/Users/mfcheer/Library/CloudStorage/OneDrive-个人/文档/AndroidTV/scripts/all-apps-070-smoke.py", line 43, in desc
+    return focus().get('content-desc', '')
+           ~~~~~^^
+  File "/Users/mfcheer/Library/CloudStorage/OneDrive-个人/文档/AndroidTV/scripts/all-apps-070-smoke.py", line 39, in focus
+    return next(n for n in tree().iter('node') if n.get('focused') == 'true')
+StopIteration

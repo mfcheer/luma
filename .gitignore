@@ -45,3 +45,11 @@ docs/recordings/*.mp4
 
 !docs/screenshots/still-071-launcher.png
 !docs/screenshots/still-071-app-info.png
+
+!docs/screenshots/still-072-*.png
+
+!docs/screenshots/still-080-*.png
+
+__pycache__/
+
+!docs/screenshots/still-081-*.png

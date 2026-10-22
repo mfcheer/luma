@@ -1,0 +1,11 @@
+/var/folders/8d/b8tggg111xv1t5_0_p3jtkh40000gn/T/tmpfr05tihn.xml: 1 file pushed, 0 skipped. 0.0 MB/s (7 bytes in 0.001s)
+PASS: fresh install defaults to pearl-white light theme with all 28 apps
+/var/folders/8d/b8tggg111xv1t5_0_p3jtkh40000gn/T/tmp5fakrnv5.xml: 1 file pushed, 0 skipped. 47.2 MB/s (4049 bytes in 0.000s)
+PASS: upgrade without appearance preference defaults to light and preserves existing order/options
+/var/folders/8d/b8tggg111xv1t5_0_p3jtkh40000gn/T/tmpvv9vv43p.xml: 1 file pushed, 0 skipped. 61.2 MB/s (4042 bytes in 0.000s)
+PASS: 7 settings rows visible; picker cancel/same option; both themes apply immediately, retain focus and persist across cold starts; native dialogs follow theme
+PASS: light home rapid reversals/idle pixels, context focus isolation, unique move text, cross-row cancel, scroll and theme return; preferences preserved
+PASS: dark home rapid reversals/idle pixels, context focus isolation, unique move text, cross-row cancel, scroll and theme return; preferences preserved
+/Users/mfcheer/Library/CloudStorage/OneDrive-个人/文档/AndroidTV/scripts/theme-080-smoke.py:226: DeprecationWarning: Image.Image.getdata is deprecated and will be removed in Pillow 14 (2027-10-15). Use get_flattened_data instead.
+  diff = ImageChops.difference(left, right)
+PASS: light-theme positional accent changes 41725 blank pixels; names remain optional

@@ -1,0 +1,16 @@
+设备  Google / sdk_google_atv64_arm64
+Android  13  ·  API 33
+架构  arm64-v8a
+系统  TTT5.221206.003 dev-keys
+当前默认桌面  Android TV Home（com.google.android.tvlauncher）
+Home 解析组件  com.google.android.tvlauncher/.MainActivity
+开机通知  Oct 22, 2026 12:38:26 AM
+启动请求  尚无记录
+开机进入界面  尚无记录
+上次 Home 进入  尚无记录
+可用桌面入口
+  com.google.android.tvlauncher/com.google.android.tvlauncher.MainActivity
+  com.jianping.tv/com.jianping.tv.ui.MainActivity
+  com.android.tv.settings/com.android.tv.settings.system.FallbackHome
+
+开机实验可能被系统拦截；待机唤醒与重新开机需要分别验证。

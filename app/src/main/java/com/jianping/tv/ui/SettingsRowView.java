@@ -11,6 +11,7 @@ import com.jianping.tv.R;
 /** Shared grouped settings row: navigation, action and switch keep the same visual rhythm. */
 public final class SettingsRowView extends LinearLayout {
   private final float scale;
+  private final UiPalette palette;
   private final TextView label, value;
   private final ImageView icon, chevron;
   private final Switch toggle;
@@ -31,9 +32,17 @@ public final class SettingsRowView extends LinearLayout {
   }
 
   public SettingsRowView(
-      Context c, float scale, String title, int resource, String detail, boolean isToggle) {
+      Context c,
+      float scale,
+      String title,
+      int resource,
+      String detail,
+      boolean isToggle,
+      UiPalette palette) {
     super(c);
     this.scale = scale;
+    this.palette = palette;
+    palette.styleShadow(this);
     this.title = title;
     setOrientation(HORIZONTAL);
     setGravity(Gravity.CENTER_VERTICAL);
@@ -44,20 +53,20 @@ public final class SettingsRowView extends LinearLayout {
     setContentDescription(title);
     icon = new ImageView(c);
     icon.setImageResource(resource);
-    icon.setColorFilter(0xFFE0E6EF);
+    icon.setColorFilter(palette.icon);
     addView(icon, new LayoutParams(px(23), px(23)));
-    label = text(c, 17, 0xFFE7ECF4);
+    label = text(c, 17, palette.text);
     label.setText(title);
     label.setSingleLine(true);
     LayoutParams lp = new LayoutParams(0, -1, 1);
     lp.leftMargin = px(20);
     addView(label, lp);
-    value = text(c, 14, 0xFF9EADBF);
+    value = text(c, 14, palette.secondary);
     value.setText(detail);
     addView(value, new LayoutParams(-2, -1));
     chevron = new ImageView(c);
     chevron.setImageResource(R.drawable.nav_forward);
-    chevron.setColorFilter(0xFF9EADBF);
+    chevron.setColorFilter(palette.secondary);
     LayoutParams cp = new LayoutParams(px(18), px(18));
     cp.leftMargin = px(12);
     if (!isToggle) addView(chevron, cp);
@@ -73,12 +82,12 @@ public final class SettingsRowView extends LinearLayout {
         (v, focus) -> {
           GradientDrawable bg = new GradientDrawable();
           bg.setCornerRadius(px(12));
-          bg.setColor(focus ? 0xFFE7ECF3 : Color.TRANSPARENT);
+          bg.setColor(focus ? palette.rowFocus : Color.TRANSPARENT);
           setBackground(bg);
-          label.setTextColor(focus ? 0xFF192333 : 0xFFE7ECF4);
-          value.setTextColor(focus ? 0xFF596779 : 0xFF9EADBF);
-          icon.setColorFilter(focus ? 0xFF253247 : 0xFFE0E6EF);
-          chevron.setColorFilter(focus ? 0xFF657386 : 0xFF9EADBF);
+          label.setTextColor(focus ? palette.rowFocusText : palette.text);
+          value.setTextColor(focus ? 0xFF596779 : palette.secondary);
+          icon.setColorFilter(focus ? palette.rowFocusIcon : palette.icon);
+          chevron.setColorFilter(focus ? 0xFF657386 : palette.secondary);
           updateToggleColors(focus);
           animate()
               .scaleX(focus ? 1.015f : 1)
@@ -89,6 +98,10 @@ public final class SettingsRowView extends LinearLayout {
         });
   }
 
+  public void detail(String detail) {
+    value.setText(detail);
+  }
+
   public void checked(boolean checked) {
     toggle.setChecked(checked);
     updateToggleColors(hasFocus());
@@ -97,10 +110,14 @@ public final class SettingsRowView extends LinearLayout {
 
   private void updateToggleColors(boolean focused) {
     toggle.setThumbTintList(
-        ColorStateList.valueOf(focused && !toggle.isChecked() ? 0xFF65758B : 0xFFE6ECF4));
+        ColorStateList.valueOf(
+            !toggle.isChecked() && (focused || palette.light) ? 0xFF718095 : 0xFFF6F8FA));
     toggle.setTrackTintList(
         new ColorStateList(
             new int[][] {new int[] {android.R.attr.state_checked}, new int[] {}},
-            new int[] {focused ? 0xFF215D47 : 0xFF739A8C, focused ? 0xFF8693A5 : 0xFF424F62}));
+            new int[] {
+              focused ? 0xFF215D47 : 0xFF739A8C,
+              palette.light ? 0xFFB9C3CE : (focused ? 0xFF8693A5 : 0xFF424F62)
+            }));
   }
 }

@@ -1,0 +1,17 @@
+警告: [options] 未与 -source 8 一起设置引导类路径
+警告: [options] 源值 8 已过时，将在未来发行版中删除
+警告: [options] 目标值 8 已过时，将在未来发行版中删除
+警告: [options] 要隐藏有关已过时选项的警告, 请使用 -Xlint:-options。
+4 个警告
+Performing Streamed Install
+Success
+s_glBindAttribLocation: bind attrib 0 name position
+s_glBindAttribLocation: bind attrib 1 name color
+s_glBindAttribLocation: bind attrib 2 name localCoord
+INSTRUMENTATION_RESULT: directory=/storage/emulated/0/Android/data/com.jianping.tv/files/scroll-probe/before
+INSTRUMENTATION_RESULT: result=PASS: captured exact row-boundary pixels and fading strengths
+INSTRUMENTATION_CODE: -1
+
+/sdcard/Android/data/com.jianping.tv/files/scroll-probe/before/: 11 files pulled, 0 skipped. 60.8 MB/s (1243489 bytes in 0.020s)
+Success
+Starting: Intent { cmp=com.jianping.tv/.ui.MainActivity }

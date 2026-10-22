@@ -1,0 +1,12 @@
+{
+  "before": "still-080-home-light.png",
+  "after": "still-081-home.png",
+  "region": [
+    50,
+    145,
+    1870,
+    1010
+  ],
+  "differenceBounds": null,
+  "identical": true
+}

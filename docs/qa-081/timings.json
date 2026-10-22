@@ -1,0 +1,37 @@
+{
+  "fresh": {
+    "apps": 28,
+    "prepared": 28,
+    "reused": 0,
+    "queryMs": 22,
+    "artworkMs": 192
+  },
+  "disk": {
+    "apps": 28,
+    "prepared": 0,
+    "reused": 28,
+    "queryMs": 72,
+    "artworkMs": 0
+  },
+  "background-process-death": {
+    "apps": 28,
+    "prepared": 0,
+    "reused": 28,
+    "queryMs": 60,
+    "artworkMs": 0
+  },
+  "one-missing-card": {
+    "apps": 28,
+    "prepared": 1,
+    "reused": 27,
+    "queryMs": 20,
+    "artworkMs": 69
+  },
+  "corrupt-index": {
+    "apps": 28,
+    "prepared": 0,
+    "reused": 28,
+    "queryMs": 19,
+    "artworkMs": 49
+  }
+}

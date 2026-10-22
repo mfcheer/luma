@@ -1,0 +1,1 @@
+PASS: running-sum blur exactly matches radius-two reference for random ARGB, transparent edges, 1px axes and 128x83 previews; invalid dimensions rejected

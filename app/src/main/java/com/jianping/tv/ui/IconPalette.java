@@ -13,11 +13,13 @@ public final class IconPalette {
     try {
       drawable.setBounds(0, 0, 32, 32);
       drawable.draw(new Canvas(image));
+      int[] pixels = new int[32 * 32];
+      image.getPixels(pixels, 0, 32, 0, 0, 32, 32);
       float[] hsv = new float[3];
       float[] weights = new float[12], hs = new float[12], ss = new float[12];
       for (int y = 0; y < 32; y++)
         for (int x = 0; x < 32; x++) {
-          int pixel = image.getPixel(x, y);
+          int pixel = pixels[y * 32 + x];
           if (Color.alpha(pixel) < 150) continue;
           Color.colorToHSV(pixel, hsv);
           if (hsv[1] < .28f || hsv[2] < .25f) continue;

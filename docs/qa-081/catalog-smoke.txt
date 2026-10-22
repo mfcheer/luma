@@ -1,0 +1,8 @@
+PASS: empty-cache preparation completes; all 28 launchers and atomic disk snapshot ready
+PASS: 4 launch/Back cycles keep the same process, exact focused card/bounds and zero catalog work
+PASS: process death behind another app restores cached wall, exact selected card and scroll on Back
+PASS: one missing bitmap rebuilds only that app; remaining 27 visuals are reused
+/var/folders/8d/b8tggg111xv1t5_0_p3jtkh40000gn/T/tmpd4otq2sp: 1 file pushed, 0 skipped. 0.0 MB/s (12 bytes in 0.001s)
+PASS: corrupt index recovers from per-app assets without decoding icons again
+PASS: all original order, name, boot and appearance preferences preserved
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
