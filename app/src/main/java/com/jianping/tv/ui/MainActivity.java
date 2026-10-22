@@ -493,6 +493,8 @@ public final class MainActivity extends Activity {
     items.add(
         new AppActionMenuView.Item("移动位置", R.drawable.menu_move, false, () -> beginMove(app)));
     items.add(
+        new AppActionMenuView.Item("移到最前", R.drawable.menu_move_first, false, () -> moveToFront(app)));
+    items.add(
         new AppActionMenuView.Item(
             "应用信息",
             R.drawable.menu_info,
@@ -537,6 +539,20 @@ public final class MainActivity extends Activity {
           if (target instanceof AppCardView) ((AppCardView) target).contextSelected(false);
           if (action != null) action.run();
         });
+  }
+
+  private void moveToFront(AppEntry app) {
+    List<String> order = AppOrder.reconcile(prefs.appOrder(), installedIds());
+    if (!order.remove(app.id)) {
+      toast("应用已变更，请重试");
+      return;
+    }
+    order.add(0, app.id);
+    prefs.saveAppOrder(order);
+    selectedId = app.id;
+    homeOffset = 0;
+    homeWall.setEntries(orderedApps(), selectedId, false);
+    toast("已移到最前");
   }
 
   private void beginMove(AppEntry app) {

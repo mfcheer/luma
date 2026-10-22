@@ -1,0 +1,7 @@
+[
+  "light: move-to-front, focus/scroll, restart persistence, first-item idempotence",
+  "light: menu cancel/info navigation, manual move cancel/save, home Back",
+  "dark: move-to-front, focus/scroll, restart persistence, first-item idempotence",
+  "dark: menu cancel/info navigation, manual move cancel/save, home Back",
+  "Complete original preference map restored"
+]
