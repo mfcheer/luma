@@ -302,6 +302,9 @@ video {
 .film-section {
   background: var(--pearl);
 }
+.film-section.section {
+  padding-bottom: 72px;
+}
 .video-figure {
   margin: 0;
 }
@@ -324,58 +327,36 @@ video {
   line-height: 1.7;
 }
 .details {
-  padding-bottom: 72px;
   display: grid;
-  gap: 28px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 48px;
+}
+.details.section {
+  padding-block: 64px;
 }
 .feature-panel {
-  background: #f7f7f5;
-  border-radius: 26px;
-  padding: 56px 0 56px 58px;
   display: grid;
-  grid-template-columns: 38% 62%;
-  align-items: center;
-  overflow: hidden;
-}
-.feature-copy {
-  position: relative;
-  z-index: 1;
+  align-content: start;
+  gap: 18px;
 }
 .feature-copy h2 {
   font-size: 35px;
-  line-height: 1.4;
+  line-height: 1.35;
   letter-spacing: -0.04em;
-  font-weight: 500;
-  margin: 0 0 16px;
+  font-weight: 600;
+  margin: 0 0 8px;
 }
 .feature-copy p {
   font-size: 15px;
-  line-height: 2;
+  line-height: 1.7;
   color: var(--muted);
   margin: 0;
-}
-.feature-panel img {
-  width: 100%;
-  max-width: none;
-  transform: translateX(30px);
-  border: 6px solid #fff;
-  border-radius: 16px;
-  box-shadow: 0 15px 35px -18px #31384a55;
-}
-.menu-panel {
-  background: #f0f2f8;
-}
-.menu-panel img {
-  transform: translateX(30px) scale(1.03);
 }
 .feature-art {
   position: relative;
   aspect-ratio: 16/10;
-  transform: translateX(30px);
-  border: 6px solid #fff;
-  border-radius: 16px;
+  border-radius: 22px;
   overflow: hidden;
-  box-shadow: 0 15px 35px -18px #31384a55;
 }
 .feature-panel .feature-art img {
   position: absolute;
@@ -384,10 +365,6 @@ video {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  margin: 0;
 }
 .menu-panel .feature-art img {
   width: 180%;
@@ -546,9 +523,8 @@ img {
   .hero-actions {
     margin-bottom: 44px;
   }
-  .feature-panel {
-    padding: 40px 0 40px 35px;
-    grid-template-columns: 42% 58%;
+  .details {
+    gap: 32px;
   }
   .feature-copy h2 {
     font-size: 28px;
@@ -685,6 +661,9 @@ img {
     letter-spacing: -0.05em;
     margin-bottom: 31px;
   }
+  .film-section.section {
+    padding-bottom: 48px;
+  }
   .video-wrap {
     border-radius: 13px;
   }
@@ -693,36 +672,23 @@ img {
     margin-top: 13px;
   }
   .details {
-    gap: 20px;
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+  .details.section {
+    padding-block: 48px 56px;
   }
   .feature-panel {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    padding: 33px 27px 0;
-    border-radius: 22px;
+    gap: 16px;
   }
   .feature-copy h2 {
     font-size: 28px;
-    margin-bottom: 17px;
   }
   .feature-copy p {
     font-size: 14px;
   }
-  .feature-panel img,
-  .menu-panel img {
-    transform: translate(27px, 22px);
-    width: calc(100% + 30px);
-    margin: 12px 0 0;
-    border-width: 4px;
-    border-radius: 11px;
-  }
   .feature-art {
-    transform: translate(27px, 22px);
-    width: calc(100% + 30px);
-    margin-top: 24px;
-    border-width: 4px;
-    border-radius: 11px;
+    border-radius: 13px;
   }
   .download-section.section {
     padding-block: 56px 64px;
