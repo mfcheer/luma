@@ -324,7 +324,7 @@ video {
   line-height: 1.7;
 }
 .details {
-  padding-bottom: 100px;
+  padding-bottom: 72px;
   display: grid;
   gap: 28px;
 }
@@ -396,36 +396,21 @@ video {
   background: linear-gradient(150deg, #f4f6fb, #faf9f5 80%);
   text-align: center;
 }
+.download-section.section {
+  padding-block: 72px 80px;
+}
 .download-inner {
   max-width: 800px;
 }
-.download-icon {
-  margin: 0 auto 34px;
-  border-radius: 20px;
-  box-shadow: 0 13px 26px -12px #2851c065;
-}
-.download-inner h2 {
-  font-size: clamp(37px, 4.6vw, 60px);
-  letter-spacing: -0.05em;
-  line-height: 1.34;
-  font-weight: 600;
-  margin: 0;
-}
-.download-copy {
-  font-size: 14px;
-  color: #68717e;
-  line-height: 2;
-  margin: 25px 0 28px;
-}
-.button.large {
-  padding: 17px 35px;
-  min-width: 182px;
-  font-size: 15px;
-}
-.download-meta {
-  font-size: 12px;
-  color: #707783;
-  margin: 17px 0 0;
+.download-section .download-button {
+  min-width: 210px;
+  min-height: 56px;
+  padding: 16px 32px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  gap: 22px;
+  box-shadow: 0 9px 24px -14px #315efb66;
 }
 .help-list {
   max-width: 620px;
@@ -462,6 +447,9 @@ video {
 }
 .help-content p {
   margin: 0;
+}
+.help-content .install-version {
+  margin-bottom: 16px;
 }
 .help-content a {
   color: var(--blue);
@@ -530,6 +518,9 @@ img {
   }
   .hero h1 > br {
     display: none;
+  }
+  .hero h1 span {
+    margin-inline-start: 0.14em;
   }
   .hero-copy {
     font-size: 16px;
@@ -733,19 +724,8 @@ img {
     border-width: 4px;
     border-radius: 11px;
   }
-  .download-icon {
-    width: 72px;
-    height: 72px;
-    border-radius: 17px;
-    margin-bottom: 29px;
-  }
-  .download-inner h2 {
-    font-size: 36px;
-  }
-  .download-copy {
-    font-size: 14px;
-    line-height: 1.95;
-    margin-top: 24px;
+  .download-section.section {
+    padding-block: 56px 64px;
   }
   .footer-top {
     flex-wrap: wrap;
