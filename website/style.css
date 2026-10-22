@@ -130,6 +130,7 @@ video {
 }
 .hero {
   padding-top: 83px;
+  padding-bottom: 88px;
   text-align: center;
 }
 .hero .eyebrow {
@@ -247,6 +248,20 @@ video {
   color: #6f7782;
   font-size: 11px;
 }
+.feature-summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.feature-summary li + li {
+  padding-left: 18px;
+  border-left: 1px solid var(--line);
+}
 .theme-switch {
   display: flex;
   gap: 3px;
@@ -259,9 +274,10 @@ video {
   border: 0;
   background: transparent;
   color: #69727e;
-  font-size: 11px;
+  font-size: 12px;
   border-radius: 24px;
   padding: 8px 18px;
+  min-height: 40px;
   transition:
     background 0.2s,
     color 0.2s,
@@ -276,64 +292,15 @@ video {
   font-size: 13px;
   padding-right: 4px;
 }
-.intro {
-  padding-top: 132px;
-}
-.editorial-heading,
-.section-heading {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 80px;
-}
-.editorial-heading h2,
-.section-heading h2 {
-  font-size: clamp(36px, 4.7vw, 62px);
+.film-title {
+  font-size: clamp(32px, 4vw, 48px);
   font-weight: 600;
   letter-spacing: -0.055em;
   line-height: 1.3;
-  margin: 0;
-}
-.editorial-heading > p,
-.section-heading > p {
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 2;
-  max-width: 440px;
-  margin: 0 0 8px;
-}
-.principles {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 56px;
-  border-top: 1px solid var(--line);
-  margin-top: 67px;
-  padding-top: 39px;
-}
-.principle-mark {
-  font-size: 27px;
-  font-weight: 300;
-  color: #727b8b;
-  display: block;
-  margin-bottom: 19px;
-}
-.principles h3 {
-  font-size: 18px;
-  font-weight: 500;
-  margin: 0 0 11px;
-  letter-spacing: -0.02em;
-}
-.principles p {
-  font-size: 14px;
-  color: var(--muted);
-  line-height: 1.9;
-  margin: 0;
+  margin: 0 0 40px;
 }
 .film-section {
   background: var(--pearl);
-}
-.section-heading {
-  margin-bottom: 58px;
 }
 .video-figure {
   margin: 0;
@@ -350,19 +317,16 @@ video {
   object-fit: contain;
 }
 .video-figure figcaption {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
+  text-align: center;
   margin-top: 19px;
-  font-size: 11px;
+  font-size: 12px;
   color: #6b7480;
   line-height: 1.7;
 }
-.video-figure figcaption a:hover {
-  color: var(--blue);
-}
 .details {
   padding-bottom: 100px;
+  display: grid;
+  gap: 28px;
 }
 .feature-panel {
   background: #f7f7f5;
@@ -372,28 +336,20 @@ video {
   grid-template-columns: 38% 62%;
   align-items: center;
   overflow: hidden;
-  margin-top: 28px;
 }
 .feature-copy {
   position: relative;
   z-index: 1;
 }
-.feature-index {
-  font-size: 11px;
-  color: #6f7782;
-  display: block;
-  margin-bottom: 35px;
-  letter-spacing: 0.08em;
-}
-.feature-copy h3 {
+.feature-copy h2 {
   font-size: 35px;
   line-height: 1.4;
   letter-spacing: -0.04em;
   font-weight: 500;
-  margin: 0 0 23px;
+  margin: 0 0 16px;
 }
 .feature-copy p {
-  font-size: 13px;
+  font-size: 15px;
   line-height: 2;
   color: var(--muted);
   margin: 0;
@@ -448,9 +404,6 @@ video {
   border-radius: 20px;
   box-shadow: 0 13px 26px -12px #2851c065;
 }
-.download-inner .eyebrow {
-  margin-bottom: 22px;
-}
 .download-inner h2 {
   font-size: clamp(37px, 4.6vw, 60px);
   letter-spacing: -0.05em;
@@ -470,89 +423,59 @@ video {
   font-size: 15px;
 }
 .download-meta {
-  font-size: 11px;
+  font-size: 12px;
   color: #707783;
-  margin: 17px 0 38px;
+  margin: 17px 0 0;
 }
-.install-details {
-  max-width: 570px;
+.help-list {
+  max-width: 620px;
   text-align: left;
-  margin: auto;
+  margin: 48px auto 0;
   border-top: 1px solid #dfe3ea;
+}
+.help-list details {
   border-bottom: 1px solid #dfe3ea;
 }
-.install-details summary {
+.help-list summary {
   padding: 21px 0;
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.7;
   cursor: pointer;
   list-style: none;
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 24px;
 }
-.install-details summary::-webkit-details-marker,
-.faq summary::-webkit-details-marker {
+.help-list summary::-webkit-details-marker {
   display: none;
 }
-.install-details > div {
-  font-size: 12px;
-  color: #727a86;
+.help-content {
+  font-size: 14px;
+  color: var(--muted);
   line-height: 1.9;
   padding-bottom: 22px;
 }
-.install-details ol {
+.help-content ol {
   padding-left: 20px;
   margin: 0;
 }
-.install-details p {
-  margin: 13px 0;
+.help-content p {
+  margin: 0;
 }
-.install-details a {
+.help-content a {
   color: var(--blue);
+  display: inline-block;
+  margin-top: 16px;
 }
 details[open] > summary > span {
   transform: rotate(45deg);
 }
 summary > span {
   transition: transform 0.2s;
-}
-.faq {
-  display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 90px;
-  padding-block: 95px 115px;
-}
-.faq > h2 {
-  font-size: 30px;
-  letter-spacing: -0.04em;
-  font-weight: 500;
-  margin: 17px 0;
-}
-.faq details {
-  border-bottom: 1px solid var(--line);
-}
-.faq details:first-child {
-  border-top: 1px solid var(--line);
-}
-.faq summary {
-  cursor: pointer;
-  list-style: none;
-  font-size: 14px;
-  padding: 22px 0;
-  display: flex;
-  justify-content: space-between;
-  gap: 24px;
-}
-.faq summary > span {
-  color: #9298a1;
+  flex-shrink: 0;
   font-size: 18px;
   font-weight: 300;
-}
-.faq details p {
-  font-size: 13px;
-  color: var(--muted);
-  line-height: 1.9;
-  padding: 0 36px 22px 0;
-  margin: 0;
 }
 .site-footer {
   background: #f8f8f8;
@@ -566,14 +489,9 @@ summary > span {
 .footer-top .brand {
   font-size: 20px;
 }
-.footer-top > p {
-  font-size: 12px;
-  color: #737a85;
-  margin-left: auto;
-}
 .footer-top > .repo-link {
   font-size: 12px;
-  margin-left: 24px;
+  margin-left: auto;
 }
 .footer-bottom {
   border-top: 1px solid #e6e7eb;
@@ -610,8 +528,7 @@ img {
   .hero h1 {
     font-size: clamp(62px, 6.5vw, 88px);
   }
-  .hero h1 > br,
-  .hero-copy > br {
+  .hero h1 > br {
     display: none;
   }
   .hero-copy {
@@ -638,37 +555,15 @@ img {
   .hero-actions {
     margin-bottom: 44px;
   }
-  .editorial-heading,
-  .section-heading {
-    gap: 35px;
-  }
-  .editorial-heading > p,
-  .section-heading > p {
-    font-size: 14px;
-    max-width: 345px;
-  }
-  .principles {
-    gap: 25px;
-  }
   .feature-panel {
     padding: 40px 0 40px 35px;
     grid-template-columns: 42% 58%;
   }
-  .feature-copy h3 {
+  .feature-copy h2 {
     font-size: 28px;
   }
   .feature-copy p {
-    font-size: 12px;
-  }
-  .feature-index {
-    margin-bottom: 22px;
-  }
-  .faq {
-    grid-template-columns: 1fr 2fr;
-    gap: 40px;
-  }
-  .faq > h2 {
-    font-size: 26px;
+    font-size: 14px;
   }
   .preview-caption {
     font-size: 10px;
@@ -714,6 +609,7 @@ img {
   }
   .hero {
     padding-top: 55px;
+    padding-bottom: 64px;
   }
   .hero .eyebrow {
     font-size: 9px;
@@ -774,87 +670,39 @@ img {
     margin-top: 12px;
     font-size: 9px;
   }
-  .preview-caption > p {
-    margin: 0;
+  .feature-summary {
+    gap: 12px;
+    font-size: 11px;
+  }
+  .feature-summary li + li {
+    padding-left: 12px;
   }
   .theme-switch {
     padding: 3px;
   }
   .theme-switch button {
-    font-size: 10px;
+    font-size: 11px;
     padding: 7px 18px;
   }
   .section {
     padding-block: 68px;
     scroll-margin-top: 60px;
   }
-  .intro {
-    padding-top: 78px;
-  }
-  .eyebrow {
-    font-size: 9px;
-    margin-bottom: 18px;
-  }
-  .editorial-heading,
-  .section-heading {
-    display: block;
-  }
-  .editorial-heading h2,
-  .section-heading h2 {
-    font-size: 38px;
+  .film-title {
+    font-size: 32px;
     line-height: 1.35;
     letter-spacing: -0.05em;
-  }
-  .editorial-heading > p,
-  .section-heading > p {
-    font-size: 13px;
-    line-height: 1.95;
-    margin: 25px 0 0;
-    max-width: none;
-  }
-  .principles {
-    grid-template-columns: 1fr;
-    gap: 0;
-    margin-top: 33px;
-    padding-top: 8px;
-  }
-  .principles > div {
-    position: relative;
-    padding: 25px 0 22px 50px;
-    border-bottom: 1px solid var(--line);
-  }
-  .principles > div:last-child {
-    border-bottom: 0;
-    padding-bottom: 0;
-  }
-  .principle-mark {
-    position: absolute;
-    left: 3px;
-    top: 23px;
-    margin: 0;
-    font-size: 27px;
-  }
-  .principles h3 {
-    font-size: 17px;
-    margin-bottom: 9px;
-  }
-  .principles p {
-    font-size: 14px;
-    line-height: 1.8;
-  }
-  .principles p br {
-    display: none;
-  }
-  .section-heading {
     margin-bottom: 31px;
   }
   .video-wrap {
     border-radius: 13px;
   }
   .video-figure figcaption {
-    font-size: 9px;
-    gap: 10px;
+    font-size: 11px;
     margin-top: 13px;
+  }
+  .details {
+    gap: 20px;
   }
   .feature-panel {
     display: flex;
@@ -862,15 +710,10 @@ img {
     align-items: stretch;
     padding: 33px 27px 0;
     border-radius: 22px;
-    margin-top: 20px;
   }
-  .feature-copy h3 {
+  .feature-copy h2 {
     font-size: 28px;
     margin-bottom: 17px;
-  }
-  .feature-index {
-    font-size: 9px;
-    margin-bottom: 22px;
   }
   .feature-copy p {
     font-size: 14px;
@@ -904,42 +747,9 @@ img {
     line-height: 1.95;
     margin-top: 24px;
   }
-  .download-copy br {
-    display: none;
-  }
-  .download-meta {
-    font-size: 10px;
-  }
-  .install-details summary {
-    font-size: 14px;
-  }
-  .install-details > div {
-    font-size: 13px;
-  }
-  .faq {
-    display: block;
-    padding-block: 65px;
-  }
-  .faq > h2 {
-    font-size: 28px;
-    margin: 0 0 28px;
-  }
-  .faq summary {
-    font-size: 14px;
-    line-height: 1.7;
-    align-items: center;
-    padding: 20px 0;
-  }
-  .faq details p {
-    font-size: 14px;
-    padding-right: 10px;
-  }
   .footer-top {
     flex-wrap: wrap;
     gap: 15px;
-  }
-  .footer-top > p {
-    font-size: 10px;
   }
   .footer-top > .repo-link {
     font-size: 10px;
