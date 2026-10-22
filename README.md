@@ -3,7 +3,7 @@
 </p>
 
 <h1 align="center">Still</h1>
-<p align="center">A quiet home for your TV.</p>
+<p align="center">Room for what matters</p>
 <p align="center">原生 Android 电视桌面 · 遥控器优先 · 图标联动环境光</p>
 <p align="center"><a href="https://mfcheer.github.io/luma/">访问 Still 官网</a> · <a href="https://mfcheer.github.io/luma/#film">观看实机演示</a> · <a href="https://mfcheer.github.io/luma/downloads/Still-0.8.1.apk">下载预览版</a></p>
 

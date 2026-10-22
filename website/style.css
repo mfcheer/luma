@@ -62,9 +62,9 @@ video {
   scroll-margin-top: 72px;
 }
 .eyebrow {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.015em;
+  font-weight: 500;
   color: #6d7580;
   margin: 0 0 24px;
 }
@@ -134,12 +134,12 @@ video {
   text-align: center;
 }
 .hero .eyebrow {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 .hero h1 {
   font-size: clamp(60px, 7.25vw, 100px);
   line-height: 1.16;
-  letter-spacing: -0.065em;
+  letter-spacing: -0.04em;
   font-weight: 600;
   margin: 0;
 }
@@ -579,13 +579,12 @@ img {
     padding-bottom: 64px;
   }
   .hero .eyebrow {
-    font-size: 9px;
-    letter-spacing: 0.16em;
-    margin-bottom: 20px;
+    font-size: 13px;
+    margin-bottom: 18px;
   }
   .hero h1 {
     font-size: 59px;
-    letter-spacing: -0.065em;
+    letter-spacing: -0.04em;
     line-height: 1.19;
   }
   .hero-copy {
