@@ -1,0 +1,12 @@
+{
+  "light": {
+    "countBottom": 352,
+    "focusedArtworkTop": 390,
+    "gapPixels": 38
+  },
+  "dark": {
+    "countBottom": 352,
+    "focusedArtworkTop": 390,
+    "gapPixels": 38
+  }
+}

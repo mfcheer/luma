@@ -1,0 +1,18 @@
+{
+  "light": {
+    "settingsToggleViaRemote": true,
+    "hiddenLabelAbsent": true,
+    "accessibleNameRetained": true,
+    "visibleTextInkCenter": 288.0,
+    "labelBoxCenter": 289.5,
+    "centerErrorPixels": 1.5
+  },
+  "dark": {
+    "settingsToggleViaRemote": true,
+    "hiddenLabelAbsent": true,
+    "accessibleNameRetained": true,
+    "visibleTextInkCenter": 287.5,
+    "labelBoxCenter": 289.5,
+    "centerErrorPixels": 2.0
+  }
+}

@@ -297,16 +297,22 @@ public final class MainActivity extends Activity {
   }
 
   private View headerAction(boolean home, Runnable action) {
+    return headerAction(
+        home ? R.drawable.nav_settings : R.drawable.nav_back, home ? "设置" : "返回", action);
+  }
+
+  private View headerAction(int icon, String label, Runnable action) {
     FrameLayout button = new FrameLayout(this);
     ImageView glyph = new ImageView(this);
-    glyph.setImageResource(home ? R.drawable.nav_settings : R.drawable.nav_back);
+    glyph.setImageResource(icon);
     glyph.setColorFilter(palette.icon);
-    button.addView(
-        glyph,
-        new FrameLayout.LayoutParams(px(home ? 18 : 24), px(home ? 18 : 24), Gravity.CENTER));
+    int glyphSize = px(icon == R.drawable.nav_back ? 24 : 20);
+    // Align the magnifier's circular body optically with the centre of the gear.
+    if (icon == R.drawable.nav_search) glyph.setTranslationY(px(2));
+    button.addView(glyph, new FrameLayout.LayoutParams(glyphSize, glyphSize, Gravity.CENTER));
     button.setFocusable(true);
     button.setClickable(true);
-    button.setContentDescription(home ? "设置" : "返回");
+    button.setContentDescription(label);
     button.setOnFocusChangeListener(
         (v, focus) -> {
           button.setBackground(rounded(focus ? palette.headerFocus : Color.TRANSPARENT, 18));
@@ -367,11 +373,11 @@ public final class MainActivity extends Activity {
     clock.setLetterSpacing(.015f);
     clock.setFontFeatureSettings("'tnum' 1");
     clock.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
-    put(clock, 698, 20, 176, 25);
+    put(clock, page.equals("home") ? 648 : 698, 20, 176, 25);
     calendarDate = text("", 12, palette.muted);
     calendarDate.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
     calendarDate.setFontFeatureSettings("'tnum' 1");
-    put(calendarDate, 698, 46, 176, 18);
+    put(calendarDate, page.equals("home") ? 648 : 698, 46, 176, 18);
     updateClock();
     View settings =
         headerAction(
@@ -387,7 +393,40 @@ public final class MainActivity extends Activity {
     settings.setId(R.id.settings_button);
     put(settings, 884, 23, 42, 42);
     if (page.equals("home")) {
-      home(settings);
+      View search =
+          headerAction(
+              R.drawable.nav_search,
+              "搜索",
+              () -> {
+                if (draftOrder != null) {
+                  finishMove(false);
+                  return;
+                }
+                if (loading || snapshot == null) {
+                  toast("应用列表准备中，请稍候");
+                  return;
+                }
+                if (homeWall != null) homeWall.restoreFocus(selectedId, homeWall.getScrollY());
+                startActivity(new Intent(this, SearchActivity.class));
+              });
+      search.setId(View.generateViewId());
+      put(search, 834, 23, 42, 42);
+      home(search);
+      search.setOnKeyListener(
+          (v, code, event) -> {
+            if (code == KeyEvent.KEYCODE_DPAD_DOWN
+                && event.getAction() == KeyEvent.ACTION_DOWN
+                && homeWall != null) {
+              homeWall.focusKey(selectedId, false);
+              return true;
+            }
+            return false;
+          });
+      search.setNextFocusRightId(settings.getId());
+      search.setNextFocusLeftId(search.getId());
+      settings.setNextFocusLeftId(search.getId());
+      settings.setNextFocusRightId(settings.getId());
+      settings.setNextFocusDownId(apps.isEmpty() ? search.getId() : homeWall.firstId());
     } else {
       settings.setNextFocusDownId(R.id.first_app);
       settingsPage();
@@ -493,7 +532,8 @@ public final class MainActivity extends Activity {
     items.add(
         new AppActionMenuView.Item("移动位置", R.drawable.menu_move, false, () -> beginMove(app)));
     items.add(
-        new AppActionMenuView.Item("移到最前", R.drawable.menu_move_first, false, () -> moveToFront(app)));
+        new AppActionMenuView.Item(
+            "移到最前", R.drawable.menu_move_first, false, () -> moveToFront(app)));
     items.add(
         new AppActionMenuView.Item(
             "应用信息",

@@ -68,6 +68,10 @@ public final class GridWallView extends ScrollView {
   }
 
   public void setEntries(List<AppEntry> apps, String focusKey, boolean animate) {
+    setEntries(apps, focusKey, animate, true);
+  }
+
+  public void setEntries(List<AppEntry> apps, String focusKey, boolean animate, boolean takeFocus) {
     entries.clear();
     List<String> next = new ArrayList<>();
     for (AppEntry app : apps) {
@@ -125,7 +129,11 @@ public final class GridWallView extends ScrollView {
     layoutCards(animate);
     movingKey(movingKey);
     navigation();
-    focusKey(focusKey, !animate);
+    if (takeFocus) focusKey(focusKey, !animate);
+    else {
+      current = cards.containsKey(focusKey) ? focusKey : (order.isEmpty() ? "" : order.get(0));
+      notifyFocus(current);
+    }
   }
 
   private void notifyFocus(String key) {
@@ -156,7 +164,9 @@ public final class GridWallView extends ScrollView {
   }
 
   private void layoutCards(boolean animate) {
-    int usable = getWidth() - getPaddingLeft() - getPaddingRight();
+    int width = getWidth();
+    if (width <= 0 && getLayoutParams() != null) width = getLayoutParams().width;
+    int usable = width - getPaddingLeft() - getPaddingRight();
     if (usable <= 0) usable = px(864);
     for (int i = 0; i < order.size(); i++) {
       String key = order.get(i);
@@ -315,7 +325,10 @@ public final class GridWallView extends ScrollView {
       AppCardView card = cards.get(key);
       int rowTop = card.getTop();
       float hidden = Math.max(Math.max(0, top - rowTop), Math.max(0, rowTop + rowHeight - bottom));
-      card.preview(card.hasFocus() ? 0 : Math.min(1, hidden / (rowHeight * .45f)));
+      card.preview(
+          !isVerticalFadingEdgeEnabled() || card.hasFocus()
+              ? 0
+              : Math.min(1, hidden / (rowHeight * .45f)));
     }
   }
 

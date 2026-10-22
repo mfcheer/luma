@@ -99,6 +99,7 @@ def go(index):
 def appearance():
     # Scroll up without changing the selected app; then enter settings through the header.
     for _ in range(7): key(19, .08)
+    if desc() == '搜索': key(22)
     assert desc() == '设置'
     key(23)
     for _ in range(8):

@@ -11,3 +11,12 @@ Source: https://github.com/google/material-design-icons/blob/master/src/image/br
 License: https://www.apache.org/licenses/LICENSE-2.0
 
 Installed application icons shown at runtime belong to their respective owners and are loaded from the user's device, not redistributed in this APK.
+
+Local search uses TinyPinyin 2.0.3 (me.majiajie:tinypinyin), Apache License 2.0.
+Source: https://github.com/tyzlmjj/TinyPinyin
+License: docs/tinypinyin-LICENSE.txt
+Its transitive dependency org.ahocorasick:ahocorasick:0.6.3 is Apache License 2.0.
+Source: https://github.com/robert-bor/aho-corasick
+License: docs/ahocorasick-LICENSE.txt
+The search and clear icons use Google Material Design Icons (search and close), Apache License 2.0, preserving the source vector paths.
+Sources: https://github.com/google/material-design-icons/tree/master/src/action/search and https://github.com/google/material-design-icons/tree/master/src/navigation/close

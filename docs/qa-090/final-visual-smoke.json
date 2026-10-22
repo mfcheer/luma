@@ -1,0 +1,9 @@
+{
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "restoredOriginalFixtureAndPreferences": true,
+  "nativeIme": "emulator system keyboard; Sogou TV not tested",
+  "artwork": "temporary emulator fixture, never product assets"
+}

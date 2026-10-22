@@ -1,0 +1,9 @@
+{
+  "menuNavigationAndCancel": true,
+  "settingsAndBack": true,
+  "systemHomeUsesConfiguredLauncher": "com.google.android.tvlauncher/.MainActivity",
+  "explicitStillHomeClearsSearchStack": true,
+  "newSearchQueryEmpty": true,
+  "systemDefaultUnchanged": true,
+  "originalPreferencesRestored": true
+}
