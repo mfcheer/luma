@@ -241,6 +241,13 @@ public final class GridWallView extends ScrollView {
     return current;
   }
 
+  public void returnToFirstRow() {
+    if (order.isEmpty()) return;
+    int index = order.indexOf(current);
+    // Keep the selection when already on the first row; otherwise start at the first app.
+    focusKey(index >= 0 && index < COLUMNS ? current : order.get(0), false);
+  }
+
   public void restoreFocus(String key, int offset) {
     focusKey(key, true);
     post(() -> scrollTo(0, offset));

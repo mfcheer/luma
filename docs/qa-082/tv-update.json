@@ -1,0 +1,9 @@
+{
+  "version": "0.8.2",
+  "versionCode": 16,
+  "sameSignatureUpdate": "adb install -r succeeded",
+  "allPreferencesPreserved": true,
+  "savedAppCount": 41,
+  "powerAfterInstall": "Asleep / display OFF",
+  "remoteInteractionRetested": false
+}

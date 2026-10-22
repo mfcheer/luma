@@ -872,6 +872,6 @@ public final class MainActivity extends Activity {
     else if (!page.equals("home")) {
       page = "home";
       render();
-    } else toast("已在 Still 首页；可在“默认桌面”中打开其他桌面");
+    } else if (homeWall != null) homeWall.returnToFirstRow();
   }
 }

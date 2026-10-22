@@ -1,0 +1,13 @@
+[
+  "light: first-row selection retained; second/last row returns to first app; rapid and repeated Back settle correctly",
+  "light: Back closes the deep-row menu; the next Back returns to first row",
+  "light: Back cancels cross-row moving without saving; the next Back returns to first row",
+  "light: Back from an external app restores the deep-row position; Back on home then returns to top",
+  "light: settings Back restores the home selection; subsequent Back keeps first-row selection",
+  "dark: first-row selection retained; second/last row returns to first app; rapid and repeated Back settle correctly",
+  "dark: Back closes the deep-row menu; the next Back returns to first row",
+  "dark: Back cancels cross-row moving without saving; the next Back returns to first row",
+  "dark: Back from an external app restores the deep-row position; Back on home then returns to top",
+  "dark: settings Back restores the home selection; subsequent Back keeps first-row selection",
+  "all original emulator preferences restored; no app install/uninstall, TV access or default-home changes"
+]

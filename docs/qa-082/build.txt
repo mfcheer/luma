@@ -1,0 +1,3 @@
+Command: JAVA_HOME=<JDK 21> ./gradlew :app:assembleDebug :app:lintDebug
+Result: BUILD SUCCESSFUL in 12s
+Lint: 0 errors, 16 warnings
