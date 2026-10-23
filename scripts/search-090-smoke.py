@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Fixture emulator only: real search/IME/navigation/state restoration, with preferences restored."""
 import json
+import os
 import runpy
 import subprocess
 import time
@@ -9,7 +10,7 @@ from pathlib import Path
 q = runpy.run_path(str(Path(__file__).with_name('theme-080-smoke.py')))
 adb, key, tree = (q[n] for n in ('adb', 'key', 'tree'))
 PKG = q['PKG']
-OUT = q['ROOT'] / 'docs/qa-090'
+OUT = q['ROOT'] / os.environ.get('STILL_QA_OUT', 'docs/qa-090')
 
 
 def focus():
@@ -35,7 +36,7 @@ def search(query):
 def main():
     original = q['prefs']()
     assert len(json.loads(original['appOrder'])) == 28
-    assert 'versionName=0.9.0' in adb('shell', 'dumpsys', 'package', PKG)
+    assert ('versionName=' + os.environ.get('STILL_EXPECT_VERSION', '0.9.0')) in adb('shell', 'dumpsys', 'package', PKG)
     OUT.mkdir(exist_ok=True)
     adb('shell', 'run-as', PKG, 'cp', 'shared_prefs/launcher.xml', 'files/qa090-backup.xml')
     passed = []

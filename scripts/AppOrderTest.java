@@ -19,6 +19,16 @@ public final class AppOrderTest {
     expect(Arrays.asList("b/.Old"), Arrays.asList("a/.Tv", "b/.Tv", "b/.Phone"), "b/.Tv", "a/.Tv");
     expect(Arrays.asList(null, "", "c/.Tv"), installed, "c/.Tv", "a/.Tv", "b/.Tv");
     expect(installed, Collections.emptyList());
-    System.out.println("PASS: fresh install, legacy prefix, append/remove/deduplicate, activity rename, TV entry preference, invalid IDs, empty list and refresh stability");
+    List<String> original = Arrays.asList("a/.Tv", "b/.Tv", "new/.Tv");
+    List<String> promoted = AppOrder.moveToFront(original, "b/.Tv");
+    if (!promoted.equals(Arrays.asList("b/.Tv", "a/.Tv", "new/.Tv"))
+        || !original.equals(Arrays.asList("a/.Tv", "b/.Tv", "new/.Tv"))
+        || !AppOrder.moveToFront(promoted, "b/.Tv").equals(promoted)
+        || !AppOrder.moveToFront(original, "gone/.Tv").equals(original))
+      throw new AssertionError("Promotion must preserve other entries/input and be stable");
+    System.out.println(
+        "PASS: fresh install, legacy prefix, append/remove/deduplicate, activity rename, TV entry"
+            + " preference, invalid IDs, empty list, refresh stability and immutable/stable"
+            + " promotion");
   }
 }

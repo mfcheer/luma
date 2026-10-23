@@ -1,0 +1,29 @@
+{
+  "checks": [
+    {
+      "theme": "light",
+      "cancelExactFocusAndScroll": true,
+      "isolatedMenuFocus": true,
+      "locateWithoutReorder": true,
+      "promotionPreservesOtherApps": true,
+      "queryPreserved": true,
+      "appInfoAndActualProcessDeath": true,
+      "repeatedPromotionStable": true,
+      "launchAndReturn": true,
+      "homeHandoffRecovered": true
+    },
+    {
+      "theme": "dark",
+      "cancelExactFocusAndScroll": true,
+      "isolatedMenuFocus": true,
+      "locateWithoutReorder": true,
+      "promotionPreservesOtherApps": true,
+      "queryPreserved": true,
+      "appInfoAndActualProcessDeath": true,
+      "repeatedPromotionStable": true,
+      "launchAndReturn": true,
+      "homeHandoffRecovered": true
+    }
+  ],
+  "originalPreferencesRestored": true
+}

@@ -1,0 +1,105 @@
+{
+  "viewports": [
+    {
+      "cards": [
+        {
+          "height": 0.6367991576730718,
+          "imageRatio": 1.7777777777777777,
+          "left": 0,
+          "loaded": true,
+          "top": 0,
+          "width": 0.6
+        },
+        {
+          "height": 0.6792313766780732,
+          "imageRatio": 1.777786389707022,
+          "left": 0.36001674107142856,
+          "loaded": true,
+          "top": 0.32076862332192685,
+          "width": 0.6399832589285714
+        }
+      ],
+      "overflow": false,
+      "overlap": true,
+      "stageRatio": 1.886812319031324,
+      "width": 320
+    },
+    {
+      "cards": [
+        {
+          "height": 0.6367924528301887,
+          "imageRatio": 1.7777777777777777,
+          "left": 0,
+          "loaded": true,
+          "top": 0,
+          "width": 0.6
+        },
+        {
+          "height": 0.6792452830188679,
+          "imageRatio": 1.7777777777777777,
+          "left": 0.36,
+          "loaded": true,
+          "top": 0.32075471698113206,
+          "width": 0.64
+        }
+      ],
+      "overflow": false,
+      "overlap": true,
+      "stageRatio": 1.8867924528301887,
+      "width": 390
+    },
+    {
+      "cards": [
+        {
+          "height": 0.6367852262846259,
+          "imageRatio": 1.7777813902074258,
+          "left": 0,
+          "loaded": true,
+          "top": 0,
+          "width": 0.5999934164325843
+        },
+        {
+          "height": 0.6792265330628131,
+          "imageRatio": 1.7778285783955132,
+          "left": 0.3600004389044944,
+          "loaded": true,
+          "top": 0.3207734669371869,
+          "width": 0.6399995610955056
+        }
+      ],
+      "overflow": false,
+      "overlap": true,
+      "stageRatio": 1.8867955778228644,
+      "width": 768
+    },
+    {
+      "cards": [
+        {
+          "height": 0.636795689633263,
+          "imageRatio": 1.7777777777777777,
+          "left": 0,
+          "loaded": true,
+          "top": 0,
+          "width": 0.6
+        },
+        {
+          "height": 0.6792385696495286,
+          "imageRatio": 1.7778006435680611,
+          "left": 0.3600013469827586,
+          "loaded": true,
+          "top": 0.32076143035047144,
+          "width": 0.6399986530172413
+        }
+      ],
+      "overflow": false,
+      "overlap": true,
+      "stageRatio": 1.8868020433578163,
+      "width": 1280
+    }
+  ],
+  "themeSwitch": true,
+  "comparisonStillFixedLight": true,
+  "videoSourceUnchanged": true,
+  "errors": [],
+  "presentation": "Single staggered overlapping composition on desktop and mobile"
+}

@@ -1,0 +1,23 @@
+{
+  "completed": true,
+  "device": "Xiaomi TV 5 Pro 55 / MiTV-ANSP0",
+  "android": 9,
+  "api": 28,
+  "date": "2026-10-23",
+  "stillVersion": "0.9.0",
+  "nativeComponent": "com.mitv.tvhome/.MainActivity",
+  "sameDevice": true,
+  "defaultHomePreserved": true,
+  "allPreferencesPreserved": true,
+  "returnedToStill": true,
+  "power": "Asleep",
+  "videoRecorded": false,
+  "nativePublishedResolution": [
+    1920,
+    1080
+  ],
+  "stillUncropped": true,
+  "publishedStillSource": "Existing full same-device Still 0.9.0 home-light.webp captured on 2026-10-23",
+  "nativeUncropped": true,
+  "presentation": "One staggered composition at all viewport sizes: native upper-left, Still lower-right"
+}

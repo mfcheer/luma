@@ -1,12 +1,15 @@
 package com.jianping.tv.ui;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.*;
+import android.provider.Settings;
 import android.text.*;
 import android.view.*;
 import android.view.inputmethod.*;
@@ -17,8 +20,10 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
-/** Local search owns its focus/IME state; the home activity and its order stay untouched. */
+/** Local search owns focus/IME state and hands explicit order/location actions back to home. */
 public final class SearchActivity extends Activity {
+  static final int REQUEST = 51;
+  static final String HOME_TARGET = "com.jianping.tv.search.HOME_TARGET";
   private final Handler handler = new Handler(Looper.getMainLooper());
   private final ExecutorService worker = Executors.newSingleThreadExecutor();
   private final Map<String, AppEntry> entries = new HashMap<>();
@@ -26,7 +31,9 @@ public final class SearchActivity extends Activity {
   private AppCatalogCache.Snapshot snapshot;
   private AppRepository repository;
   private AppSearch index;
-  private FrameLayout root, inputBox;
+  private FrameLayout root, content, inputBox;
+  private AppActionMenuView actionLayer;
+  private View menuReturn;
   private AmbientBackgroundView ambient;
   private SearchInput input;
   private GridWallView results;
@@ -35,6 +42,7 @@ public final class SearchActivity extends Activity {
   private float unit;
   private int screenHeight, resultOffset, imeRequest;
   private String selected = "", query = "";
+  private String homeTarget = "";
   private boolean imeOpen, keyboardRequested, autoKeyboard, restoreResult, ready;
   private final Runnable clockTick =
       new Runnable() {
@@ -60,6 +68,8 @@ public final class SearchActivity extends Activity {
     selected = state == null ? "" : state.getString("selected", "");
     resultOffset = state == null ? 0 : state.getInt("offset", 0);
     restoreResult = state != null && state.getBoolean("resultFocus", false);
+    homeTarget = state == null ? "" : state.getString("homeTarget", "");
+    if (!homeTarget.isEmpty()) publishHomeTarget();
     autoKeyboard = state == null || state.getBoolean("keyboard", false);
     getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
@@ -73,8 +83,10 @@ public final class SearchActivity extends Activity {
     root.setBackgroundColor(palette.background);
     root.setClipChildren(false);
     setContentView(root);
+    content = new FrameLayout(this);
+    root.addView(content, new FrameLayout.LayoutParams(-1, -1));
     ambient = new AmbientBackgroundView(this, palette);
-    root.addView(ambient, new FrameLayout.LayoutParams(-1, -1));
+    content.addView(ambient, new FrameLayout.LayoutParams(-1, -1));
     back = icon(R.drawable.nav_back, "返回首页", this::leave);
     place(back, 42, 18, 34, 42);
     place(text("搜索应用", 18, palette.text), 86, 18, 160, 42);
@@ -177,7 +189,7 @@ public final class SearchActivity extends Activity {
               }
 
               public void hold(AppEntry app, View source) {
-                /* Search results only launch apps. */
+                manage(app, source);
               }
 
               public boolean key(int code, KeyEvent event) {
@@ -357,6 +369,97 @@ public final class SearchActivity extends Activity {
     return state == null ? drawable : state.newDrawable(getResources()).mutate();
   }
 
+  private void manage(AppEntry app, View source) {
+    if (actionLayer != null) return;
+    hideKeyboard();
+    resultOffset = results.getScrollY();
+    menuReturn = source;
+    if (source instanceof AppCardView) ((AppCardView) source).contextSelected(true);
+    content.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+    List<AppActionMenuView.Item> items = new ArrayList<>();
+    items.add(
+        new AppActionMenuView.Item(
+            "移到最前", R.drawable.menu_move_first, false, () -> moveToFront(app)));
+    items.add(
+        new AppActionMenuView.Item(
+            "在首页定位",
+            R.drawable.settings_home,
+            false,
+            () -> {
+              homeTarget = app.id;
+              publishHomeTarget();
+              leave();
+            }));
+    items.add(
+        new AppActionMenuView.Item(
+            "应用信息",
+            R.drawable.menu_info,
+            false,
+            () -> {
+              resultOffset = results.getScrollY();
+              restoreResult = true;
+              try {
+                startActivity(
+                    new Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:" + app.component.getPackageName())));
+              } catch (RuntimeException error) {
+                Toast.makeText(this, "当前系统不支持此入口", Toast.LENGTH_LONG).show();
+              }
+            }));
+    actionLayer =
+        new AppActionMenuView(
+            this, unit, app.label, image(app, false), items, action -> closeMenu(action), palette);
+    root.addView(actionLayer, new FrameLayout.LayoutParams(-1, -1));
+    actionLayer.reveal();
+  }
+
+  private void closeMenu(Runnable action) {
+    if (actionLayer == null) return;
+    AppActionMenuView old = actionLayer;
+    View target = menuReturn;
+    old.dismiss(
+        () -> {
+          if (actionLayer != old || isDestroyed()) return;
+          root.removeView(old);
+          actionLayer = null;
+          menuReturn = null;
+          content.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+          if (target != null && target.isAttachedToWindow()) target.requestFocus();
+          if (target instanceof AppCardView) ((AppCardView) target).contextSelected(false);
+          if (action != null) action.run();
+        });
+  }
+
+  private void moveToFront(AppEntry app) {
+    Preferences prefs = new Preferences(this);
+    List<String> order = prefs.appOrder();
+    if (!order.contains(app.id)) {
+      Toast.makeText(this, "应用已变更，请返回首页刷新列表", Toast.LENGTH_LONG).show();
+      return;
+    }
+    if (order.get(0).equals(app.id)) {
+      Toast.makeText(this, "已在首页最前", Toast.LENGTH_SHORT).show();
+      return;
+    }
+    // Preserve entries installed while search was open, even if absent from its snapshot.
+    prefs.saveAppOrder(AppOrder.moveToFront(order, app.id));
+    homeTarget = app.id;
+    publishHomeTarget();
+    List<String> available = new ArrayList<>();
+    for (AppEntry entry : snapshot.apps) available.add(entry.id);
+    List<AppSearch.Item> items = new ArrayList<>();
+    for (String id : AppOrder.reconcile(prefs.appOrder(), available))
+      items.add(new AppSearch.Item(id, entries.get(id).label));
+    index = new AppSearch(items);
+    updateResults(true);
+    Toast.makeText(this, "已移到首页最前", Toast.LENGTH_SHORT).show();
+  }
+
+  private void publishHomeTarget() {
+    setResult(RESULT_OK, new Intent().putExtra(HOME_TARGET, homeTarget));
+  }
+
   private void showKeyboard() {
     if (isFinishing() || !hasWindowFocus()) return;
     input.requestFocus();
@@ -406,7 +509,8 @@ public final class SearchActivity extends Activity {
 
   @Override
   public void onBackPressed() {
-    if (imeOpen || keyboardRequested) hideAndFocusResults();
+    if (actionLayer != null) closeMenu(null);
+    else if (imeOpen || keyboardRequested) hideAndFocusResults();
     else leave();
   }
 
@@ -439,7 +543,8 @@ public final class SearchActivity extends Activity {
     state.putString("query", query);
     state.putString("selected", selected);
     state.putInt("offset", results.getScrollY());
-    state.putBoolean("resultFocus", results.hasFocus() || restoreResult);
+    state.putBoolean("resultFocus", results.hasFocus() || restoreResult || actionLayer != null);
+    state.putString("homeTarget", homeTarget);
     state.putBoolean("keyboard", imeOpen);
     super.onSaveInstanceState(state);
   }
@@ -521,6 +626,6 @@ public final class SearchActivity extends Activity {
     FrameLayout.LayoutParams p = new FrameLayout.LayoutParams(px(w), px(h));
     p.leftMargin = px(x);
     p.topMargin = px(y);
-    root.addView(view, p);
+    content.addView(view, p);
   }
 }

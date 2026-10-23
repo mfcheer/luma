@@ -6,6 +6,13 @@ import java.util.*;
 public final class AppOrder {
   private AppOrder() {}
 
+  /** Promote one existing entry without mutating the caller's order or other positions. */
+  public static List<String> moveToFront(List<String> order, String id) {
+    List<String> result = new ArrayList<>(order);
+    if (result.remove(id)) result.add(0, id);
+    return result;
+  }
+
   public static List<String> reconcile(List<String> previous, List<String> available) {
     Map<String, String> remaining = new LinkedHashMap<>();
     for (String id : available) {

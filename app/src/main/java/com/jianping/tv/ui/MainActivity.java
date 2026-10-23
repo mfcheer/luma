@@ -40,6 +40,7 @@ public final class MainActivity extends Activity {
   private GridWallView homeWall;
   private View menuReturn;
   private String selectedSetting = "默认桌面", selectedId = "", page = "home";
+  private String pendingSearchTarget = "";
   private AmbientBackgroundView ambient;
   private float scale = 1;
   private boolean loading = true, pendingRender, catalogError;
@@ -85,6 +86,7 @@ public final class MainActivity extends Activity {
       page = state.getString("page", "home");
       selectedId = state.getString("selected", "");
       homeOffset = state.getInt("homeOffset", 0);
+      pendingSearchTarget = state.getString("searchTarget", "");
     }
     recordEntry(getIntent());
     IntentFilter filter = new IntentFilter();
@@ -123,7 +125,25 @@ public final class MainActivity extends Activity {
     b.putString("page", page);
     b.putString("selected", selectedId);
     b.putInt("homeOffset", homeWall == null ? homeOffset : homeWall.getScrollY());
+    b.putString("searchTarget", pendingSearchTarget);
     super.onSaveInstanceState(b);
+  }
+
+  @Override
+  protected void onActivityResult(int request, int result, Intent data) {
+    super.onActivityResult(request, result, data);
+    if (request != SearchActivity.REQUEST || result != RESULT_OK || data == null) return;
+    String target = data.getStringExtra(SearchActivity.HOME_TARGET);
+    if (target == null || target.isEmpty()) return;
+    selectedId = target;
+    pendingSearchTarget = target;
+    homeOffset = 0;
+    page = "home";
+    if (homeWall != null && !loading) {
+      homeWall.setEntries(orderedApps(), target, false);
+      homeWall.focusKey(target, true);
+      pendingSearchTarget = "";
+    } else if (!loading) render();
   }
 
   @Override
@@ -407,7 +427,8 @@ public final class MainActivity extends Activity {
                   return;
                 }
                 if (homeWall != null) homeWall.restoreFocus(selectedId, homeWall.getScrollY());
-                startActivity(new Intent(this, SearchActivity.class));
+                startActivityForResult(
+                    new Intent(this, SearchActivity.class), SearchActivity.REQUEST);
               });
       search.setId(View.generateViewId());
       put(search, 834, 23, 42, 42);
@@ -496,7 +517,10 @@ public final class MainActivity extends Activity {
     put(homeWall, 42, 82, 876, 424);
     String previous = selectedId;
     homeWall.setEntries(orderedApps(), selectedId, false);
-    if (previous.equals(selectedId)) homeWall.restoreFocus(selectedId, homeOffset);
+    if (!pendingSearchTarget.isEmpty() && !apps.isEmpty()) {
+      homeWall.focusKey(pendingSearchTarget, true);
+      pendingSearchTarget = "";
+    } else if (previous.equals(selectedId)) homeWall.restoreFocus(selectedId, homeOffset);
     homeWall.upperFocus(settings.getId());
     if (apps.isEmpty()) {
       TextView empty =
@@ -583,12 +607,11 @@ public final class MainActivity extends Activity {
 
   private void moveToFront(AppEntry app) {
     List<String> order = AppOrder.reconcile(prefs.appOrder(), installedIds());
-    if (!order.remove(app.id)) {
+    if (!order.contains(app.id)) {
       toast("应用已变更，请重试");
       return;
     }
-    order.add(0, app.id);
-    prefs.saveAppOrder(order);
+    prefs.saveAppOrder(AppOrder.moveToFront(order, app.id));
     selectedId = app.id;
     homeOffset = 0;
     homeWall.setEntries(orderedApps(), selectedId, false);

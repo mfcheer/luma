@@ -1,0 +1,1 @@
+PASS: fresh install, legacy prefix, append/remove/deduplicate, activity rename, TV entry preference, invalid IDs, empty list, refresh stability and immutable/stable promotion

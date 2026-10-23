@@ -292,6 +292,67 @@ video {
   font-size: 13px;
   padding-right: 4px;
 }
+.comparison-section.section {
+  padding-block: 32px 80px;
+}
+.comparison-title {
+  margin: 0 0 32px;
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  text-align: center;
+}
+.comparison-stage {
+  position: relative;
+  aspect-ratio: 100/53;
+  margin: 48px 0 46px;
+}
+.comparison-item {
+  position: absolute;
+  margin: 0;
+}
+.comparison-native {
+  top: 0;
+  left: 0;
+  width: 60%;
+}
+.comparison-still {
+  right: 0;
+  bottom: 0;
+  width: 64%;
+  z-index: 1;
+}
+.comparison-item figcaption {
+  position: absolute;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 500;
+  color: var(--muted);
+}
+.comparison-native figcaption {
+  left: 0;
+  bottom: calc(100% + 12px);
+}
+.comparison-still figcaption {
+  right: 0;
+  top: calc(100% + 12px);
+}
+.comparison-item img {
+  width: 100%;
+  border-radius: 14px;
+  box-shadow: 0 16px 44px -24px #1e25374d;
+}
+.comparison-still img {
+  box-shadow: 0 24px 54px -24px #1e25375c;
+}
+.comparison-note {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--muted);
+}
 .film-title {
   font-size: clamp(32px, 4vw, 48px);
   font-weight: 600;
@@ -544,6 +605,22 @@ img {
   }
 }
 @media (max-width: 600px) {
+  .comparison-section.section {
+    padding-block: 0 64px;
+  }
+  .comparison-title {
+    margin-bottom: 28px;
+  }
+  .comparison-stage {
+    margin-block: 36px 40px;
+  }
+  .comparison-item figcaption {
+    font-size: 11px;
+  }
+  .comparison-item img {
+    border-radius: 9px;
+    box-shadow: 0 12px 28px -16px #1e25375c;
+  }
   .shell {
     width: calc(100% - 40px);
   }

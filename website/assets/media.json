@@ -54,5 +54,29 @@
     "source": "Direct ADB screenrecord on the real television",
     "sha256": "2857d3465e6b388529a4305ab1ac3dacc18e8635ec02010fe680b42fa59b8528"
   },
-  "videoEdit": "Three native clips joined at original playback speed, no frame interpolation, audio omitted"
+  "videoEdit": "Three native clips joined at original playback speed, no frame interpolation, audio omitted",
+  "comparison": {
+    "captureDate": "2026-10-23",
+    "device": "Xiaomi TV 5 Pro 55 / MiTV-ANSP0",
+    "sourceResolution": [
+      1920,
+      1080
+    ],
+    "nativeComponent": "com.mitv.tvhome/.MainActivity",
+    "nativePublishedResolution": [
+      1920,
+      1080
+    ],
+    "stillVersion": "0.9.0",
+    "stillUncropped": true,
+    "source": "Direct same-device ADB screencap; full native screenshot approved by user; WebP encoding only; existing full Still screenshot unchanged",
+    "files": {
+      "comparison-xiaomi.webp": "21dabbacf039e5c3ce521c36aa7d0a6f8891b5c8efabbcd3761d170825027e87",
+      "home-light.webp": "a2ab7e975f58fa2bcd8a4a83302630539346473c3e16c4b695facaea220ecbf3"
+    },
+    "stillSourceFile": "home-light.webp",
+    "stillSource": "Existing full Still 0.9.0 screenshot captured on the same TV on 2026-10-23",
+    "nativeUncropped": true,
+    "presentation": "One staggered composition at all viewport sizes: native upper-left, Still lower-right"
+  }
 }
