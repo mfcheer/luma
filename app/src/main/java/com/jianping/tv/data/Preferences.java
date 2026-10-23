@@ -49,7 +49,7 @@ public final class Preferences {
   }
 
   public boolean showAppNames() {
-    return prefs.getBoolean("showAppNames", true);
+    return prefs.getBoolean("showAppNames", false);
   }
 
   public void showAppNames(boolean visible) {

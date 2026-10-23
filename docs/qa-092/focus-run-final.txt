@@ -1,0 +1,6 @@
+/var/folders/8d/b8tggg111xv1t5_0_p3jtkh40000gn/T/tmp92u2tb76.xml: 1 file pushed, 0 skipped. 21.5 MB/s (4042 bytes in 0.000s)
+/var/folders/8d/b8tggg111xv1t5_0_p3jtkh40000gn/T/tmp8eepogo_.xml: 1 file pushed, 0 skipped. 65.5 MB/s (4086 bytes in 0.000s)
+PASS: light focus-only captions, rapid focus, scroll, menus, search, settings and idle
+/var/folders/8d/b8tggg111xv1t5_0_p3jtkh40000gn/T/tmppf73lr1t.xml: 1 file pushed, 0 skipped. 50.5 MB/s (4041 bytes in 0.000s)
+/var/folders/8d/b8tggg111xv1t5_0_p3jtkh40000gn/T/tmpedvkrm6j.xml: 1 file pushed, 0 skipped. 47.8 MB/s (4085 bytes in 0.000s)
+PASS: dark focus-only captions, rapid focus, scroll, menus, search, settings and idle

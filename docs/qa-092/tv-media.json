@@ -1,0 +1,19 @@
+{
+  "completed": true,
+  "model": "MiTV-ANSP0",
+  "android": 9,
+  "api": 28,
+  "version": "0.9.2",
+  "apps": 41,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "orderAndOptionsPreserved": true,
+  "originalThemeRestored": true,
+  "defaultHomePreserved": true,
+  "finalPowerState": "Asleep",
+  "videoRecorded": true,
+  "thirdPartyContentOpened": false,
+  "testFixturesInstalled": false
+}

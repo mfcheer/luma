@@ -1,0 +1,3 @@
+/var/folders/8d/b8tggg111xv1t5_0_p3jtkh40000gn/T/tmpo_yekr9b.xml: 1 file pushed, 0 skipped. 58.6 MB/s (4087 bytes in 0.000s)
+/sdcard/still-focus-092.mp4: 1 file pulled, 0 skipped. 103.1 MB/s (2574784 bytes in 0.024s)
+PASS: measured focus geometry; native navigation recording; stable final Home; preferences restored

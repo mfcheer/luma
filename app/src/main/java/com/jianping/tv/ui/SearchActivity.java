@@ -197,6 +197,7 @@ public final class SearchActivity extends Activity {
               }
             });
     results.showNames(new Preferences(this).showAppNames());
+    results.focusBaselineLift(px(2.5f));
     place(results, 54, 188, 852, 322);
     results.upperFocus(input.getId());
     results.setVisibility(View.GONE);
@@ -268,7 +269,7 @@ public final class SearchActivity extends Activity {
                     results.getPaddingTop(),
                     results.getPaddingRight(),
                     bottomPadding);
-              results.setVerticalFadingEdgeEnabled(!editing);
+              results.edgeTreatment(!editing);
               FrameLayout.LayoutParams mp = (FrameLayout.LayoutParams) message.getLayoutParams();
               if (mp.topMargin != px(compact ? 132 : 150)) {
                 mp.topMargin = px(compact ? 132 : 150);

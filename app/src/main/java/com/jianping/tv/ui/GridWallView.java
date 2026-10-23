@@ -2,7 +2,13 @@ package com.jianping.tv.ui;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.LinearGradient;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.view.*;
 import android.widget.*;
@@ -42,7 +48,12 @@ public final class GridWallView extends ScrollView {
   private String current = "", movingKey = "";
   private long lastFocusAt;
   private int upId;
-  private boolean showNames = true;
+  private boolean showNames;
+  private float baselineLift;
+  private boolean edgesEnabled = true;
+  private final Paint edgeMask = new Paint(Paint.ANTI_ALIAS_FLAG);
+  private LinearGradient topMask, bottomMask;
+  private final android.graphics.Matrix maskTransform = new android.graphics.Matrix();
 
   private int px(float value) {
     return Math.round(value * unit);
@@ -59,8 +70,13 @@ public final class GridWallView extends ScrollView {
     setClipToPadding(false);
     setClipChildren(false);
     setVerticalScrollBarEnabled(false);
-    setVerticalFadingEdgeEnabled(true);
-    setFadingEdgeLength(px(48));
+    // One fixed viewport mask for both edges. Native fading-edge padding changes
+    // during row transitions used to expose a bright strip above the artwork.
+    setVerticalFadingEdgeEnabled(false);
+    edgeMask.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+    topMask = new LinearGradient(0, 0, 0, 1, Color.TRANSPARENT, Color.BLACK, Shader.TileMode.CLAMP);
+    bottomMask =
+        new LinearGradient(0, 0, 0, 1, Color.BLACK, Color.TRANSPARENT, Shader.TileMode.CLAMP);
     content = new FrameLayout(c);
     content.setClipChildren(false);
     content.setClipToPadding(false);
@@ -99,6 +115,7 @@ public final class GridWallView extends ScrollView {
               listener.accent(app),
               palette);
       card.showName(showNames);
+      card.focusBaselineLift(baselineLift);
       card.setId(View.generateViewId());
       card.action(() -> listener.activate(entries.get(key)));
       card.setOnLongClickListener(
@@ -163,6 +180,18 @@ public final class GridWallView extends ScrollView {
     for (AppCardView card : cards.values()) card.showName(visible);
   }
 
+  public void focusBaselineLift(float pixels) {
+    baselineLift = pixels;
+    for (AppCardView card : cards.values()) card.focusBaselineLift(pixels);
+  }
+
+  public void edgeTreatment(boolean enabled) {
+    if (edgesEnabled == enabled) return;
+    edgesEnabled = enabled;
+    updatePreviews();
+    invalidate();
+  }
+
   private void layoutCards(boolean animate) {
     int width = getWidth();
     if (width <= 0 && getLayoutParams() != null) width = getLayoutParams().width;
@@ -204,15 +233,43 @@ public final class GridWallView extends ScrollView {
   @Override
   protected void dispatchDraw(Canvas canvas) {
     int save = canvas.save();
-    // The viewport must stay fixed while crossing a row boundary. Changing its top by
-    // the lift padding exposed a strip of artwork for one frame at each aligned offset.
-    canvas.clipRect(
-        getScrollX(),
-        getScrollY(),
-        getScrollX() + getWidth(),
-        getScrollY() + getHeight() - getPaddingBottom());
+    int left = getScrollX(), top = getScrollY(), right = left + getWidth();
+    int bottom = top + getHeight() - getPaddingBottom();
+    canvas.clipRect(left, top, right, bottom);
+    // Fade only artwork actually leaving through the upper edge. At an aligned
+    // row the first card starts below the headroom and must stay fully opaque.
+    // The outgoing artwork (including shadow) is gone before the next row arrives,
+    // so this reaches zero without changing opacity across a row boundary.
+    int phase = Math.max(0, top) % rowHeight;
+    float clipped = Math.max(0, phase - getPaddingTop() - px(8));
+    float remaining = Math.max(0, getPaddingTop() + px(102) - phase);
+    float topFade = Math.min(px(48), remaining) * Math.min(1, clipped / px(24));
+    float bottomFade =
+        Math.min(px(48), Math.max(0, content.getHeight() + getPaddingTop() - bottom));
+    if (!edgesEnabled) topFade = bottomFade = 0;
+    AppCardView focused = cards.get(current);
+    if (focused != null && (focused.focusHighlighted() || !movingKey.isEmpty())) {
+      // Protect the complete lifted card and its label, including at restored offsets.
+      float cardTop = getPaddingTop() + focused.getY();
+      topFade = Math.min(topFade, Math.max(0, cardTop - top - px(16)));
+      bottomFade = Math.min(bottomFade, Math.max(0, bottom - cardTop - px(128)));
+    }
+    boolean masked = topFade > 0 || bottomFade > 0;
+    if (masked) canvas.saveLayer(left, top, right, bottom, null);
     super.dispatchDraw(canvas);
+    if (topFade > 0) drawEdge(canvas, topMask, left, right, top, topFade);
+    if (bottomFade > 0) drawEdge(canvas, bottomMask, left, right, bottom - bottomFade, bottomFade);
+    if (masked) canvas.restore();
     canvas.restoreToCount(save);
+  }
+
+  private void drawEdge(
+      Canvas canvas, LinearGradient gradient, int left, int right, float y, float height) {
+    maskTransform.setScale(1, height);
+    maskTransform.postTranslate(0, y);
+    gradient.setLocalMatrix(maskTransform);
+    edgeMask.setShader(gradient);
+    canvas.drawRect(left, y, right, y + height, edgeMask);
   }
 
   @Override
@@ -260,7 +317,7 @@ public final class GridWallView extends ScrollView {
 
   public void restoreFocus(String key, int offset) {
     focusKey(key, true);
-    post(() -> scrollTo(0, offset));
+    post(() -> scrollTo(0, scrollForRow(Math.max(0, order.indexOf(current)) / COLUMNS, offset)));
   }
 
   public void focusKey(String key, boolean immediate) {
@@ -273,7 +330,8 @@ public final class GridWallView extends ScrollView {
         () -> {
           int index = order.indexOf(target);
           if (index < 0) return;
-          int y = Math.max(0, index / COLUMNS - 1) * rowHeight;
+          int row = index / COLUMNS;
+          int y = scrollForRow(row, Math.max(0, row - 1) * rowHeight);
           if (immediate) scrollTo(0, y);
           else smoothScrollTo(0, y);
         });
@@ -282,34 +340,22 @@ public final class GridWallView extends ScrollView {
   @Override
   protected int computeScrollDeltaToGetChildRectOnScreen(Rect rect) {
     int row = Math.max(0, rect.top / rowHeight);
-    int available = getHeight() - getPaddingTop() - getPaddingBottom();
-    int target = getScrollY();
+    return scrollForRow(row, getScrollY()) - getScrollY();
+  }
+
+  private int scrollForRow(int row, int preferred) {
+    int target = preferred;
     if (row * rowHeight < target) target = row * rowHeight;
-    else if (row * rowHeight + px(122) > target + available)
-      target = Math.max(0, row - 1) * rowHeight;
+    // The search wall has larger cards in a shorter viewport: two complete row
+    // pitches do not always fit. Scroll the extra few pixels needed for the name
+    // instead of snapping to a row offset that still leaves its caption clipped.
+    int visibleHeight = getHeight() - getPaddingBottom();
+    int visualBottom = getPaddingTop() + row * rowHeight + px(124);
+    if (visualBottom > target + visibleHeight)
+      target = Math.max(Math.max(0, row - 1) * rowHeight, visualBottom - visibleHeight);
+    int available = getHeight() - getPaddingTop() - getPaddingBottom();
     int max = Math.max(0, content.getHeight() - available);
-    return Math.min(target, max) - getScrollY();
-  }
-
-  @Override
-  protected float getTopFadingEdgeStrength() {
-    // Ease the fade out as a complete row arrives, then back in as it leaves.
-    // The old full/zero switch at exact row offsets made the upper artwork flash.
-    int phase = Math.max(0, getScrollY()) % rowHeight;
-    int distance = Math.min(phase, rowHeight - phase);
-    return Math.min(1f, distance / (float) Math.max(1, getVerticalFadingEdgeLength()));
-  }
-
-  @Override
-  protected boolean isPaddingOffsetRequired() {
-    return true;
-  }
-
-  @Override
-  protected int getTopPaddingOffset() {
-    // Fade from the real viewport edge, including lift headroom, rather than leaving
-    // an unfaded strip above the padded content. Bottom fading keeps its existing bounds.
-    return -getPaddingTop();
+    return Math.max(0, Math.min(target, max));
   }
 
   @Override
@@ -326,7 +372,7 @@ public final class GridWallView extends ScrollView {
       int rowTop = card.getTop();
       float hidden = Math.max(Math.max(0, top - rowTop), Math.max(0, rowTop + rowHeight - bottom));
       card.preview(
-          !isVerticalFadingEdgeEnabled() || card.hasFocus()
+          !edgesEnabled || card.focusHighlighted() || key.equals(movingKey)
               ? 0
               : Math.min(1, hidden / (rowHeight * .45f)));
     }

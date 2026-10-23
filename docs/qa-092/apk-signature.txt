@@ -1,0 +1,5 @@
+Signer #1 certificate DN: C=US, O=Android, CN=Android Debug
+Signer #1 certificate SHA-256 digest: ab4f40cc3090987f0d2734e169762a40fa4426bc912fdcdc721d2c1332e44b43
+Signer #1 certificate SHA-1 digest: 0bac1dcc6084183289b07ee16266e53f9953f755
+Signer #1 certificate MD5 digest: f6901a24ce0f679a80ab121eb95cee3d
+WARNING: META-INF/com/android/build/gradle/app-metadata.properties not protected by signature. Unauthorized modifications to this JAR entry will not be detected. Delete or move the entry outside of META-INF/.

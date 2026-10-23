@@ -16,6 +16,13 @@ public final class AmbientBackgroundView extends View {
   private float centerX = .5f, centerY = .32f, targetX = centerX, targetY = centerY;
   private ValueAnimator colorTransition, positionTransition;
   private Bitmap lightMask;
+  private boolean focusPending;
+  private final Runnable settleFocus =
+      () -> {
+        focusPending = false;
+        animateColor();
+        animatePosition();
+      };
 
   public AmbientBackgroundView(Context context, UiPalette palette) {
     super(context);
@@ -25,18 +32,33 @@ public final class AmbientBackgroundView extends View {
   }
 
   public void illuminate(int color, boolean animated) {
-    if (animated && targetAccent == color) return;
+    removeCallbacks(settleFocus);
     if (colorTransition != null) colorTransition.cancel();
-    targetAccent = color;
+    if (positionTransition != null) positionTransition.cancel();
+    // Saturated application artwork should leave a quiet tint, not color the whole page.
+    float saturation = palette.light ? .38f : .65f;
+    targetAccent =
+        Color.rgb(
+            mix(137, Color.red(color), saturation),
+            mix(153, Color.green(color), saturation),
+            mix(177, Color.blue(color), saturation));
+    focusPending = animated;
     if (!animated) {
-      accent = color;
+      accent = targetAccent;
       applyTint();
       invalidate();
       return;
     }
+    // Skip applications crossed during repeat navigation. Position and tint settle together.
+    postDelayed(settleFocus, 110);
+  }
+
+  private void animateColor() {
+    if (accent == targetAccent) return;
     final int from = accent;
+    final int color = targetAccent;
     colorTransition = ValueAnimator.ofFloat(0, 1);
-    colorTransition.setDuration(460);
+    colorTransition.setDuration(520);
     colorTransition.setInterpolator(new DecelerateInterpolator());
     colorTransition.addUpdateListener(
         a -> {
@@ -55,27 +77,36 @@ public final class AmbientBackgroundView extends View {
   /** Coordinates are in the desktop, and already include the wall's current scroll offset. */
   public void follow(float x, float y, boolean animated) {
     if (getWidth() == 0 || getHeight() == 0) return;
-    float nextX = .08f + .84f * Math.max(0, Math.min(1, x / getWidth()));
-    float nextY = .10f + .76f * Math.max(0, Math.min(1, y / getHeight()));
+    float nextX = Math.max(.06f, Math.min(.94f, x / getWidth()));
+    float nextY = Math.max(.08f, Math.min(.92f, y / getHeight()));
     if (Math.abs(targetX - nextX) < .0001f && Math.abs(targetY - nextY) < .0001f) return;
     targetX = nextX;
     targetY = nextY;
-    if (positionTransition != null) positionTransition.cancel();
+    if (focusPending) return;
     if (!animated) {
+      // Scroll offsets update the existing destination instead of restarting an
+      // animation every frame. At rest, follow the smooth scroll directly.
+      if (positionTransition != null && positionTransition.isRunning()) return;
       centerX = nextX;
       centerY = nextY;
       invalidate();
       return;
     }
+    animatePosition();
+  }
+
+  private void animatePosition() {
+    if (positionTransition != null) positionTransition.cancel();
+    if (Math.abs(centerX - targetX) < .0001f && Math.abs(centerY - targetY) < .0001f) return;
     final float fromX = centerX, fromY = centerY;
     positionTransition = ValueAnimator.ofFloat(0, 1);
-    positionTransition.setDuration(380);
+    positionTransition.setDuration(460);
     positionTransition.setInterpolator(new DecelerateInterpolator());
     positionTransition.addUpdateListener(
         a -> {
           float t = (float) a.getAnimatedValue();
-          centerX = fromX + (nextX - fromX) * t;
-          centerY = fromY + (nextY - fromY) * t;
+          centerX = fromX + (targetX - fromX) * t;
+          centerY = fromY + (targetY - fromY) * t;
           invalidate();
         });
     positionTransition.start();
@@ -106,8 +137,8 @@ public final class AmbientBackgroundView extends View {
             128,
             128,
             palette.light
-                ? new int[] {0x10FFFFFF, 0x04FFFFFF, 0x00FFFFFF}
-                : new int[] {0x27FFFFFF, 0x0BFFFFFF, 0x00FFFFFF},
+                ? new int[] {0x17FFFFFF, 0x07FFFFFF, 0x00FFFFFF}
+                : new int[] {0x25FFFFFF, 0x0AFFFFFF, 0x00FFFFFF},
             new float[] {0, .52f, 1},
             Shader.TileMode.CLAMP));
     c.drawRect(0, 0, 256, 256, mask);
@@ -120,15 +151,17 @@ public final class AmbientBackgroundView extends View {
     if (palette.light) c.drawRect(0, 0, getWidth(), getHeight(), surfacePaint);
     float x = centerX * getWidth(), y = centerY * getHeight();
     lightBounds.set(
-        x - getWidth() * .58f,
-        y - getHeight() * .76f,
-        x + getWidth() * .58f,
-        y + getHeight() * .76f);
+        x - getWidth() * .32f,
+        y - getHeight() * .48f,
+        x + getWidth() * .32f,
+        y + getHeight() * .48f);
     if (lightMask != null) c.drawBitmap(lightMask, null, lightBounds, paint);
   }
 
   @Override
   protected void onDetachedFromWindow() {
+    removeCallbacks(settleFocus);
+    focusPending = false;
     if (colorTransition != null) colorTransition.cancel();
     if (positionTransition != null) positionTransition.cancel();
     super.onDetachedFromWindow();

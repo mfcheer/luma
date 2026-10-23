@@ -1,0 +1,14 @@
+{
+  "version": "0.9.2",
+  "versionCode": 20,
+  "previousVersion": "0.9.1",
+  "model": "MiTV-ANSP0",
+  "applicationCount": 41,
+  "fullPreferencesPreserved": true,
+  "applicationOrderPreserved": true,
+  "defaultHomePreserved": true,
+  "power": "Asleep",
+  "wakeOrLaunchRequested": false,
+  "installationVerified": true,
+  "newUiOnPhysicalTvTested": false
+}

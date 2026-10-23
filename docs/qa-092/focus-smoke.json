@@ -1,0 +1,52 @@
+{
+  "checks": [
+    {
+      "theme": "light",
+      "defaultFocusOnly": true,
+      "captionCentered": true,
+      "headerAndInputHideCaptions": true,
+      "repeatFocusAndIdle": true,
+      "allRowsCaptionVisible": true,
+      "menusPreserveCaption": true,
+      "searchLaunchReturn": true,
+      "countClearance": true,
+      "existingAlwaysNamesPreserved": true,
+      "settingToggleAndRestart": true,
+      "homeBaseline": {
+        "selectedBottom": 674,
+        "restingBottom": 679,
+        "differencePixels": -5
+      },
+      "searchBaseline": {
+        "selectedBottom": 938,
+        "restingBottom": 943,
+        "differencePixels": -5
+      }
+    },
+    {
+      "theme": "dark",
+      "defaultFocusOnly": true,
+      "captionCentered": true,
+      "headerAndInputHideCaptions": true,
+      "repeatFocusAndIdle": true,
+      "allRowsCaptionVisible": true,
+      "menusPreserveCaption": true,
+      "searchLaunchReturn": true,
+      "countClearance": true,
+      "existingAlwaysNamesPreserved": true,
+      "settingToggleAndRestart": true,
+      "homeBaseline": {
+        "selectedBottom": 674,
+        "restingBottom": 679,
+        "differencePixels": -5
+      },
+      "searchBaseline": {
+        "selectedBottom": 938,
+        "restingBottom": 943,
+        "differencePixels": -5
+      }
+    }
+  ],
+  "preferencesRestored": true,
+  "physicalTvTouched": false
+}

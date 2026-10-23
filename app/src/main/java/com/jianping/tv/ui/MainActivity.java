@@ -513,6 +513,7 @@ public final class MainActivity extends Activity {
     moveHint = text("", 14, palette.secondary);
     put(moveHint, 210, 36, 480, 30);
     homeWall = new GridWallView(this, scale, 156, palette, wallListener());
+    homeWall.focusBaselineLift(px(2.5f));
     homeWall.showNames(prefs.showAppNames());
     put(homeWall, 42, 82, 876, 424);
     String previous = selectedId;
@@ -711,7 +712,7 @@ public final class MainActivity extends Activity {
           boot.checked(prefs.bootEnabled());
         });
     SettingsRowView names =
-        settingsRow(desktop, rows, "显示应用名称", R.drawable.settings_description, "", true);
+        settingsRow(desktop, rows, "始终显示应用名称", R.drawable.settings_description, "", true);
     names.checked(prefs.showAppNames());
     names.setOnClickListener(
         v -> {

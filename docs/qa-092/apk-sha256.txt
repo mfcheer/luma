@@ -1,0 +1,1 @@
+64a1b436528e20abb8f414f04e6cc37e67bd5812c35a5cfaaae81bffc007059a  output/Still-0.9.2-debug.apk

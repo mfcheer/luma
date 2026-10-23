@@ -1,0 +1,48 @@
+{
+  "version": "0.9.2",
+  "layouts": [
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "allImagesLoaded": true,
+      "staggeredComposition": true,
+      "download": "./downloads/Still-0.9.2.apk"
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "allImagesLoaded": true,
+      "staggeredComposition": true,
+      "download": "./downloads/Still-0.9.2.apk"
+    },
+    {
+      "width": 768,
+      "scrollWidth": 768,
+      "allImagesLoaded": true,
+      "staggeredComposition": true,
+      "download": "./downloads/Still-0.9.2.apk"
+    },
+    {
+      "width": 1280,
+      "scrollWidth": 1280,
+      "allImagesLoaded": true,
+      "staggeredComposition": true,
+      "download": "./downloads/Still-0.9.2.apk"
+    }
+  ],
+  "themeSwitch": true,
+  "installHelp": true,
+  "video": {
+    "duration": 58.029527,
+    "width": 1920,
+    "height": 1080,
+    "playedTo": 0.359395,
+    "source": "/assets/still-tv-demo.mp4?v=092-f9ae429b147f",
+    "error": null
+  },
+  "apk": {
+    "status": 200,
+    "bytes": 618481
+  },
+  "consoleErrors": []
+}

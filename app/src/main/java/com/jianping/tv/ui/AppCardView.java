@@ -23,15 +23,17 @@ public final class AppCardView extends LinearLayout {
   private final RectF floorBounds = new RectF();
   private final SurfaceHighlight highlight;
   private final PathInterpolator settle = new PathInterpolator(.18f, .85f, .25f, 1);
-  // One damped lift, including a small overshoot; exactly at rest when the animation ends.
+  // A restrained landing for isolated presses; rapid navigation uses a plain ease-out.
   private final Interpolator lift =
-      t -> t >= 1 ? 1 : (float) (1 - Math.exp(-7 * t) * (Math.cos(7 * t) + Math.sin(7 * t)));
+      t -> t >= 1 ? 1 : (float) (1 - Math.exp(-9 * t) * (Math.cos(6 * t) + 1.5 * Math.sin(6 * t)));
   private final int accent;
   private final boolean brightSurface;
   private Bitmap glow, floorLight;
-  private float focusAmount, pressAmount, previewAmount, moveAmount;
-  private ValueAnimator focusTransition, pressTransition, moveTransition;
-  private boolean activating, contextSelected, focusTarget, rapid, moving, namesVisible = true;
+  private float focusAmount, pressAmount, previewAmount, moveAmount, nameAmount;
+  private ValueAnimator focusTransition, pressTransition, moveTransition, nameTransition;
+  private boolean activating, contextSelected, focusTarget, rapid, moving, namesVisible;
+  private float baselineLift;
+  private final Runnable revealName = () -> animateName(true);
   private Runnable action;
 
   private int px(float value) {
@@ -99,6 +101,8 @@ public final class AppCardView extends LinearLayout {
     name.setSingleLine(true);
     name.setEllipsize(TextUtils.TruncateAt.END);
     name.setTextColor(palette.cardName);
+    name.setAlpha(0);
+    name.setVisibility(INVISIBLE);
     LayoutParams np = new LayoutParams(-1, px(26));
     np.topMargin = px(7);
     FrameLayout labelSlot = new FrameLayout(context);
@@ -135,19 +139,55 @@ public final class AppCardView extends LinearLayout {
   }
 
   public void showName(boolean visible) {
-    // Keep the card geometry and accessible name stable in icon-only mode.
+    // False means focus-only. The label slot and accessible card name never change size.
     namesVisible = visible;
-    name.setVisibility(visible && !moving ? VISIBLE : INVISIBLE);
+    updateName(false);
+  }
+
+  private void updateName(boolean delayed) {
+    removeCallbacks(revealName);
+    boolean visible = !moving && (namesVisible || hasFocus() || contextSelected);
+    if (visible && delayed && !namesVisible && !contextSelected && nameAmount == 0) {
+      postDelayed(revealName, rapid ? 140 : 90);
+    } else animateName(visible);
+  }
+
+  private void animateName(boolean visible) {
+    // A delayed reveal must never resurrect a label after its focus has moved away.
+    if (visible && (moving || !(namesVisible || hasFocus() || contextSelected))) return;
+    if (nameTransition != null) nameTransition.cancel();
+    float target = visible ? 1 : 0;
+    if (target == nameAmount) return;
+    name.setVisibility(VISIBLE);
+    nameTransition = ValueAnimator.ofFloat(nameAmount, target);
+    nameTransition.setDuration(visible ? 120 : 80);
+    nameTransition.setInterpolator(settle);
+    nameTransition.addUpdateListener(
+        a -> {
+          nameAmount = (float) a.getAnimatedValue();
+          name.setAlpha(nameAmount * (1 - previewAmount));
+          name.setVisibility(nameAmount > 0 ? VISIBLE : INVISIBLE);
+        });
+    nameTransition.start();
   }
 
   public void rapidFocus(boolean rapid) {
     this.rapid = rapid;
   }
 
+  public boolean focusHighlighted() {
+    return hasFocus() || contextSelected;
+  }
+
+  public void focusBaselineLift(float pixels) {
+    baselineLift = pixels;
+    applyMotion();
+  }
+
   public void moving(boolean value) {
     if (moving == value) return;
     moving = value;
-    name.setVisibility(namesVisible && !moving ? VISIBLE : INVISIBLE);
+    updateName(false);
     moveBadge.setVisibility(moving ? VISIBLE : INVISIBLE);
     if (android.os.Build.VERSION.SDK_INT >= 30) setStateDescription(moving ? "移动中" : null);
     if (moveTransition != null) moveTransition.cancel();
@@ -178,7 +218,7 @@ public final class AppCardView extends LinearLayout {
     float blur = .62f * previewAmount * previewAmount * (3 - 2 * previewAmount);
     normalImage.setAlpha(1 - blur);
     softImage.setAlpha(blur);
-    name.setAlpha(1 - previewAmount);
+    name.setAlpha(nameAmount * (1 - previewAmount));
     surfaceAlpha();
   }
 
@@ -197,6 +237,7 @@ public final class AppCardView extends LinearLayout {
 
   private void updateFocus(boolean focused) {
     focused = focused || contextSelected;
+    updateName(focused);
     if (!focused) animatePress(0);
     name.setTypeface(
         Typeface.create(focused ? "sans-serif-medium" : "sans-serif", Typeface.NORMAL));
@@ -213,7 +254,7 @@ public final class AppCardView extends LinearLayout {
         Math.max(
             90,
             Math.round(
-                (focused ? (rapid ? 150 : 340) : 160)
+                (focused ? (rapid ? 120 : 260) : 120)
                     * Math.min(1.1f, Math.abs(target - focusAmount)))));
     focusTransition.setInterpolator(focused && !rapid ? lift : settle);
     focusTransition.addUpdateListener(
@@ -239,14 +280,18 @@ public final class AppCardView extends LinearLayout {
 
   private void applyMotion() {
     float light = Math.max(0, Math.min(1, focusAmount));
-    float size = 1 + .20f * focusAmount + .012f * moveAmount - .045f * pressAmount;
+    float size = 1 + .14f * focusAmount + .012f * moveAmount - .035f * pressAmount;
     body.setScaleX(size);
     body.setScaleY(size);
-    body.setTranslationY(unit * (-10 * focusAmount - 3 * moveAmount + 3 * pressAmount));
+    // Compensate enlargement first, then lift the bottom by the same screen-space
+    // distance on Home and search, regardless of their different card sizes.
+    float liftY = (-px(78) * .5f * .14f - baselineLift) * focusAmount;
+    body.setTranslationY(liftY + unit * (-3 * moveAmount + 3 * pressAmount));
     body.setTranslationZ(
-        unit * ((palette.light ? 6 : 12) * light + (palette.light ? 2 : 4) * moveAmount));
+        unit * ((palette.light ? 4 : 8) * light + (palette.light ? 2 : 4) * moveAmount));
     surfaceAlpha();
-    name.setTranslationY(unit * 2 * light);
+    // Let the caption accompany the lift without opening a large gap under the card.
+    name.setTranslationY(unit * -4 * light);
     int from = palette.cardName, to = palette.cardNameFocused;
     int r = Math.round(Color.red(from) + (Color.red(to) - Color.red(from)) * light);
     int g = Math.round(Color.green(from) + (Color.green(to) - Color.green(from)) * light);
@@ -276,7 +321,7 @@ public final class AppCardView extends LinearLayout {
     float y = inset + px(8);
     RectF bounds = new RectF(x, y, x + w, y + h);
     p.setColor(palette.light ? 0xFFF7F7F5 : 0xFF111824);
-    p.setShadowLayer(px(14), 0, px(7), palette.light ? 0x32000000 : 0xA0000000);
+    p.setShadowLayer(px(12), 0, px(9), palette.light ? 0x38000000 : 0xA0000000);
     canvas.drawRoundRect(bounds, px(12), px(12), p);
 
     // A stationary soft pool below the lifted card provides a separate surface/depth cue.
@@ -290,12 +335,12 @@ public final class AppCardView extends LinearLayout {
             74,
             new int[] {
               Color.argb(
-                  palette.light ? 8 : 44,
+                  palette.light ? 5 : 26,
                   Color.red(accent),
                   Color.green(accent),
                   Color.blue(accent)),
               Color.argb(
-                  palette.light ? 3 : 16,
+                  palette.light ? 2 : 9,
                   Color.red(accent),
                   Color.green(accent),
                   Color.blue(accent)),
@@ -306,13 +351,6 @@ public final class AppCardView extends LinearLayout {
     floor.scale(1, .25f, 80, 20);
     floor.drawRect(0, -80, 160, 120, light);
     floorBounds.set(getWidth() / 2f - px(80), px(78), getWidth() / 2f + px(80), px(118));
-    p.setShadowLayer(
-        px(13),
-        0,
-        0,
-        Color.argb(
-            palette.light ? 18 : 48, Color.red(accent), Color.green(accent), Color.blue(accent)));
-    canvas.drawRoundRect(bounds, px(12), px(12), p);
   }
 
   /** One shared shadow texture for every resting light card, independent of screen density. */
@@ -323,7 +361,7 @@ public final class AppCardView extends LinearLayout {
     c.scale(2, 2);
     Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
     p.setColor(0xFFF6F6F4);
-    p.setShadowLayer(8, 0, 5, 0x25000000);
+    p.setShadowLayer(7, 0, 4, 0x1C000000);
     c.drawRoundRect(new RectF(24, 24, 144, 102), 12, 12, p);
   }
 
@@ -369,6 +407,8 @@ public final class AppCardView extends LinearLayout {
 
   @Override
   protected void onDetachedFromWindow() {
+    removeCallbacks(revealName);
+    if (nameTransition != null) nameTransition.cancel();
     if (focusTransition != null) focusTransition.cancel();
     if (pressTransition != null) pressTransition.cancel();
     if (moveTransition != null) moveTransition.cancel();
@@ -406,8 +446,8 @@ public final class AppCardView extends LinearLayout {
               b.top,
               0,
               bottom,
-              light ? 0x806C7C92 : 0x78FFFFFF,
-              light ? 0x2864748B : 0x14FFFFFF,
+              light ? 0x286C7C92 : 0x40FFFFFF,
+              light ? 0x1064748B : 0x0CFFFFFF,
               Shader.TileMode.CLAMP));
       sheen.setShader(
           new LinearGradient(

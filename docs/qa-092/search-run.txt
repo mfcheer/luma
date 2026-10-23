@@ -1,0 +1,5 @@
+PASS: light: pinyin/live input focus, IME Back, multi-row results, launch/return, process-death recovery and original home position
+PASS: light: English matching, no results, remote clear, empty state, Back stages and unchanged home order
+PASS: dark: pinyin/live input focus, IME Back, multi-row results, launch/return, process-death recovery and original home position
+PASS: dark: English matching, no results, remote clear, empty state, Back stages and unchanged home order
+PASS: preferences restored
