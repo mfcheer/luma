@@ -1,5 +1,4 @@
 {
-  "version": "0.8.1",
   "device": "Xiaomi TV 5 Pro 55 / MiTV-ANSP0",
   "android": 9,
   "api": 28,
@@ -8,9 +7,34 @@
     1920,
     1080
   ],
-  "captureDate": "2026-10-22",
-  "source": "Direct ADB screen capture and screenrecord on the real television",
-  "videoEdit": "Three native clips joined at original playback speed, no frame interpolation, audio omitted",
+  "screenshots": {
+    "version": "0.9.0",
+    "captureDate": "2026-10-23",
+    "source": "Direct ADB screencap on the real television; WebP encoding only",
+    "files": {
+      "home-light.webp": "a2ab7e975f58fa2bcd8a4a83302630539346473c3e16c4b695facaea220ecbf3",
+      "home-dark.webp": "269df3cbed24ac08b63984400264867b93c85397eac9b3b422d35296c9947c8c",
+      "settings-light.webp": "96377bb7383a5f3f38fd73c1036509a952442705abe7d6fbe81f8b717771d8cf",
+      "menu-light.webp": "d51c0ed224858b4136902daeff21969087a8c356ef9925f0bc923d15810a2011"
+    }
+  },
+  "legacyScreenshots": {
+    "version": "0.8.1",
+    "captureDate": "2026-10-22",
+    "files": [
+      "scrolled-light.webp",
+      "scrolled-dark.webp",
+      "moving-light.webp",
+      "settings-dark.webp",
+      "video-poster.webp"
+    ]
+  },
+  "animatedPreview": {
+    "file": "still-tv-preview.gif",
+    "version": "0.8.1",
+    "captureDate": "2026-10-22",
+    "sha256": "c7cd0734b2d0544060f19d9644c0423671afb22341508e76719d85398185abc1"
+  },
   "video": {
     "programs": [],
     "streams": [
@@ -23,6 +47,12 @@
     "format": {
       "duration": "75.933000",
       "size": "3101674"
-    }
-  }
+    },
+    "file": "still-tv-demo.mp4",
+    "version": "0.8.1",
+    "captureDate": "2026-10-22",
+    "source": "Direct ADB screenrecord on the real television",
+    "sha256": "2857d3465e6b388529a4305ab1ac3dacc18e8635ec02010fe680b42fa59b8528"
+  },
+  "videoEdit": "Three native clips joined at original playback speed, no frame interpolation, audio omitted"
 }

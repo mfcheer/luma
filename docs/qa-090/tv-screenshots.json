@@ -1,0 +1,28 @@
+{
+  "completed": true,
+  "model": "MiTV-ANSP0",
+  "android": 9,
+  "api": 28,
+  "version": "0.9.0",
+  "apps": 41,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "orderAndOptionsPreserved": true,
+  "originalThemeRestored": true,
+  "originalPowerStateRestored": true,
+  "videoRecorded": false,
+  "websiteChecks": {
+    "viewportWidths": [
+      320,
+      390,
+      1280
+    ],
+    "noHorizontalOverflow": true,
+    "allImagesLoaded": true,
+    "lightDarkSwitch": true,
+    "consoleErrors": 0,
+    "videoAndGifUnchanged": true
+  }
+}
