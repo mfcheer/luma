@@ -1,0 +1,272 @@
+{
+  "device-order": {
+    "url": "../../../output/real-tv-presentation-092/preferences-before.xml",
+    "checkedOn": "2026-10-24",
+    "supports": "既有实机 appOrder 包名；本次未连接或唤醒电视。仅本地证据，不随正式词库发布。"
+  },
+  "device-home": {
+    "url": "../../../output/real-tv-presentation-092/home-light.xml",
+    "checkedOn": "2026-10-24",
+    "supports": "既有实机可见应用名称，结合顺序快照核对。"
+  },
+  "device-scrolled": {
+    "url": "../../../output/real-tv-presentation-092/scrolled-light.xml",
+    "checkedOn": "2026-10-24",
+    "supports": "既有实机滚动后可见名称，结合顺序快照核对。"
+  },
+  "bili": {
+    "url": "https://www.bilibili.com/blackboard/activity-U_aG4BWWl.html",
+    "checkedOn": "2026-10-24",
+    "supports": "云视听小电视与哔哩哔哩投屏接收端关系；不证明第三方客户端身份。"
+  },
+  "tencent": {
+    "url": "https://tv.qq.com/",
+    "checkedOn": "2026-10-24",
+    "supports": "云视听极光、腾讯视频 TV 端的产品关系。"
+  },
+  "iqiyi": {
+    "url": "https://help.iqiyi.com/m/2udxbhID/questionInfo/1368.html",
+    "checkedOn": "2026-10-24",
+    "supports": "爱奇艺官方帮助列出银河奇异果。"
+  },
+  "youku": {
+    "url": "https://csc.youku.com/feedback-web/help/index.html?loreid=5111&style=1",
+    "checkedOn": "2026-10-24",
+    "supports": "优酷帮助中的 CIBN 酷喵影视，历史产品关系，非所有渠道包名。"
+  },
+  "mango": {
+    "url": "https://www.mgtv.com/app/",
+    "checkedOn": "2026-10-24",
+    "supports": "芒果 TV 官方产品名称；TV 包名另以既有实机为据。"
+  },
+  "xigua": {
+    "url": "https://tv.ixigua.com/",
+    "checkedOn": "2026-10-24",
+    "supports": "鲜时光官方停运公告：2025-06-30 起停止运营。保留旧安装识别，不作为当前可用服务推荐。"
+  },
+  "migu": {
+    "url": "https://passport.migu.cn/portal/privacy/protocol?sourceid=203062",
+    "checkedOn": "2026-10-24",
+    "supports": "咪视界官方隐私政策中产品身份；绑定包名以实机为据。"
+  },
+  "cctv": {
+    "url": "https://www.chinaott.com/cpzx/xstphone.html",
+    "checkedOn": "2026-10-24",
+    "supports": "央视频 TV 官方产品页明确 CCTV.新视听更名；包名仍需核实。"
+  },
+  "cctv-help": {
+    "url": "https://app.cctv.com/special/m/touping/index.html",
+    "checkedOn": "2026-10-24",
+    "supports": "官方将 CCTV.新视听和央视频 TV 作为电视投屏端；不等同央视影音手机端。"
+  },
+  "kugou": {
+    "url": "https://download.kugou.com/",
+    "checkedOn": "2026-10-24",
+    "supports": "官方列出酷狗音乐 TV 版；尚未确认具体 TV 包名。"
+  },
+  "kuwo": {
+    "url": "https://oia.kuwo.cn/kplayer.html",
+    "checkedOn": "2026-10-24",
+    "supports": "官方酷我音乐产品名称；TV 版包名待核实。"
+  },
+  "changba": {
+    "url": "https://changba.com/",
+    "checkedOn": "2026-10-24",
+    "supports": "唱吧官方品牌名称；TV 包名另以实机为据。"
+  },
+  "karaoke": {
+    "url": "https://kg.yst.aisee.tv/kg_node/tvlogin",
+    "checkedOn": "2026-10-24",
+    "supports": "全民 K 歌 TV 端官方登录页。"
+  },
+  "zspace": {
+    "url": "https://www.zspace.cn/",
+    "checkedOn": "2026-10-24",
+    "supports": "极空间官方产品及下载入口；TV 包名以实机为据。"
+  },
+  "dangbei-player": {
+    "url": "https://www.dangbei.com/player/",
+    "checkedOn": "2026-10-24",
+    "supports": "当贝播放器官方名称；包名以实机为据。"
+  },
+  "dangbei": {
+    "url": "https://www.dangbei.com/",
+    "checkedOn": "2026-10-24",
+    "supports": "当贝市场官方产品页；各渠道包名须逐一核实。"
+  },
+  "lebo": {
+    "url": "https://www.lebo.cn/",
+    "checkedOn": "2026-10-24",
+    "supports": "官方列出乐播投屏电视接收端，区别手机发送端；TV 包名待核实。"
+  },
+  "ugreen": {
+    "url": "https://www.ugnas.com/download/",
+    "checkedOn": "2026-10-24",
+    "supports": "绿联云官方下载页，本次页面不足以确认 TV 客户端包名。"
+  },
+  "smarttube": {
+    "url": "https://github.com/yuliskov/SmartTube",
+    "checkedOn": "2026-10-24",
+    "supports": "SmartTube 项目原始资料；不同于官方 YouTube。"
+  },
+  "smarttube-gradle": {
+    "url": "https://raw.githubusercontent.com/yuliskov/SmartTube/master/smarttubetv/build.gradle",
+    "checkedOn": "2026-10-24",
+    "supports": "源码中 flavor applicationId：org.smarttube.stable / org.smarttube.beta / app.smarttube.fdroid。默认 app.smarttube 不作为发行包绑定。"
+  },
+  "aptoide": {
+    "url": "https://tv.aptoide.com/",
+    "checkedOn": "2026-10-24",
+    "supports": "Aptoide TV 官方名称；cm.aptoidetv.pt 为既有实机观察。"
+  },
+  "play-jellyfin-tv": {
+    "url": "https://play.google.com/store/apps/details?id=org.jellyfin.androidtv",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-emby-tv": {
+    "url": "https://play.google.com/store/apps/details?id=tv.emby.embyatv",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-plex": {
+    "url": "https://play.google.com/store/apps/details?id=com.plexapp.android",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-kodi": {
+    "url": "https://play.google.com/store/apps/details?id=org.xbmc.kodi",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-vlc": {
+    "url": "https://play.google.com/store/apps/details?id=org.videolan.vlc",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-nova": {
+    "url": "https://play.google.com/store/apps/details?id=org.courville.nova",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-just-player": {
+    "url": "https://play.google.com/store/apps/details?id=com.brouken.player",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-mx-player": {
+    "url": "https://play.google.com/store/apps/details?id=com.mxtech.videoplayer.ad",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-ds-video": {
+    "url": "https://play.google.com/store/apps/details?id=com.synology.dsvideo",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-youtube-tv": {
+    "url": "https://play.google.com/store/apps/details?id=com.google.android.youtube.tv",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-netflix-tv": {
+    "url": "https://play.google.com/store/apps/details?id=com.netflix.ninja",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-prime-video-tv": {
+    "url": "https://play.google.com/store/apps/details?id=com.amazon.amazonvideo.livingroom",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-disney-plus": {
+    "url": "https://play.google.com/store/apps/details?id=com.disney.disneyplus",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-apple-tv": {
+    "url": "https://play.google.com/store/apps/details?id=com.apple.atve.androidtv.appletv",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-spotify-tv": {
+    "url": "https://play.google.com/store/apps/details?id=com.spotify.tv.android",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-hbo-max": {
+    "url": "https://play.google.com/store/apps/details?id=com.wbd.stream",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-crunchyroll": {
+    "url": "https://play.google.com/store/apps/details?id=com.crunchyroll.crunchyroid",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-twitch": {
+    "url": "https://play.google.com/store/apps/details?id=tv.twitch.android.app",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-iqiyi-intl-tv": {
+    "url": "https://play.google.com/store/apps/details?id=com.iqiyi.i18n.tv",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-airscreen": {
+    "url": "https://play.google.com/store/apps/details?id=com.ionitech.airscreen",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-send-files": {
+    "url": "https://play.google.com/store/apps/details?id=com.yablio.sendfilestotv",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-xplore": {
+    "url": "https://play.google.com/store/apps/details?id=com.lonelycatgames.Xplore",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-tv-bro": {
+    "url": "https://play.google.com/store/apps/details?id=com.phlox.tvwebbrowser",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-downloader": {
+    "url": "https://play.google.com/store/apps/details?id=com.esaba.downloader",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-file-commander": {
+    "url": "https://play.google.com/store/apps/details?id=com.mobisystems.fileman",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-projectivy": {
+    "url": "https://play.google.com/store/apps/details?id=com.spocky.projengmenu",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-flauncher": {
+    "url": "https://play.google.com/store/apps/details?id=me.efesser.flauncher",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-steam-link": {
+    "url": "https://play.google.com/store/apps/details?id=com.valvesoftware.steamlink",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-moonlight": {
+    "url": "https://play.google.com/store/apps/details?id=com.limelight",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  },
+  "play-geforce-now": {
+    "url": "https://play.google.com/store/apps/details?id=com.nvidia.geforcenow",
+    "checkedOn": "2026-10-24",
+    "supports": "开发者发布的商店名称与包名；不代表在所有电视/地区可安装或已经实机验证。"
+  }
+}

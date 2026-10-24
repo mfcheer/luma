@@ -1,0 +1,61 @@
+{
+  "passed": true,
+  "version": "0.9.3",
+  "model": "MiTV-ANSP0",
+  "api": 28,
+  "apps": 41,
+  "checks": [
+    {
+      "case": "home",
+      "passed": true,
+      "settledCheckSeconds": 4.31,
+      "requestsForWake": 1
+    },
+    {
+      "case": "external-calendar",
+      "passed": true,
+      "settledCheckSeconds": 4.94,
+      "requestsForWake": 1
+    },
+    {
+      "case": "native-home",
+      "passed": true,
+      "settledCheckSeconds": 5.18,
+      "requestsForWake": 1
+    },
+    {
+      "case": "search-to-home",
+      "passed": true
+    },
+    {
+      "case": "disabled-no-return-request",
+      "passed": true,
+      "foregroundAfterWake": "com.xiaomi.mitv.calendar"
+    },
+    {
+      "case": "process-reclaimed-awake",
+      "automaticServiceRestart": true,
+      "noFocusSteal": true
+    },
+    {
+      "case": "wake-after-process-recovery",
+      "passed": true,
+      "settledCheckSeconds": 5.0,
+      "requestsForWake": 1
+    },
+    {
+      "case": "process-reclaimed-asleep",
+      "passed": true,
+      "automaticServiceRestart": true
+    },
+    {
+      "case": "longer-standby",
+      "seconds": 120,
+      "passed": true
+    }
+  ],
+  "optionsAndOrderPreserved": true,
+  "defaultHomePreserved": true,
+  "finalPower": "Asleep",
+  "testFixturesInstalled": false
+}

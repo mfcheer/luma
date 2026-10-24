@@ -1,0 +1,2 @@
+INSTRUMENTATION_RESULT: result=PASS: 12 Android integration checks: accepted/rejected launch, single counting, shared persistence, frozen snapshot, replace/uninstall and corrupt storage
+INSTRUMENTATION_CODE: -1

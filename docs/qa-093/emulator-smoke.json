@@ -1,0 +1,12 @@
+{
+  "api": 33,
+  "version": "0.9.3",
+  "checks": [
+    "unified switch preserves existing preference",
+    "unsupported API33 visibly says boot only",
+    "no foreground service starts on API33",
+    "toggle retains focus and restores preference",
+    "same app order and complete preferences"
+  ],
+  "preferencesPreserved": true
+}

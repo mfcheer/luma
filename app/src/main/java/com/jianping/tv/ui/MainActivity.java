@@ -15,6 +15,9 @@ import android.widget.*;
 import com.jianping.tv.R;
 import com.jianping.tv.data.*;
 import com.jianping.tv.platform.DeviceDiagnostics;
+import com.jianping.tv.platform.AutoEntry;
+import com.jianping.tv.platform.AppLaunch;
+import com.jianping.tv.platform.WakeEntryService;
 import java.text.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -48,6 +51,7 @@ public final class MainActivity extends Activity {
   private String movingId;
   private int loadGeneration;
   private int homeOffset;
+  private long pendingWakeEntry;
   private final Runnable ticker =
       new Runnable() {
         public void run() {
@@ -89,6 +93,7 @@ public final class MainActivity extends Activity {
       pendingSearchTarget = state.getString("searchTarget", "");
     }
     recordEntry(getIntent());
+    AutoEntry.sync(this);
     IntentFilter filter = new IntentFilter();
     filter.addAction(Intent.ACTION_PACKAGE_ADDED);
     filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
@@ -115,6 +120,9 @@ public final class MainActivity extends Activity {
   }
 
   private void recordEntry(Intent i) {
+    pendingWakeEntry = i.getLongExtra("wakeId", 0);
+    i.removeExtra("wakeId");
+    if (pendingWakeEntry != 0) page = "home";
     String now = DateFormat.getDateTimeInstance().format(new Date());
     if (i.getBooleanExtra("boot", false)) prefs.record("bootVisible", now);
     if (i.hasCategory(Intent.CATEGORY_HOME)) prefs.record("homeVisible", now);
@@ -149,6 +157,11 @@ public final class MainActivity extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
+    if (pendingWakeEntry != 0) {
+      WakeEntryService.recordVisible(this, pendingWakeEntry);
+      pendingWakeEntry = 0;
+    }
+    AutoEntry.sync(this);
     getWindow()
         .getDecorView()
         .setSystemUiVisibility(
@@ -541,7 +554,7 @@ public final class MainActivity extends Activity {
 
   private void launch(AppEntry app) {
     try {
-      startActivity(repository.launchIntent(app));
+      AppLaunch.open(this, repository, app);
     } catch (RuntimeException e) {
       toast("无法打开此应用，请刷新应用列表");
       reload(false);
@@ -704,12 +717,18 @@ public final class MainActivity extends Activity {
     first.setId(R.id.first_app);
     first.setOnClickListener(v -> requestHome());
     SettingsRowView boot =
-        settingsRow(desktop, rows, "开机启动", R.drawable.settings_power_settings_new, "", true);
+        settingsRow(desktop, rows, "自动进入 Still", R.drawable.settings_power_settings_new, AutoEntry.supportsWake() ? "" : "仅开机", true);
     boot.checked(prefs.bootEnabled());
     boot.setOnClickListener(
         v -> {
           prefs.bootEnabled(!prefs.bootEnabled());
           boot.checked(prefs.bootEnabled());
+          boolean ready = AutoEntry.sync(this);
+          if (prefs.bootEnabled())
+            toast(AutoEntry.supportsWake()
+                ? (ready ? "已开启：开机和待机唤醒后返回 Still" : "开机启动已开启，唤醒监听未能启动，请查看设备信息")
+                : "此系统暂仅尝试开机进入，待机唤醒尚未适配");
+          else toast("已关闭自动进入 Still");
         });
     SettingsRowView names =
         settingsRow(desktop, rows, "始终显示应用名称", R.drawable.settings_description, "", true);
@@ -741,7 +760,7 @@ public final class MainActivity extends Activity {
         v ->
             new AlertDialog.Builder(this)
                 .setTitle("设备与启动信息")
-                .setMessage(DeviceDiagnostics.report(this) + "\n\n开机实验可能被系统拦截；待机唤醒与重新开机需要分别验证。")
+                .setMessage(DeviceDiagnostics.report(this) + "\n\n自动进入由同一个开关控制；系统重启、待机唤醒和长时间待机需分别验证。")
                 .setPositiveButton(
                     "复制报告",
                     (d, w) -> {

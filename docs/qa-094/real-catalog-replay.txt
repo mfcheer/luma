@@ -1,0 +1,1 @@
+PASS: 20 top-result checks against 41 actual TV launch entries; deduplicated, no uninstalled app suggestions. Offline JVM replay only.

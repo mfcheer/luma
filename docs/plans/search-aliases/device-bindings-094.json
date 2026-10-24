@@ -1,0 +1,152 @@
+[
+  {
+    "productId": "tencent-tv",
+    "packageName": "com.ktcp.video",
+    "label": "云视听极光"
+  },
+  {
+    "productId": "iqiyi-cn-tv",
+    "packageName": "com.gitvdemo.video",
+    "label": "银河奇异果"
+  },
+  {
+    "productId": "youku-tv",
+    "packageName": "com.cibn.tv",
+    "label": "CIBN酷喵"
+  },
+  {
+    "productId": "mango-tv",
+    "packageName": "com.hunantv.license",
+    "label": "芒果TV"
+  },
+  {
+    "productId": "bilibili-tv",
+    "packageName": "com.xiaodianshi.tv.yst",
+    "label": "云视听小电视"
+  },
+  {
+    "productId": "xigua-legacy-tv",
+    "packageName": "com.ixigua.android.tv.wasu",
+    "label": "华数鲜时光"
+  },
+  {
+    "productId": "migu-tv",
+    "packageName": "cn.miguvideo.migutv",
+    "label": "咪视界"
+  },
+  {
+    "productId": "cctv-tv",
+    "packageName": "com.newtv.cboxtv",
+    "label": "央视频TV"
+  },
+  {
+    "productId": "netease-music-tv",
+    "packageName": "com.netease.cloudmusic.tv",
+    "label": "网易云音乐"
+  },
+  {
+    "productId": "qq-music-tv",
+    "packageName": "com.tencent.qqmusictv",
+    "label": "QQ音乐"
+  },
+  {
+    "productId": "karaoke-tv",
+    "packageName": "com.tencent.karaoketv",
+    "label": "全民K歌"
+  },
+  {
+    "productId": "changba-tv",
+    "packageName": "com.changba.sd",
+    "label": "唱吧"
+  },
+  {
+    "productId": "zspace-tv",
+    "packageName": "com.zentraedi.zspace.tv",
+    "label": "极空间"
+  },
+  {
+    "productId": "dangbei-player",
+    "packageName": "com.dangbei.lerad.videoposter",
+    "label": "当贝播放器"
+  },
+  {
+    "productId": "jellyfin-tv",
+    "packageName": "org.jellyfin.androidtv",
+    "label": "Jellyfin"
+  },
+  {
+    "productId": "youtube-tv",
+    "packageName": "com.google.android.youtube.tv",
+    "label": "YouTube"
+  },
+  {
+    "productId": "aptoide-tv",
+    "packageName": "cm.aptoidetv.pt",
+    "label": "Aptoide TV"
+  },
+  {
+    "productId": "smarttube",
+    "packageName": "com.teamsmart.videomanager.tv",
+    "label": "SmartTube Next"
+  },
+  {
+    "productId": "start-tv",
+    "packageName": "com.tencent.start.tv",
+    "label": "腾讯START云游戏"
+  },
+  {
+    "productId": "netease-cloudgame",
+    "packageName": "com.netease.android.cloudgame.tv",
+    "label": "网易云游戏"
+  },
+  {
+    "productId": "keep-tv",
+    "packageName": "com.gotokeep.androidtv",
+    "label": "Keep"
+  },
+  {
+    "productId": "ihuman-pinyin",
+    "packageName": "com.ihuman.pinyin.ott.vip",
+    "label": "拼音乐园"
+  },
+  {
+    "productId": "children-thinking",
+    "packageName": "com.lutongnet.nldmxXiaomiChildren",
+    "label": "儿童思维训练"
+  },
+  {
+    "productId": "xiaomi-settings",
+    "packageName": "com.xiaomi.mitv.settings",
+    "label": "电视设置"
+  },
+  {
+    "productId": "xiaomi-manager",
+    "packageName": "com.xiaomi.mitv.tvmanager",
+    "label": "电视管家"
+  },
+  {
+    "productId": "xiaomi-calendar",
+    "packageName": "com.xiaomi.mitv.calendar",
+    "label": "日历"
+  },
+  {
+    "productId": "xiaomi-weather",
+    "packageName": "com.xiaomi.tweather",
+    "label": "天气"
+  },
+  {
+    "productId": "xiaomi-tvhome",
+    "packageName": "com.mitv.tvhome",
+    "label": "桌面"
+  },
+  {
+    "productId": "xiaomi-voice",
+    "packageName": "com.xiaomi.voicecontrol",
+    "label": "小爱同学"
+  },
+  {
+    "productId": "xiaomi-handbook",
+    "packageName": "com.xiaomi.mitv.handbook",
+    "label": "玩机手册"
+  }
+]

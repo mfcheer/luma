@@ -1,7 +1,7 @@
 package com.jianping.tv.ui;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.content.*;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Typeface;
@@ -16,6 +16,7 @@ import android.view.inputmethod.*;
 import android.widget.*;
 import com.jianping.tv.R;
 import com.jianping.tv.data.*;
+import com.jianping.tv.platform.AppLaunch;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
@@ -31,6 +32,21 @@ public final class SearchActivity extends Activity {
   private AppCatalogCache.Snapshot snapshot;
   private AppRepository repository;
   private AppSearch index;
+  private Map<String, Double> usageSnapshot;
+  private Map<String, String> usageEpochs;
+  private int loadGeneration;
+  private Future<?> loadTask;
+  private final Runnable catalogReload = () -> load(true);
+  private final BroadcastReceiver packageChanges =
+      new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+          if (Intent.ACTION_PACKAGE_REMOVED.equals(intent.getAction())
+              && intent.getBooleanExtra(Intent.EXTRA_REPLACING, false)) return;
+          handler.removeCallbacks(catalogReload);
+          handler.postDelayed(catalogReload, 250);
+        }
+      };
   private FrameLayout root, content, inputBox;
   private AppActionMenuView actionLayer;
   private View menuReturn;
@@ -70,12 +86,39 @@ public final class SearchActivity extends Activity {
     restoreResult = state != null && state.getBoolean("resultFocus", false);
     homeTarget = state == null ? "" : state.getString("homeTarget", "");
     if (!homeTarget.isEmpty()) publishHomeTarget();
+    if (state != null && state.containsKey("usagePackages")) {
+      ArrayList<String> packages = state.getStringArrayList("usagePackages");
+      double[] scores = state.getDoubleArray("usageScores");
+      ArrayList<String> epochs = state.getStringArrayList("usageEpochs");
+      if (packages != null
+          && scores != null
+          && epochs != null
+          && packages.size() == scores.length
+          && epochs.size() == scores.length) {
+        Map<String, Double> restoredUsage = new HashMap<>();
+        Map<String, String> restoredEpochs = new HashMap<>();
+        for (int i = 0; i < scores.length; i++) {
+          restoredUsage.put(packages.get(i), scores[i]);
+          restoredEpochs.put(packages.get(i), epochs.get(i));
+        }
+        usageSnapshot = Collections.unmodifiableMap(restoredUsage);
+        usageEpochs = Collections.unmodifiableMap(restoredEpochs);
+      }
+    }
     autoKeyboard = state == null || state.getBoolean("keyboard", false);
     getWindow().clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
     getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
     repository = new AppRepository(this);
+    IntentFilter filter = new IntentFilter();
+    filter.addAction(Intent.ACTION_PACKAGE_ADDED);
+    filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+    filter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+    filter.addDataScheme("package");
+    if (Build.VERSION.SDK_INT >= 33)
+      registerReceiver(packageChanges, filter, Context.RECEIVER_EXPORTED);
+    else registerReceiver(packageChanges, filter);
     build();
-    load();
+    load(false);
   }
 
   private void build() {
@@ -181,7 +224,7 @@ public final class SearchActivity extends Activity {
                 restoreResult = true;
                 hideKeyboard();
                 try {
-                  startActivity(repository.launchIntent(app));
+                  AppLaunch.open(SearchActivity.this, repository, app);
                 } catch (RuntimeException e) {
                   Toast.makeText(SearchActivity.this, "无法打开此应用，请返回首页刷新应用列表", Toast.LENGTH_LONG)
                       .show();
@@ -284,67 +327,109 @@ public final class SearchActivity extends Activity {
             });
   }
 
-  private void load() {
-    worker.submit(
-        () -> {
-          try {
-            AppCatalogCache cache = new AppCatalogCache(this);
-            AppCatalogCache.Snapshot loaded = cache.memory();
-            if (loaded == null) loaded = cache.read();
-            // Only recover from discovery after process death plus missing/corrupt disk cache.
-            if (loaded == null) {
-              List<AppEntry> apps = repository.load();
-              Map<String, AppCatalogCache.Visual> visuals = new HashMap<>();
-              for (AppEntry app : apps) {
-                if (Thread.currentThread().isInterrupted()) return;
-                AppCatalogCache.Visual visual = cache.readVisual(app);
-                if (visual == null) {
-                  AppRepository.Artwork raw = repository.artwork(app);
-                  int color = IconPalette.accent(raw.icon);
-                  Drawable art;
-                  try {
-                    art = IconArtwork.landscape(getResources(), raw.icon, raw.banner, color);
-                  } catch (RuntimeException e) {
-                    art = IconArtwork.fallback(getResources(), raw.icon);
+  private void load(boolean refreshMetadata) {
+    final int generation = ++loadGeneration;
+    if (loadTask != null) loadTask.cancel(true);
+    loadTask =
+        worker.submit(
+            () -> {
+              try {
+                AppCatalogCache cache = new AppCatalogCache(this);
+                AppCatalogCache.Snapshot loaded = cache.memory();
+                if (loaded == null) loaded = cache.read();
+                // Discovery only for a package event or missing/corrupt cache, never on app return.
+                if (refreshMetadata || loaded == null) {
+                  List<AppEntry> apps = repository.load();
+                  Map<String, AppCatalogCache.Visual> visuals = new HashMap<>();
+                  for (AppEntry app : apps) {
+                    if (Thread.currentThread().isInterrupted()) return;
+                    AppCatalogCache.Visual visual =
+                        loaded == null ? null : loaded.visuals.get(app.id);
+                    if (visual != null && !visual.fingerprint.equals(app.fingerprint))
+                      visual = null;
+                    if (visual == null) visual = cache.readVisual(app);
+                    if (visual == null) {
+                      AppRepository.Artwork raw = repository.artwork(app);
+                      int color = IconPalette.accent(raw.icon);
+                      Drawable art;
+                      try {
+                        art = IconArtwork.landscape(getResources(), raw.icon, raw.banner, color);
+                      } catch (RuntimeException e) {
+                        art = IconArtwork.fallback(getResources(), raw.icon);
+                      }
+                      visual =
+                          new AppCatalogCache.Visual(
+                              app.fingerprint,
+                              color,
+                              art,
+                              IconArtwork.preview(getResources(), art));
+                    }
+                    visuals.put(app.id, visual);
                   }
-                  visual =
-                      new AppCatalogCache.Visual(
-                          app.fingerprint, color, art, IconArtwork.preview(getResources(), art));
+                  loaded = new AppCatalogCache.Snapshot(apps, visuals);
                 }
-                visuals.put(app.id, visual);
+                Map<String, AppEntry> byId = new HashMap<>();
+                List<String> available = new ArrayList<>();
+                for (AppEntry app : loaded.apps) {
+                  byId.put(app.id, app);
+                  available.add(app.id);
+                }
+                List<AppEntry> ordered = new ArrayList<>();
+                for (String id : AppOrder.reconcile(new Preferences(this).appOrder(), available))
+                  ordered.add(byId.get(id));
+                AppUsageStore.Snapshot currentUsage = new AppUsageStore(this).session();
+                Map<String, Double> weights = new HashMap<>();
+                Map<String, String> epochs = new HashMap<>();
+                if (usageSnapshot == null) {
+                  weights.putAll(currentUsage.weights);
+                  epochs.putAll(currentUsage.epochs);
+                } else {
+                  // Keep the session frozen, except history erased by an uninstall/reinstall.
+                  for (String pkg : usageSnapshot.keySet()) {
+                    String epoch = usageEpochs.get(pkg);
+                    if (epoch != null && epoch.equals(currentUsage.epochs.get(pkg))) {
+                      weights.put(pkg, usageSnapshot.get(pkg));
+                      epochs.put(pkg, epoch);
+                    }
+                  }
+                }
+                Map<String, Double> frozenWeights = Collections.unmodifiableMap(weights);
+                Map<String, String> frozenEpochs = Collections.unmodifiableMap(epochs);
+                AppCatalogCache.Snapshot restored = loaded;
+                AppSearch prepared = SearchIndex.prepare(this, ordered, weights);
+                runOnUiThread(
+                    () -> {
+                      if (isDestroyed() || isFinishing() || generation != loadGeneration) return;
+                      boolean keepFocus = results.hasFocus() || restoreResult;
+                      restoreResult =
+                          false; // Consume saved focus once; later package events keep editing
+                                 // focus.
+                      int offset = ready ? results.getScrollY() : resultOffset;
+                      boolean wasReady = ready;
+                      snapshot = restored;
+                      cache.remember(restored);
+                      usageSnapshot = frozenWeights;
+                      usageEpochs = frozenEpochs;
+                      index = prepared;
+                      entries.clear();
+                      entries.putAll(byId);
+                      ready = true;
+                      updateResults(keepFocus);
+                      if (keepFocus && results.getVisibility() == View.VISIBLE)
+                        results.post(() -> results.restoreFocus(selected, offset));
+                      else if (wasReady) results.scrollTo(0, offset);
+                      if (keepFocus && results.getVisibility() != View.VISIBLE)
+                        input.requestFocus();
+                    });
+              } catch (RuntimeException e) {
+                android.util.Log.w("StillSearch", "Unable to restore search catalog", e);
+                runOnUiThread(
+                    () -> {
+                      if (!isDestroyed() && !isFinishing() && generation == loadGeneration)
+                        message.setText("搜索暂不可用，请返回首页重试");
+                    });
               }
-              loaded = new AppCatalogCache.Snapshot(apps, visuals);
-            }
-            Map<String, AppEntry> byId = new HashMap<>();
-            List<String> available = new ArrayList<>();
-            for (AppEntry app : loaded.apps) {
-              byId.put(app.id, app);
-              available.add(app.id);
-            }
-            List<AppSearch.Item> items = new ArrayList<>();
-            for (String id : AppOrder.reconcile(new Preferences(this).appOrder(), available))
-              items.add(new AppSearch.Item(id, byId.get(id).label));
-            AppCatalogCache.Snapshot restored = loaded;
-            AppSearch prepared = new AppSearch(items);
-            runOnUiThread(
-                () -> {
-                  if (isDestroyed() || isFinishing()) return;
-                  snapshot = restored;
-                  index = prepared;
-                  entries.putAll(byId);
-                  ready = true;
-                  updateResults(restoreResult);
-                  if (restoreResult)
-                    results.post(() -> results.restoreFocus(selected, resultOffset));
-                });
-          } catch (RuntimeException e) {
-            android.util.Log.w("StillSearch", "Unable to restore search catalog", e);
-            runOnUiThread(
-                () -> {
-                  if (!isDestroyed() && !isFinishing()) message.setText("搜索暂不可用，请返回首页重试");
-                });
-          }
-        });
+            });
   }
 
   private void updateResults(boolean takeFocus) {
@@ -427,6 +512,8 @@ public final class SearchActivity extends Activity {
           menuReturn = null;
           content.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
           if (target != null && target.isAttachedToWindow()) target.requestFocus();
+          else if (results.getVisibility() == View.VISIBLE) results.focusKey(selected, true);
+          else input.requestFocus();
           if (target instanceof AppCardView) ((AppCardView) target).contextSelected(false);
           if (action != null) action.run();
         });
@@ -449,10 +536,10 @@ public final class SearchActivity extends Activity {
     publishHomeTarget();
     List<String> available = new ArrayList<>();
     for (AppEntry entry : snapshot.apps) available.add(entry.id);
-    List<AppSearch.Item> items = new ArrayList<>();
-    for (String id : AppOrder.reconcile(prefs.appOrder(), available))
-      items.add(new AppSearch.Item(id, entries.get(id).label));
-    index = new AppSearch(items);
+    List<AppEntry> ordered = new ArrayList<>();
+    for (String id : AppOrder.reconcile(prefs.appOrder(), available)) ordered.add(entries.get(id));
+    // Explicit home reordering reuses prepared terms and the same session's frozen usage.
+    index = SearchIndex.prepare(this, ordered, usageSnapshot);
     updateResults(true);
     Toast.makeText(this, "已移到首页最前", Toast.LENGTH_SHORT).show();
   }
@@ -541,6 +628,18 @@ public final class SearchActivity extends Activity {
 
   @Override
   protected void onSaveInstanceState(Bundle state) {
+    if (usageSnapshot != null) {
+      ArrayList<String> packages = new ArrayList<>(usageSnapshot.keySet());
+      double[] scores = new double[packages.size()];
+      ArrayList<String> epochs = new ArrayList<>();
+      for (int i = 0; i < scores.length; i++) {
+        scores[i] = usageSnapshot.get(packages.get(i));
+        epochs.add(usageEpochs.get(packages.get(i)));
+      }
+      state.putStringArrayList("usageEpochs", epochs);
+      state.putStringArrayList("usagePackages", packages);
+      state.putDoubleArray("usageScores", scores);
+    }
     state.putString("query", query);
     state.putString("selected", selected);
     state.putInt("offset", results.getScrollY());
@@ -576,6 +675,7 @@ public final class SearchActivity extends Activity {
   @Override
   protected void onDestroy() {
     handler.removeCallbacksAndMessages(null);
+    unregisterReceiver(packageChanges);
     worker.shutdownNow();
     super.onDestroy();
   }

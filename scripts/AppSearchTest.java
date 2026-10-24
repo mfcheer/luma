@@ -23,7 +23,8 @@ public final class AppSearchTest {
     expect(search, "Tube", "y");
     expect(search, " ＹｏｕＴｕｂｅ ", "y");
     expect(search, "当贝", "d0", "d2", "d1", "other");
-    expect(search, "db", "d2", "d1", "d0", "other");
+    // Full initials now outrank initial-prefix matches; equal prefix matches retain home order.
+    expect(search, "db", "d0", "d2", "d1", "other");
     expect(search, "xiao mi", "x");
     expect(search, "播放器", "d1");
     expect(search, "");
@@ -31,7 +32,8 @@ public final class AppSearchTest {
     expect(search, "。?!");
     expect(search, "not-installed");
     expect(search, "😀");
-    expect(search, "db", "d2", "d1", "d0", "other");
+    // Full initials now outrank initial-prefix matches; equal prefix matches retain home order.
+    expect(search, "db", "d0", "d2", "d1", "other");
     if (!items.get(0).id.equals("j") || !items.get(2).id.equals("d2"))
       throw new AssertionError("Searching must never mutate home order");
     System.out.println(

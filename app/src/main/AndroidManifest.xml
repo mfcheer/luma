@@ -1,5 +1,6 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
 <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 <uses-feature android:name="android.software.leanback" android:required="false" />
 <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
 <queries><intent><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent><intent><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LEANBACK_LAUNCHER"/></intent><intent><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.HOME"/></intent></queries>
@@ -10,4 +11,8 @@
 </activity>
 <activity android:name=".ui.SearchActivity" android:exported="false" android:screenOrientation="landscape" android:windowSoftInputMode="adjustResize" />
 <receiver android:name=".platform.BootReceiver" android:exported="true"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/></intent-filter></receiver>
+<!-- The resource disables this service on API 29+, so Android 14 FGS types never apply. -->
+<service android:name=".platform.WakeEntryService" android:enabled="@bool/wake_service_available" android:exported="false" tools:ignore="ForegroundServiceType" />
+<receiver android:name=".platform.PackageUpdatedReceiver" android:exported="false"><intent-filter><action android:name="android.intent.action.MY_PACKAGE_REPLACED"/></intent-filter></receiver>
+<receiver android:name=".platform.AppRemovedReceiver" android:exported="true"><intent-filter><action android:name="android.intent.action.PACKAGE_FULLY_REMOVED"/><data android:scheme="package"/></intent-filter></receiver>
 </application></manifest>

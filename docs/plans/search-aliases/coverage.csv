@@ -1,0 +1,69 @@
+﻿类别,应用,身份状态,准确包名（待核实为空）,别名/简称提案,正式名全拼,正式名首字母,注意事项,来源ID
+国内视频,云视听极光,pending_label_review,com.ktcp.video,腾讯视频 / 腾讯视频TV版 / 极光TV / txsp,yunshitingjiguang,ystjg,仅当前已核实的国内 TV 包；不套用腾讯包名前缀，不把所有腾讯产品归到此项。,tencent
+国内视频,银河奇异果,pending_label_review,com.gitvdemo.video,爱奇艺 / 奇异果 / 奇异果TV / 爱奇艺TV版 / iqiyi / aqy,yinheqiyiguo,yhqyg,国内客户端；与国际 iQIYI 分别绑定。,iqiyi
+国内视频,CIBN酷喵影视,pending_label_review,com.cibn.tv,优酷 / 酷喵 / 酷喵影视 / 优酷TV版 / youku / yk,cibnkumiaoyingshi,cibnkmys,,youku
+国内视频,芒果TV,bound_draft,com.hunantv.license,芒果 / Mango TV / MGTV,mangguotv,mgtv,,mango
+国内视频,云视听小电视,bound_draft,com.xiaodianshi.tv.yst,哔哩哔哩 / B站 / bilibili / 小电视 / bl,yunshitingxiaodianshi,ystxds,不把第三方 BBLL、哔哩哔哩其他渠道包自动认作同一发行包。,bili
+国内视频,华数鲜时光,bound_draft,com.ixigua.android.tv.wasu,鲜时光 / 西瓜视频TV版 / 西瓜视频 / xsg,huashuxianshiguang,hsxsg,历史兼容词；只查找已安装旧应用，不推荐下载、不承诺服务可用。不添加“抖音”泛别名。,xigua
+国内视频,咪视界,bound_draft,cn.miguvideo.migutv,咪咕视频 / 咪咕TV / migu,mishijie,msj,“咪咕TV”的首字母 mgtv 与芒果TV 撞词，按匹配层级解决；不增加 mg 简称。,migu
+国内视频,央视频TV,pending_binding,,CCTV新视听 / 央视频TV版 / ysptv,yangshipintv,ysptv,更名关系有官方依据；虽实机有 com.newtv.cboxtv，缺少标签配对证据，暂不猜测绑定。,cctv | cctv-help
+国内视频,云视听悦厅,pending_binding,,搜狐视频 / 搜狐视频TV版 / 悦厅TV / sohu,yunshitingyueting,ystyt,候选；电视产品关系及包名仍需官方资料和 APK 核实。,
+国内视频,云视听快TV,pending_binding,,快手TV版 / kstv,yunshitingkuaitv,ystktv,候选；不把手机快手包或所有云视听包归入，产品关系及包名待核实。,
+国内视频,百视通,pending_binding,,BesTV,baishitong,bst,候选；品牌下有多种客户端，必须先锁定具体产品和包名。,
+国内视频,1905电影网TV版,pending_binding,,1905电影网 / 1905电影 / 1905,1905dianyingwangtvban,1905dywtvb,候选；与手机端、其他电视电影产品分开，TV 包名待核实。,
+音乐K歌,网易云音乐,bound_draft,com.netease.cloudmusic.tv,网易云 / 云音乐 / NetEase Cloud Music / wyy,wangyiyunyinyue,wyyyy,“网易”不作为别名，避免网易云游戏。音乐按 yin yue 生成。,
+音乐K歌,QQ音乐,pending_label_review,com.tencent.qqmusictv,QQ音乐TV版,qqyinyue,qqyy,音乐按 yin yue 生成，不赋予“腾讯音乐”泛别名。,
+音乐K歌,全民K歌,bound_draft,com.tencent.karaoketv,全民K歌TV版,quanminkge,qmkg,,karaoke
+音乐K歌,唱吧,bound_draft,com.changba.sd,唱吧TV版 / 唱吧KTV,changba,cb,,changba
+音乐K歌,酷狗音乐TV版,pending_binding,,酷狗音乐 / 酷狗 / kugou,kugouyinyuetvban,kgyytvb,官方存在 TV 版；尚未获取 APK 核对。不得直接套手机包名或当贝联名产品包名。,kugou
+音乐K歌,酷我音乐TV版,pending_binding,,酷我音乐 / 酷我 / kuwo,kuwoyinyuetvban,kwyytvb,TV 版具体发行身份待核实，先准备检索词。,kuwo
+本地媒体与NAS,极空间,bound_draft,com.zentraedi.zspace.tv,极空间TV版 / ZSpace,jikongjian,jkj,,zspace
+本地媒体与NAS,当贝播放器,bound_draft,com.dangbei.lerad.videoposter,当贝播放 / dbbfq,dangbeibofangqi,dbbfq,,dangbei-player
+本地媒体与NAS,Jellyfin,bound_draft,org.jellyfin.androidtv,Jellyfin for Android TV / 果冻,jellyfin,jellyfin,“果冻”是建议收录的俗称，非官方中文名称。独立于 Emby。,play-jellyfin-tv
+本地媒体与NAS,Emby,bound_draft,tv.emby.embyatv,Emby for Android TV,emby,emby,此次核实的 TV 包是 tv.emby.embyatv；不猜写为 com.emby.embyatv。手机包后续单独核验。,play-emby-tv
+本地媒体与NAS,Plex,bound_draft,com.plexapp.android,Plex TV,plex,plex,不绑定 Plexamp，不把“海报墙”作为别名。,play-plex
+本地媒体与NAS,Kodi,bound_draft,org.xbmc.kodi,XBMC,kodi,kodi,XBMC 作为历史名称候选，不等同任何含 Kodi 字样的第三方改版。,play-kodi
+本地媒体与NAS,VLC,bound_draft,org.videolan.vlc,VLC播放器 / VLC for Android,vlc,vlc,不收录“小黄锥”之类未经核实且容易混淆的词。,play-vlc
+本地媒体与NAS,NOVA Video Player,bound_draft,org.courville.nova,Nova播放器 / Nova Player,novavideoplayer,novavideoplayer,,play-nova
+本地媒体与NAS,Just (Video) Player,bound_draft,com.brouken.player,Just Player / Just播放器,justvideoplayer,justvideoplayer,,play-just-player
+本地媒体与NAS,MX Player,bound_draft,com.mxtech.videoplayer.ad,MX播放器,mxplayer,mxplayer,仅已核实包；Pro、流媒体等变体不按前缀归类。,play-mx-player
+本地媒体与NAS,绿联云TV版,pending_binding,,绿联云 / UGREEN NAS,lvlianyuntvban,llytvb,下载页不足以核实具体 TV 包；不猜包名。,ugreen
+本地媒体与NAS,DS video,bound_draft,com.synology.dsvideo,群晖视频 / 群晖DS video,dsvideo,dsvideo,保留旧安装识别。此项是已查到的 Android 包，不声称覆盖所有 Android TV 专版；不把 Synology Photos/Drive 绑定于此。,play-ds-video
+国际影音,YouTube,bound_draft,com.google.android.youtube.tv,YouTube for Android TV / 油管 / yt,youtube,youtube,官方 TV 客户端。SmartTube 独立记录。,play-youtube-tv
+国际影音,Netflix,bound_draft,com.netflix.ninja,奈飞 / 网飞 / nf,netflix,netflix,奈飞/网飞为建议收录的常用中文叫法；不承诺设备认证与播放兼容。,play-netflix-tv
+国际影音,Prime Video,bound_draft,com.amazon.amazonvideo.livingroom,Amazon Prime Video / 亚马逊视频 / pv,primevideo,primevideo,,play-prime-video-tv
+国际影音,Disney+,bound_draft,com.disney.disneyplus,Disney Plus / 迪士尼+ / 迪士尼Plus,disney,disney,规范化会去掉 +，需记录 Disney 与 Disney+ 的碰撞；不绑定 Hotstar。,play-disney-plus
+国际影音,Apple TV,bound_draft,com.apple.atve.androidtv.appletv,苹果TV / atv,appletv,appletv,Apple TV+ 仅作为进入 Apple TV 应用的检索叫法，不等同硬件；不声明会员关系。,play-apple-tv
+国际影音,Spotify,bound_draft,com.spotify.tv.android,Spotify TV / 声田,spotify,spotify,“声田”为建议收录的中文叫法，非本次商店的产品标题。,play-spotify-tv
+国际影音,HBO Max,bound_draft,com.wbd.stream,Max / hbo,hbomax,hbomax,按当前已查到的包名绑定；不把旧 HBO GO、HBO NOW 包自动合并。Max 只精确匹配，避免最大化等无关词。,play-hbo-max
+国际影音,Crunchyroll,bound_draft,com.crunchyroll.crunchyroid,,crunchyroll,crunchyroll,不额外发明中文品牌名。,play-crunchyroll
+国际影音,Twitch,bound_draft,tv.twitch.android.app,,twitch,twitch,商店身份已核实；TV 专用历史包仍需单独核实，不按 tv.twitch 前缀匹配。,play-twitch
+国际影音,WeTV,pending_binding,,腾讯视频国际版,wetv,wetv,TV 包本次未核实。已查到 com.tencent.qqlivei18n 是另一已发布 Android 客户端，不直接标为 TV 包。,
+国际影音,iQIYI 国际版,bound_draft,com.iqiyi.i18n.tv,爱奇艺国际版 / iQIYI,iqiyiguojiban,iqiyigjb,输入 iQIYI 可返回已安装的国内与国际客户端，保留真实标签和各自图标。,play-iqiyi-intl-tv
+投屏与工具,乐播投屏,pending_binding,,乐播 / 乐播投屏TV版 / HappyCast,lebotouping,lbtp,TV 接收端包名待核实，不能套用手机发送端包名。,lebo
+投屏与工具,AirScreen,bound_draft,com.ionitech.airscreen,,airscreen,airscreen,,play-airscreen
+投屏与工具,Send files to TV,bound_draft,com.yablio.sendfilestotv,sfttv,sendfilestotv,sendfilestotv,不添加“传文件”等泛功能词。,play-send-files
+投屏与工具,X-plore File Manager,bound_draft,com.lonelycatgames.Xplore,X-plore,xplorefilemanager,xplorefilemanager,包名大小写保留；不自动小写 Android 包名。,play-xplore
+投屏与工具,TV Bro,bound_draft,com.phlox.tvwebbrowser,,tvbro,tvbro,,play-tv-bro
+投屏与工具,Downloader by AFTVnews,bound_draft,com.esaba.downloader,AFTVnews Downloader / Downloader,downloaderbyaftvnews,downloaderbyaftvnews,仅真实英文产品名；不添加“下载器”的泛类别中文词。,play-downloader
+投屏与工具,Aptoide TV,pending_label_review,cm.aptoidetv.pt,,aptoidetv,aptoidetv,,aptoide
+投屏与工具,当贝市场,pending_binding,,当贝应用市场 / Dangbei Market,dangbeishichang,dbsc,多品牌渠道版本需要逐包核实；不使用 com.dangbei 前缀匹配。,dangbei
+投屏与工具,File Commander,bound_draft,com.mobisystems.fileman,文件指挥官,filecommander,filecommander,中文译名为候选别名，界面仍显示系统原标签。,play-file-commander
+投屏与工具,Projectivy Launcher,bound_draft,com.spocky.projengmenu,Projectivy,projectivylauncher,projectivylauncher,不自动给所有桌面应用加“桌面”别名。,play-projectivy
+投屏与工具,FLauncher,bound_draft,me.efesser.flauncher,,flauncher,flauncher,,play-flauncher
+国际影音,SmartTube,pending_label_review,com.teamsmart.videomanager.tv | org.smarttube.stable | org.smarttube.beta | app.smarttube.fdroid,SmartTube Next / stn,smarttube,smarttube,第三方客户端；本机旧稳定包单独实机观察。新版三个 flavor 包已由项目源码确认。不自动继承 YouTube/油管/yt 这些别名。,smarttube | smarttube-gradle
+游戏与健身,Steam Link,bound_draft,com.valvesoftware.steamlink,Steam串流,steamlink,steamlink,,play-steam-link
+游戏与健身,Moonlight,bound_draft,com.limelight,Moonlight Game Streaming / 月光串流,moonlight,moonlight,Sunshine 是主机端，不能作为 Moonlight 应用的别名。,play-moonlight
+游戏与健身,GeForce NOW,bound_draft,com.nvidia.geforcenow,NVIDIA GeForce NOW / gfn,geforcenow,geforcenow,,play-geforce-now
+游戏与健身,腾讯START云游戏,bound_draft,com.tencent.start.tv,START云游戏 / start,tengxunstartyunyouxi,txstartyyx,,
+游戏与健身,网易云游戏,pending_label_review,com.netease.android.cloudgame.tv,网易云游戏TV版,wangyiyunyouxi,wyyyx,,
+游戏与健身,Keep,bound_draft,com.gotokeep.androidtv,Keep TV版,keep,keep,,
+儿童教育,拼音乐园,bound_draft,com.ihuman.pinyin.ott.vip,洪恩拼音乐园 / 洪恩拼音,pinyinleyuan,pyly,实机标签与渠道包配对；不绑定其他洪恩识字、数学产品。拼音乐园的乐是 le，不套“音乐”全局替字。,
+儿童教育,儿童思维训练,bound_draft,com.lutongnet.nldmxXiaomiChildren,儿童思维训练TV版,ertongsiweixunlian,etswxl,没有可靠品牌证据，不根据图标猜为宝宝巴士。,
+设备内置,电视设置,bound_draft,com.xiaomi.mitv.settings,系统设置 / 小米电视设置,dianshishezhi,dssz,,
+设备内置,电视管家,bound_draft,com.xiaomi.mitv.tvmanager,小米电视管家,dianshiguanjia,dsgj,,
+设备内置,日历,bound_draft,com.xiaomi.mitv.calendar,小米日历,rili,rl,,
+设备内置,天气,bound_draft,com.xiaomi.tweather,小米天气,tianqi,tq,,
+设备内置,小米原生桌面,pending_label_review,com.mitv.tvhome,小米桌面,xiaomiyuanshengzhuomian,xmyszm,绑定实机组件包；不以“首页”“Home”泛词替代所有桌面应用。,
+设备内置,语音设置,pending_label_review,com.xiaomi.voicecontrol,,yuyinshezhi,yysz,包名已在顺序快照观察；当前标签尚无本次本地图像证据，转待核实标签。,
+设备内置,玩机手册,bound_draft,com.xiaomi.mitv.handbook,电视说明书 / 小米电视手册,wanjishouce,wjsc,,

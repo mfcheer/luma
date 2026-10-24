@@ -75,8 +75,12 @@ def start():
     adb('shell', 'am', 'start', '-n', PKG + '/.ui.MainActivity')
     time.sleep(1.3)
     for _ in range(8):
-        current = focused()
-        if current.get('package') == PKG and current.get('long-clickable') == 'true': return
+        state = tree()
+        current = next((n for n in state.iter('node') if n.get('focused') == 'true'), None)
+        if current is not None and current.get('package') == PKG and current.get('long-clickable') == 'true': return
+        # Native instrumentation/mouse input can leave the emulator in touch mode.
+        # Establish remote navigation through a real direction key, including a header landing.
+        key(20, .2)
         time.sleep(.4)
     raise AssertionError('Home did not finish loading')
 

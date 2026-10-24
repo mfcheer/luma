@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Dedicated fixture emulator: search context actions, Home handoff and recovery."""
 import json
+import os
 import re
 import runpy
 import subprocess
@@ -9,7 +10,8 @@ from pathlib import Path
 
 q = runpy.run_path(str(Path(__file__).with_name('theme-080-smoke.py')))
 adb,key=q['adb'],q['key']
-PKG=q['PKG']; OUT=q['ROOT']/'docs/qa-091'
+PKG=q['PKG']; OUT=q['ROOT']/os.environ.get('STILL_QA_OUT','docs/qa-091')
+OUT.mkdir(parents=True,exist_ok=True)
 
 
 def focus():
@@ -39,7 +41,7 @@ def deep_result():
 def main():
  original=q['prefs'](); original_xml=q['prefs_xml'](); original_order=json.loads(original['appOrder'])
  assert len(original_order)==28
- assert 'versionName=0.9.1' in adb('shell','dumpsys','package',PKG)
+ assert ('versionName='+os.environ.get('STILL_EXPECT_VERSION','0.9.1')) in adb('shell','dumpsys','package',PKG)
  target=next(i for i in original_order if 'com.jianping.fixture.app16/' in i)
  adb('shell','run-as',PKG,'cp','shared_prefs/launcher.xml','files/qa091-backup.xml')
  checks=[]

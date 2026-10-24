@@ -1,0 +1,3606 @@
+{
+  "schemaVersion": 1,
+  "dictionaryVersion": "2026-10-24-draft-1",
+  "status": "review_only_not_loaded_by_app",
+  "scope": "offline_installed_launchable_apps_only",
+  "identityEvidenceDoesNotVerifyCompatibility": true,
+  "aliasStatus": "editorial_proposals_not_official_names",
+  "records": [
+    {
+      "id": "tencent-tv",
+      "name": "云视听极光",
+      "category": "国内视频",
+      "identityStatus": "pending_label_review",
+      "bindings": [
+        {
+          "packageName": "com.ktcp.video",
+          "evidence": "device_package_observed_label_pending",
+          "sourceIds": [
+            "device-order"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "云视听极光",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "云视听极光",
+          "pinyin": "yunshitingjiguang",
+          "initials": "ystjg",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "腾讯视频",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "腾讯视频",
+          "pinyin": "tengxunshipin",
+          "initials": "txsp",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "腾讯视频TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "腾讯视频tv版",
+          "pinyin": "tengxunshipintvban",
+          "initials": "txsptvb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "极光TV",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "极光tv",
+          "pinyin": "jiguangtv",
+          "initials": "jgtv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "txsp",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "txsp",
+          "pinyin": "txsp",
+          "initials": "txsp",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "tencent"
+      ],
+      "notes": "仅当前已核实的国内 TV 包；不套用腾讯包名前缀，不把所有腾讯产品归到此项。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "腾讯",
+        "云视听",
+        "极光"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "iqiyi-cn-tv",
+      "name": "银河奇异果",
+      "category": "国内视频",
+      "identityStatus": "pending_label_review",
+      "bindings": [
+        {
+          "packageName": "com.gitvdemo.video",
+          "evidence": "device_package_observed_label_pending",
+          "sourceIds": [
+            "device-order"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "银河奇异果",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "银河奇异果",
+          "pinyin": "yinheqiyiguo",
+          "initials": "yhqyg",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "爱奇艺",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "爱奇艺",
+          "pinyin": "aiqiyi",
+          "initials": "aqy",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "奇异果",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "奇异果",
+          "pinyin": "qiyiguo",
+          "initials": "qyg",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "奇异果TV",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "奇异果tv",
+          "pinyin": "qiyiguotv",
+          "initials": "qygtv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "爱奇艺TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "爱奇艺tv版",
+          "pinyin": "aiqiyitvban",
+          "initials": "aqytvb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "iqiyi",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "iqiyi",
+          "pinyin": "iqiyi",
+          "initials": "iqiyi",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "aqy",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "aqy",
+          "pinyin": "aqy",
+          "initials": "aqy",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "iqiyi"
+      ],
+      "notes": "国内客户端；与国际 iQIYI 分别绑定。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "银河"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "youku-tv",
+      "name": "CIBN酷喵影视",
+      "category": "国内视频",
+      "identityStatus": "pending_label_review",
+      "bindings": [
+        {
+          "packageName": "com.cibn.tv",
+          "evidence": "device_package_observed_label_pending",
+          "sourceIds": [
+            "device-order"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "CIBN酷喵影视",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "cibn酷喵影视",
+          "pinyin": "cibnkumiaoyingshi",
+          "initials": "cibnkmys",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "优酷",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "优酷",
+          "pinyin": "youku",
+          "initials": "yk",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "酷喵",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "酷喵",
+          "pinyin": "kumiao",
+          "initials": "km",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "酷喵影视",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "酷喵影视",
+          "pinyin": "kumiaoyingshi",
+          "initials": "kmys",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "优酷TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "优酷tv版",
+          "pinyin": "youkutvban",
+          "initials": "yktvb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "youku",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "youku",
+          "pinyin": "youku",
+          "initials": "youku",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "yk",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "yk",
+          "pinyin": "yk",
+          "initials": "yk",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "youku"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "CIBN"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "mango-tv",
+      "name": "芒果TV",
+      "category": "国内视频",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.hunantv.license",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "芒果TV",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "芒果tv",
+          "pinyin": "mangguotv",
+          "initials": "mgtv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "芒果",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "芒果",
+          "pinyin": "mangguo",
+          "initials": "mg",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Mango TV",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "mangotv",
+          "pinyin": "mangotv",
+          "initials": "mangotv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "MGTV",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "mgtv",
+          "pinyin": "mgtv",
+          "initials": "mgtv",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "mango"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "mg"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "bilibili-tv",
+      "name": "云视听小电视",
+      "category": "国内视频",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.xiaodianshi.tv.yst",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "云视听小电视",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "云视听小电视",
+          "pinyin": "yunshitingxiaodianshi",
+          "initials": "ystxds",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "哔哩哔哩",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "哔哩哔哩",
+          "pinyin": "bilibili",
+          "initials": "blbl",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "B站",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "b站",
+          "pinyin": "bzhan",
+          "initials": "bz",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "bilibili",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "bilibili",
+          "pinyin": "bilibili",
+          "initials": "bilibili",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "小电视",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "小电视",
+          "pinyin": "xiaodianshi",
+          "initials": "xds",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "bl",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "bl",
+          "pinyin": "bl",
+          "initials": "bl",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "bili"
+      ],
+      "notes": "不把第三方 BBLL、哔哩哔哩其他渠道包自动认作同一发行包。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "云视听"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "xigua-legacy-tv",
+      "name": "华数鲜时光",
+      "category": "国内视频",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.ixigua.android.tv.wasu",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "华数鲜时光",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "华数鲜时光",
+          "pinyin": "huashuxianshiguang",
+          "initials": "hsxsg",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "鲜时光",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "鲜时光",
+          "pinyin": "xianshiguang",
+          "initials": "xsg",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "西瓜视频TV版",
+          "kind": "historical_alias",
+          "match": "partial",
+          "normalized": "西瓜视频tv版",
+          "pinyin": "xiguashipintvban",
+          "initials": "xgsptvb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "西瓜视频",
+          "kind": "historical_alias",
+          "match": "partial",
+          "normalized": "西瓜视频",
+          "pinyin": "xiguashipin",
+          "initials": "xgsp",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "xsg",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "xsg",
+          "pinyin": "xsg",
+          "initials": "xsg",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "xigua"
+      ],
+      "notes": "历史兼容词；只查找已安装旧应用，不推荐下载、不承诺服务可用。不添加“抖音”泛别名。",
+      "lifecycle": "official_shutdown_2025-06-30",
+      "excludedAliases": [
+        "抖音"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "migu-tv",
+      "name": "咪视界",
+      "category": "国内视频",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "cn.miguvideo.migutv",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "咪视界",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "咪视界",
+          "pinyin": "mishijie",
+          "initials": "msj",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "咪咕视频",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "咪咕视频",
+          "pinyin": "migushipin",
+          "initials": "mgsp",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "咪咕TV",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "咪咕tv",
+          "pinyin": "migutv",
+          "initials": "mgtv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "migu",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "migu",
+          "pinyin": "migu",
+          "initials": "migu",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "migu"
+      ],
+      "notes": "“咪咕TV”的首字母 mgtv 与芒果TV 撞词，按匹配层级解决；不增加 mg 简称。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "mg"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "cctv-tv",
+      "name": "央视频TV",
+      "category": "国内视频",
+      "identityStatus": "pending_binding",
+      "bindings": [],
+      "terms": [
+        {
+          "text": "央视频TV",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "央视频tv",
+          "pinyin": "yangshipintv",
+          "initials": "ysptv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "CCTV新视听",
+          "kind": "historical_alias",
+          "match": "partial",
+          "normalized": "cctv新视听",
+          "pinyin": "cctvxinshiting",
+          "initials": "cctvxst",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "央视频TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "央视频tv版",
+          "pinyin": "yangshipintvban",
+          "initials": "ysptvb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "ysptv",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "ysptv",
+          "pinyin": "ysptv",
+          "initials": "ysptv",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "cctv",
+        "cctv-help"
+      ],
+      "notes": "更名关系有官方依据；虽实机有 com.newtv.cboxtv，缺少标签配对证据，暂不猜测绑定。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "央视影音",
+        "央视",
+        "CCTV"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "sohu-tv",
+      "name": "云视听悦厅",
+      "category": "国内视频",
+      "identityStatus": "pending_binding",
+      "bindings": [],
+      "terms": [
+        {
+          "text": "云视听悦厅",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "云视听悦厅",
+          "pinyin": "yunshitingyueting",
+          "initials": "ystyt",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "搜狐视频",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "搜狐视频",
+          "pinyin": "souhushipin",
+          "initials": "shsp",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "搜狐视频TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "搜狐视频tv版",
+          "pinyin": "souhushipintvban",
+          "initials": "shsptvb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "悦厅TV",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "悦厅tv",
+          "pinyin": "yuetingtv",
+          "initials": "yttv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "sohu",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "sohu",
+          "pinyin": "sohu",
+          "initials": "sohu",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "候选；电视产品关系及包名仍需官方资料和 APK 核实。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "搜狐",
+        "云视听"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "kuaishou-tv",
+      "name": "云视听快TV",
+      "category": "国内视频",
+      "identityStatus": "pending_binding",
+      "bindings": [],
+      "terms": [
+        {
+          "text": "云视听快TV",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "云视听快tv",
+          "pinyin": "yunshitingkuaitv",
+          "initials": "ystktv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "快手TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "快手tv版",
+          "pinyin": "kuaishoutvban",
+          "initials": "kstvb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "kstv",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "kstv",
+          "pinyin": "kstv",
+          "initials": "kstv",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "候选；不把手机快手包或所有云视听包归入，产品关系及包名待核实。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "快手",
+        "云视听"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "bestv",
+      "name": "百视通",
+      "category": "国内视频",
+      "identityStatus": "pending_binding",
+      "bindings": [],
+      "terms": [
+        {
+          "text": "百视通",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "百视通",
+          "pinyin": "baishitong",
+          "initials": "bst",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "BesTV",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "bestv",
+          "pinyin": "bestv",
+          "initials": "bestv",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "候选；品牌下有多种客户端，必须先锁定具体产品和包名。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "百视TV"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "movie1905-tv",
+      "name": "1905电影网TV版",
+      "category": "国内视频",
+      "identityStatus": "pending_binding",
+      "bindings": [],
+      "terms": [
+        {
+          "text": "1905电影网TV版",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "1905电影网tv版",
+          "pinyin": "1905dianyingwangtvban",
+          "initials": "1905dywtvb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "1905电影网",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "1905电影网",
+          "pinyin": "1905dianyingwang",
+          "initials": "1905dyw",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "1905电影",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "1905电影",
+          "pinyin": "1905dianying",
+          "initials": "1905dy",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "1905",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "1905",
+          "pinyin": "1905",
+          "initials": "1905",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "候选；与手机端、其他电视电影产品分开，TV 包名待核实。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "netease-music-tv",
+      "name": "网易云音乐",
+      "category": "音乐K歌",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.netease.cloudmusic.tv",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "网易云音乐",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "网易云音乐",
+          "pinyin": "wangyiyunyinyue",
+          "initials": "wyyyy",
+          "phoneticReview": "music_phrase_override",
+          "libraryBaseline": {
+            "pinyin": "wangyiyunyinle",
+            "initials": "wyyyl"
+          }
+        },
+        {
+          "text": "网易云",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "网易云",
+          "pinyin": "wangyiyun",
+          "initials": "wyy",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "云音乐",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "云音乐",
+          "pinyin": "yunyinyue",
+          "initials": "yyy",
+          "phoneticReview": "music_phrase_override",
+          "libraryBaseline": {
+            "pinyin": "yunyinle",
+            "initials": "yyl"
+          }
+        },
+        {
+          "text": "NetEase Cloud Music",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "neteasecloudmusic",
+          "pinyin": "neteasecloudmusic",
+          "initials": "neteasecloudmusic",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "wyy",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "wyy",
+          "pinyin": "wyy",
+          "initials": "wyy",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "“网易”不作为别名，避免网易云游戏。音乐按 yin yue 生成。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "网易",
+        "音乐"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "qq-music-tv",
+      "name": "QQ音乐",
+      "category": "音乐K歌",
+      "identityStatus": "pending_label_review",
+      "bindings": [
+        {
+          "packageName": "com.tencent.qqmusictv",
+          "evidence": "device_package_observed_label_pending",
+          "sourceIds": [
+            "device-order"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "QQ音乐",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "qq音乐",
+          "pinyin": "qqyinyue",
+          "initials": "qqyy",
+          "phoneticReview": "music_phrase_override",
+          "libraryBaseline": {
+            "pinyin": "qqyinle",
+            "initials": "qqyl"
+          }
+        },
+        {
+          "text": "QQ音乐TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "qq音乐tv版",
+          "pinyin": "qqyinyuetvban",
+          "initials": "qqyytvb",
+          "phoneticReview": "music_phrase_override",
+          "libraryBaseline": {
+            "pinyin": "qqyinletvban",
+            "initials": "qqyltvb"
+          }
+        }
+      ],
+      "sourceIds": [],
+      "notes": "音乐按 yin yue 生成，不赋予“腾讯音乐”泛别名。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "腾讯音乐",
+        "音乐"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "karaoke-tv",
+      "name": "全民K歌",
+      "category": "音乐K歌",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.tencent.karaoketv",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "全民K歌",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "全民k歌",
+          "pinyin": "quanminkge",
+          "initials": "qmkg",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "全民K歌TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "全民k歌tv版",
+          "pinyin": "quanminkgetvban",
+          "initials": "qmkgtvb",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "karaoke"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "K歌",
+        "唱歌"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "changba-tv",
+      "name": "唱吧",
+      "category": "音乐K歌",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.changba.sd",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "唱吧",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "唱吧",
+          "pinyin": "changba",
+          "initials": "cb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "唱吧TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "唱吧tv版",
+          "pinyin": "changbatvban",
+          "initials": "cbtvb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "唱吧KTV",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "唱吧ktv",
+          "pinyin": "changbaktv",
+          "initials": "cbktv",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "changba"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "唱歌",
+        "KTV"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "kugou-tv",
+      "name": "酷狗音乐TV版",
+      "category": "音乐K歌",
+      "identityStatus": "pending_binding",
+      "bindings": [],
+      "terms": [
+        {
+          "text": "酷狗音乐TV版",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "酷狗音乐tv版",
+          "pinyin": "kugouyinyuetvban",
+          "initials": "kgyytvb",
+          "phoneticReview": "music_phrase_override",
+          "libraryBaseline": {
+            "pinyin": "kugouyinletvban",
+            "initials": "kgyltvb"
+          }
+        },
+        {
+          "text": "酷狗音乐",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "酷狗音乐",
+          "pinyin": "kugouyinyue",
+          "initials": "kgyy",
+          "phoneticReview": "music_phrase_override",
+          "libraryBaseline": {
+            "pinyin": "kugouyinle",
+            "initials": "kgyl"
+          }
+        },
+        {
+          "text": "酷狗",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "酷狗",
+          "pinyin": "kugou",
+          "initials": "kg",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "kugou",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "kugou",
+          "pinyin": "kugou",
+          "initials": "kugou",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "kugou"
+      ],
+      "notes": "官方存在 TV 版；尚未获取 APK 核对。不得直接套手机包名或当贝联名产品包名。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "kuwo-tv",
+      "name": "酷我音乐TV版",
+      "category": "音乐K歌",
+      "identityStatus": "pending_binding",
+      "bindings": [],
+      "terms": [
+        {
+          "text": "酷我音乐TV版",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "酷我音乐tv版",
+          "pinyin": "kuwoyinyuetvban",
+          "initials": "kwyytvb",
+          "phoneticReview": "music_phrase_override",
+          "libraryBaseline": {
+            "pinyin": "kuwoyinletvban",
+            "initials": "kwyltvb"
+          }
+        },
+        {
+          "text": "酷我音乐",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "酷我音乐",
+          "pinyin": "kuwoyinyue",
+          "initials": "kwyy",
+          "phoneticReview": "music_phrase_override",
+          "libraryBaseline": {
+            "pinyin": "kuwoyinle",
+            "initials": "kwyl"
+          }
+        },
+        {
+          "text": "酷我",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "酷我",
+          "pinyin": "kuwo",
+          "initials": "kw",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "kuwo",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "kuwo",
+          "pinyin": "kuwo",
+          "initials": "kuwo",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "kuwo"
+      ],
+      "notes": "TV 版具体发行身份待核实，先准备检索词。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "zspace-tv",
+      "name": "极空间",
+      "category": "本地媒体与NAS",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.zentraedi.zspace.tv",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "极空间",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "极空间",
+          "pinyin": "jikongjian",
+          "initials": "jkj",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "极空间TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "极空间tv版",
+          "pinyin": "jikongjiantvban",
+          "initials": "jkjtvb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "ZSpace",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "zspace",
+          "pinyin": "zspace",
+          "initials": "zspace",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "zspace"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "NAS",
+        "网盘"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "dangbei-player",
+      "name": "当贝播放器",
+      "category": "本地媒体与NAS",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.dangbei.lerad.videoposter",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "当贝播放器",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "当贝播放器",
+          "pinyin": "dangbeibofangqi",
+          "initials": "dbbfq",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "当贝播放",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "当贝播放",
+          "pinyin": "dangbeibofang",
+          "initials": "dbbf",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "dbbfq",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "dbbfq",
+          "pinyin": "dbbfq",
+          "initials": "dbbfq",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "dangbei-player"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "当贝",
+        "播放器"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "jellyfin-tv",
+      "name": "Jellyfin",
+      "category": "本地媒体与NAS",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "org.jellyfin.androidtv",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-jellyfin-tv"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Jellyfin",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "jellyfin",
+          "pinyin": "jellyfin",
+          "initials": "jellyfin",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Jellyfin for Android TV",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "jellyfinforandroidtv",
+          "pinyin": "jellyfinforandroidtv",
+          "initials": "jellyfinforandroidtv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "果冻",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "果冻",
+          "pinyin": "guodong",
+          "initials": "gd",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-jellyfin-tv"
+      ],
+      "notes": "“果冻”是建议收录的俗称，非官方中文名称。独立于 Emby。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "Emby",
+        "NAS"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "emby-tv",
+      "name": "Emby",
+      "category": "本地媒体与NAS",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "tv.emby.embyatv",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-emby-tv"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Emby",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "emby",
+          "pinyin": "emby",
+          "initials": "emby",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Emby for Android TV",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "embyforandroidtv",
+          "pinyin": "embyforandroidtv",
+          "initials": "embyforandroidtv",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-emby-tv"
+      ],
+      "notes": "此次核实的 TV 包是 tv.emby.embyatv；不猜写为 com.emby.embyatv。手机包后续单独核验。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "Jellyfin",
+        "emb"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "plex",
+      "name": "Plex",
+      "category": "本地媒体与NAS",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.plexapp.android",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-plex"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Plex",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "plex",
+          "pinyin": "plex",
+          "initials": "plex",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Plex TV",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "plextv",
+          "pinyin": "plextv",
+          "initials": "plextv",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-plex"
+      ],
+      "notes": "不绑定 Plexamp，不把“海报墙”作为别名。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "kodi",
+      "name": "Kodi",
+      "category": "本地媒体与NAS",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "org.xbmc.kodi",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-kodi"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Kodi",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "kodi",
+          "pinyin": "kodi",
+          "initials": "kodi",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "XBMC",
+          "kind": "historical_alias",
+          "match": "partial",
+          "normalized": "xbmc",
+          "pinyin": "xbmc",
+          "initials": "xbmc",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-kodi"
+      ],
+      "notes": "XBMC 作为历史名称候选，不等同任何含 Kodi 字样的第三方改版。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "vlc",
+      "name": "VLC",
+      "category": "本地媒体与NAS",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "org.videolan.vlc",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-vlc"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "VLC",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "vlc",
+          "pinyin": "vlc",
+          "initials": "vlc",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "VLC播放器",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "vlc播放器",
+          "pinyin": "vlcbofangqi",
+          "initials": "vlcbfq",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "VLC for Android",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "vlcforandroid",
+          "pinyin": "vlcforandroid",
+          "initials": "vlcforandroid",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-vlc"
+      ],
+      "notes": "不收录“小黄锥”之类未经核实且容易混淆的词。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "nova",
+      "name": "NOVA Video Player",
+      "category": "本地媒体与NAS",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "org.courville.nova",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-nova"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "NOVA Video Player",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "novavideoplayer",
+          "pinyin": "novavideoplayer",
+          "initials": "novavideoplayer",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Nova播放器",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "nova播放器",
+          "pinyin": "novabofangqi",
+          "initials": "novabfq",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Nova Player",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "novaplayer",
+          "pinyin": "novaplayer",
+          "initials": "novaplayer",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-nova"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "just-player",
+      "name": "Just (Video) Player",
+      "category": "本地媒体与NAS",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.brouken.player",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-just-player"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Just (Video) Player",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "justvideoplayer",
+          "pinyin": "justvideoplayer",
+          "initials": "justvideoplayer",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Just Player",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "justplayer",
+          "pinyin": "justplayer",
+          "initials": "justplayer",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Just播放器",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "just播放器",
+          "pinyin": "justbofangqi",
+          "initials": "justbfq",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-just-player"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "JP",
+        "播放器"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "mx-player",
+      "name": "MX Player",
+      "category": "本地媒体与NAS",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.mxtech.videoplayer.ad",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-mx-player"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "MX Player",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "mxplayer",
+          "pinyin": "mxplayer",
+          "initials": "mxplayer",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "MX播放器",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "mx播放器",
+          "pinyin": "mxbofangqi",
+          "initials": "mxbfq",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-mx-player"
+      ],
+      "notes": "仅已核实包；Pro、流媒体等变体不按前缀归类。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "播放器"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "ugreen-tv",
+      "name": "绿联云TV版",
+      "category": "本地媒体与NAS",
+      "identityStatus": "pending_binding",
+      "bindings": [],
+      "terms": [
+        {
+          "text": "绿联云TV版",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "绿联云tv版",
+          "pinyin": "lvlianyuntvban",
+          "initials": "llytvb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "绿联云",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "绿联云",
+          "pinyin": "lvlianyun",
+          "initials": "lly",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "UGREEN NAS",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "ugreennas",
+          "pinyin": "ugreennas",
+          "initials": "ugreennas",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "ugreen"
+      ],
+      "notes": "下载页不足以核实具体 TV 包；不猜包名。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "绿联",
+        "NAS"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "ds-video",
+      "name": "DS video",
+      "category": "本地媒体与NAS",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.synology.dsvideo",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-ds-video"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "DS video",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "dsvideo",
+          "pinyin": "dsvideo",
+          "initials": "dsvideo",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "群晖视频",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "群晖视频",
+          "pinyin": "qunhuishipin",
+          "initials": "qhsp",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "群晖DS video",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "群晖dsvideo",
+          "pinyin": "qunhuidsvideo",
+          "initials": "qhdsvideo",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-ds-video"
+      ],
+      "notes": "保留旧安装识别。此项是已查到的 Android 包，不声称覆盖所有 Android TV 专版；不把 Synology Photos/Drive 绑定于此。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "群晖",
+        "Synology",
+        "NAS"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "youtube-tv",
+      "name": "YouTube",
+      "category": "国际影音",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.google.android.youtube.tv",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-youtube-tv"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "YouTube",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "youtube",
+          "pinyin": "youtube",
+          "initials": "youtube",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "YouTube for Android TV",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "youtubeforandroidtv",
+          "pinyin": "youtubeforandroidtv",
+          "initials": "youtubeforandroidtv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "油管",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "油管",
+          "pinyin": "youguan",
+          "initials": "yg",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "yt",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "yt",
+          "pinyin": "yt",
+          "initials": "yt",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-youtube-tv"
+      ],
+      "notes": "官方 TV 客户端。SmartTube 独立记录。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "SmartTube"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "netflix-tv",
+      "name": "Netflix",
+      "category": "国际影音",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.netflix.ninja",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-netflix-tv"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Netflix",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "netflix",
+          "pinyin": "netflix",
+          "initials": "netflix",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "奈飞",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "奈飞",
+          "pinyin": "naifei",
+          "initials": "nf",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "网飞",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "网飞",
+          "pinyin": "wangfei",
+          "initials": "wf",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "nf",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "nf",
+          "pinyin": "nf",
+          "initials": "nf",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-netflix-tv"
+      ],
+      "notes": "奈飞/网飞为建议收录的常用中文叫法；不承诺设备认证与播放兼容。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "prime-video-tv",
+      "name": "Prime Video",
+      "category": "国际影音",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.amazon.amazonvideo.livingroom",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-prime-video-tv"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Prime Video",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "primevideo",
+          "pinyin": "primevideo",
+          "initials": "primevideo",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Amazon Prime Video",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "amazonprimevideo",
+          "pinyin": "amazonprimevideo",
+          "initials": "amazonprimevideo",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "亚马逊视频",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "亚马逊视频",
+          "pinyin": "yamaxunshipin",
+          "initials": "ymxsp",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "pv",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "pv",
+          "pinyin": "pv",
+          "initials": "pv",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-prime-video-tv"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "亚马逊",
+        "Amazon"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "disney-plus",
+      "name": "Disney+",
+      "category": "国际影音",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.disney.disneyplus",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-disney-plus"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Disney+",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "disney",
+          "pinyin": "disney",
+          "initials": "disney",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Disney Plus",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "disneyplus",
+          "pinyin": "disneyplus",
+          "initials": "disneyplus",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "迪士尼+",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "迪士尼",
+          "pinyin": "dishini",
+          "initials": "dsn",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "迪士尼Plus",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "迪士尼plus",
+          "pinyin": "dishiniplus",
+          "initials": "dsnplus",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-disney-plus"
+      ],
+      "notes": "规范化会去掉 +，需记录 Disney 与 Disney+ 的碰撞；不绑定 Hotstar。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "Hotstar"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "apple-tv",
+      "name": "Apple TV",
+      "category": "国际影音",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.apple.atve.androidtv.appletv",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-apple-tv"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Apple TV",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "appletv",
+          "pinyin": "appletv",
+          "initials": "appletv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "苹果TV",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "苹果tv",
+          "pinyin": "pingguotv",
+          "initials": "pgtv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "atv",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "atv",
+          "pinyin": "atv",
+          "initials": "atv",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-apple-tv"
+      ],
+      "notes": "Apple TV+ 仅作为进入 Apple TV 应用的检索叫法，不等同硬件；不声明会员关系。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "苹果",
+        "Apple"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "spotify-tv",
+      "name": "Spotify",
+      "category": "国际影音",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.spotify.tv.android",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-spotify-tv"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Spotify",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "spotify",
+          "pinyin": "spotify",
+          "initials": "spotify",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Spotify TV",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "spotifytv",
+          "pinyin": "spotifytv",
+          "initials": "spotifytv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "声田",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "声田",
+          "pinyin": "shengtian",
+          "initials": "st",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-spotify-tv"
+      ],
+      "notes": "“声田”为建议收录的中文叫法，非本次商店的产品标题。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "hbo-max",
+      "name": "HBO Max",
+      "category": "国际影音",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.wbd.stream",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-hbo-max"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "HBO Max",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "hbomax",
+          "pinyin": "hbomax",
+          "initials": "hbomax",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Max",
+          "kind": "historical_alias",
+          "match": "exact",
+          "normalized": "max",
+          "pinyin": "max",
+          "initials": "max",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "hbo",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "hbo",
+          "pinyin": "hbo",
+          "initials": "hbo",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-hbo-max"
+      ],
+      "notes": "按当前已查到的包名绑定；不把旧 HBO GO、HBO NOW 包自动合并。Max 只精确匹配，避免最大化等无关词。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "crunchyroll",
+      "name": "Crunchyroll",
+      "category": "国际影音",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.crunchyroll.crunchyroid",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-crunchyroll"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Crunchyroll",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "crunchyroll",
+          "pinyin": "crunchyroll",
+          "initials": "crunchyroll",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-crunchyroll"
+      ],
+      "notes": "不额外发明中文品牌名。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "twitch",
+      "name": "Twitch",
+      "category": "国际影音",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "tv.twitch.android.app",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-twitch"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Twitch",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "twitch",
+          "pinyin": "twitch",
+          "initials": "twitch",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-twitch"
+      ],
+      "notes": "商店身份已核实；TV 专用历史包仍需单独核实，不按 tv.twitch 前缀匹配。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "wetv-tv",
+      "name": "WeTV",
+      "category": "国际影音",
+      "identityStatus": "pending_binding",
+      "bindings": [],
+      "terms": [
+        {
+          "text": "WeTV",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "wetv",
+          "pinyin": "wetv",
+          "initials": "wetv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "腾讯视频国际版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "腾讯视频国际版",
+          "pinyin": "tengxunshipinguojiban",
+          "initials": "txspgjb",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "TV 包本次未核实。已查到 com.tencent.qqlivei18n 是另一已发布 Android 客户端，不直接标为 TV 包。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "腾讯视频",
+        "云视听极光"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "iqiyi-intl-tv",
+      "name": "iQIYI 国际版",
+      "category": "国际影音",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.iqiyi.i18n.tv",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-iqiyi-intl-tv"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "iQIYI 国际版",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "iqiyi国际版",
+          "pinyin": "iqiyiguojiban",
+          "initials": "iqiyigjb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "爱奇艺国际版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "爱奇艺国际版",
+          "pinyin": "aiqiyiguojiban",
+          "initials": "aqygjb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "iQIYI",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "iqiyi",
+          "pinyin": "iqiyi",
+          "initials": "iqiyi",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-iqiyi-intl-tv"
+      ],
+      "notes": "输入 iQIYI 可返回已安装的国内与国际客户端，保留真实标签和各自图标。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "银河奇异果"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "lebo-tv",
+      "name": "乐播投屏",
+      "category": "投屏与工具",
+      "identityStatus": "pending_binding",
+      "bindings": [],
+      "terms": [
+        {
+          "text": "乐播投屏",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "乐播投屏",
+          "pinyin": "lebotouping",
+          "initials": "lbtp",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "乐播",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "乐播",
+          "pinyin": "lebo",
+          "initials": "lb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "乐播投屏TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "乐播投屏tv版",
+          "pinyin": "lebotoupingtvban",
+          "initials": "lbtptvb",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "HappyCast",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "happycast",
+          "pinyin": "happycast",
+          "initials": "happycast",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "lebo"
+      ],
+      "notes": "TV 接收端包名待核实，不能套用手机发送端包名。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "投屏",
+        "AirPlay",
+        "DLNA"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "airscreen",
+      "name": "AirScreen",
+      "category": "投屏与工具",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.ionitech.airscreen",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-airscreen"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "AirScreen",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "airscreen",
+          "pinyin": "airscreen",
+          "initials": "airscreen",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-airscreen"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "AirPlay",
+        "投屏"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "send-files",
+      "name": "Send files to TV",
+      "category": "投屏与工具",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.yablio.sendfilestotv",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-send-files"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Send files to TV",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "sendfilestotv",
+          "pinyin": "sendfilestotv",
+          "initials": "sendfilestotv",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "sfttv",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "sfttv",
+          "pinyin": "sfttv",
+          "initials": "sfttv",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-send-files"
+      ],
+      "notes": "不添加“传文件”等泛功能词。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "xplore",
+      "name": "X-plore File Manager",
+      "category": "投屏与工具",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.lonelycatgames.Xplore",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-xplore"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "X-plore File Manager",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "xplorefilemanager",
+          "pinyin": "xplorefilemanager",
+          "initials": "xplorefilemanager",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "X-plore",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "xplore",
+          "pinyin": "xplore",
+          "initials": "xplore",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-xplore"
+      ],
+      "notes": "包名大小写保留；不自动小写 Android 包名。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "tv-bro",
+      "name": "TV Bro",
+      "category": "投屏与工具",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.phlox.tvwebbrowser",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-tv-bro"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "TV Bro",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "tvbro",
+          "pinyin": "tvbro",
+          "initials": "tvbro",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-tv-bro"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "浏览器"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "downloader",
+      "name": "Downloader by AFTVnews",
+      "category": "投屏与工具",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.esaba.downloader",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-downloader"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Downloader by AFTVnews",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "downloaderbyaftvnews",
+          "pinyin": "downloaderbyaftvnews",
+          "initials": "downloaderbyaftvnews",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "AFTVnews Downloader",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "aftvnewsdownloader",
+          "pinyin": "aftvnewsdownloader",
+          "initials": "aftvnewsdownloader",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Downloader",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "downloader",
+          "pinyin": "downloader",
+          "initials": "downloader",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-downloader"
+      ],
+      "notes": "仅真实英文产品名；不添加“下载器”的泛类别中文词。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "aptoide-tv",
+      "name": "Aptoide TV",
+      "category": "投屏与工具",
+      "identityStatus": "pending_label_review",
+      "bindings": [
+        {
+          "packageName": "cm.aptoidetv.pt",
+          "evidence": "device_package_observed_label_pending",
+          "sourceIds": [
+            "device-order"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Aptoide TV",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "aptoidetv",
+          "pinyin": "aptoidetv",
+          "initials": "aptoidetv",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "aptoide"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "市场",
+        "应用商店"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "dangbei-market",
+      "name": "当贝市场",
+      "category": "投屏与工具",
+      "identityStatus": "pending_binding",
+      "bindings": [],
+      "terms": [
+        {
+          "text": "当贝市场",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "当贝市场",
+          "pinyin": "dangbeishichang",
+          "initials": "dbsc",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "当贝应用市场",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "当贝应用市场",
+          "pinyin": "dangbeiyingyongshichang",
+          "initials": "dbyysc",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Dangbei Market",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "dangbeimarket",
+          "pinyin": "dangbeimarket",
+          "initials": "dangbeimarket",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "dangbei"
+      ],
+      "notes": "多品牌渠道版本需要逐包核实；不使用 com.dangbei 前缀匹配。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "当贝",
+        "市场"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "file-commander",
+      "name": "File Commander",
+      "category": "投屏与工具",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.mobisystems.fileman",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-file-commander"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "File Commander",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "filecommander",
+          "pinyin": "filecommander",
+          "initials": "filecommander",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "文件指挥官",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "文件指挥官",
+          "pinyin": "wenjianzhihuiguan",
+          "initials": "wjzhg",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-file-commander"
+      ],
+      "notes": "中文译名为候选别名，界面仍显示系统原标签。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "文件管理"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "projectivy",
+      "name": "Projectivy Launcher",
+      "category": "投屏与工具",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.spocky.projengmenu",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-projectivy"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Projectivy Launcher",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "projectivylauncher",
+          "pinyin": "projectivylauncher",
+          "initials": "projectivylauncher",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Projectivy",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "projectivy",
+          "pinyin": "projectivy",
+          "initials": "projectivy",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-projectivy"
+      ],
+      "notes": "不自动给所有桌面应用加“桌面”别名。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "flauncher",
+      "name": "FLauncher",
+      "category": "投屏与工具",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "me.efesser.flauncher",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-flauncher"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "FLauncher",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "flauncher",
+          "pinyin": "flauncher",
+          "initials": "flauncher",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-flauncher"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "smarttube",
+      "name": "SmartTube",
+      "category": "国际影音",
+      "identityStatus": "pending_label_review",
+      "bindings": [
+        {
+          "packageName": "com.teamsmart.videomanager.tv",
+          "evidence": "device_package_observed_label_pending",
+          "sourceIds": [
+            "device-order"
+          ],
+          "review": "draft"
+        },
+        {
+          "packageName": "org.smarttube.stable",
+          "evidence": "official_source_manifest",
+          "sourceIds": [
+            "smarttube-gradle"
+          ],
+          "review": "draft"
+        },
+        {
+          "packageName": "org.smarttube.beta",
+          "evidence": "official_source_manifest",
+          "sourceIds": [
+            "smarttube-gradle"
+          ],
+          "review": "draft"
+        },
+        {
+          "packageName": "app.smarttube.fdroid",
+          "evidence": "official_source_manifest",
+          "sourceIds": [
+            "smarttube-gradle"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "SmartTube",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "smarttube",
+          "pinyin": "smarttube",
+          "initials": "smarttube",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "SmartTube Next",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "smarttubenext",
+          "pinyin": "smarttubenext",
+          "initials": "smarttubenext",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "stn",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "stn",
+          "pinyin": "stn",
+          "initials": "stn",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "smarttube",
+        "smarttube-gradle"
+      ],
+      "notes": "第三方客户端；本机旧稳定包单独实机观察。新版三个 flavor 包已由项目源码确认。不自动继承 YouTube/油管/yt 这些别名。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "YouTube",
+        "油管",
+        "yt"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "steam-link",
+      "name": "Steam Link",
+      "category": "游戏与健身",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.valvesoftware.steamlink",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-steam-link"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Steam Link",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "steamlink",
+          "pinyin": "steamlink",
+          "initials": "steamlink",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Steam串流",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "steam串流",
+          "pinyin": "steamchuanliu",
+          "initials": "steamcl",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-steam-link"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "Steam",
+        "游戏"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "moonlight",
+      "name": "Moonlight",
+      "category": "游戏与健身",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.limelight",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-moonlight"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Moonlight",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "moonlight",
+          "pinyin": "moonlight",
+          "initials": "moonlight",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Moonlight Game Streaming",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "moonlightgamestreaming",
+          "pinyin": "moonlightgamestreaming",
+          "initials": "moonlightgamestreaming",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "月光串流",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "月光串流",
+          "pinyin": "yueguangchuanliu",
+          "initials": "ygcl",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-moonlight"
+      ],
+      "notes": "Sunshine 是主机端，不能作为 Moonlight 应用的别名。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "Sunshine",
+        "串流"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "geforce-now",
+      "name": "GeForce NOW",
+      "category": "游戏与健身",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.nvidia.geforcenow",
+          "evidence": "store_listing",
+          "sourceIds": [
+            "play-geforce-now"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "GeForce NOW",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "geforcenow",
+          "pinyin": "geforcenow",
+          "initials": "geforcenow",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "NVIDIA GeForce NOW",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "nvidiageforcenow",
+          "pinyin": "nvidiageforcenow",
+          "initials": "nvidiageforcenow",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "gfn",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "gfn",
+          "pinyin": "gfn",
+          "initials": "gfn",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [
+        "play-geforce-now"
+      ],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "NVIDIA",
+        "英伟达"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "start-tv",
+      "name": "腾讯START云游戏",
+      "category": "游戏与健身",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.tencent.start.tv",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "腾讯START云游戏",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "腾讯start云游戏",
+          "pinyin": "tengxunstartyunyouxi",
+          "initials": "txstartyyx",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "START云游戏",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "start云游戏",
+          "pinyin": "startyunyouxi",
+          "initials": "startyyx",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "start",
+          "kind": "abbreviation_proposal",
+          "match": "exact",
+          "normalized": "start",
+          "pinyin": "start",
+          "initials": "start",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "腾讯",
+        "云游戏"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "netease-cloudgame",
+      "name": "网易云游戏",
+      "category": "游戏与健身",
+      "identityStatus": "pending_label_review",
+      "bindings": [
+        {
+          "packageName": "com.netease.android.cloudgame.tv",
+          "evidence": "device_package_observed_label_pending",
+          "sourceIds": [
+            "device-order"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "网易云游戏",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "网易云游戏",
+          "pinyin": "wangyiyunyouxi",
+          "initials": "wyyyx",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "网易云游戏TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "网易云游戏tv版",
+          "pinyin": "wangyiyunyouxitvban",
+          "initials": "wyyyxtvb",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "网易云",
+        "网易",
+        "云游戏"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "keep-tv",
+      "name": "Keep",
+      "category": "游戏与健身",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.gotokeep.androidtv",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "Keep",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "keep",
+          "pinyin": "keep",
+          "initials": "keep",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "Keep TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "keeptv版",
+          "pinyin": "keeptvban",
+          "initials": "keeptvb",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "健身",
+        "运动"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "ihuman-pinyin",
+      "name": "拼音乐园",
+      "category": "儿童教育",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.ihuman.pinyin.ott.vip",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "拼音乐园",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "拼音乐园",
+          "pinyin": "pinyinleyuan",
+          "initials": "pyly",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "洪恩拼音乐园",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "洪恩拼音乐园",
+          "pinyin": "hongenpinyinleyuan",
+          "initials": "hepyly",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "洪恩拼音",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "洪恩拼音",
+          "pinyin": "hongenpinyin",
+          "initials": "hepy",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "实机标签与渠道包配对；不绑定其他洪恩识字、数学产品。拼音乐园的乐是 le，不套“音乐”全局替字。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "洪恩",
+        "教育"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "children-thinking",
+      "name": "儿童思维训练",
+      "category": "儿童教育",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.lutongnet.nldmxXiaomiChildren",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "儿童思维训练",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "儿童思维训练",
+          "pinyin": "ertongsiweixunlian",
+          "initials": "etswxl",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "儿童思维训练TV版",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "儿童思维训练tv版",
+          "pinyin": "ertongsiweixunliantvban",
+          "initials": "etswxltvb",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "没有可靠品牌证据，不根据图标猜为宝宝巴士。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "宝宝巴士",
+        "儿童"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "xiaomi-settings",
+      "name": "电视设置",
+      "category": "设备内置",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.xiaomi.mitv.settings",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "电视设置",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "电视设置",
+          "pinyin": "dianshishezhi",
+          "initials": "dssz",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "系统设置",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "系统设置",
+          "pinyin": "xitongshezhi",
+          "initials": "xtsz",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "小米电视设置",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "小米电视设置",
+          "pinyin": "xiaomidianshishezhi",
+          "initials": "xmdssz",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "小米"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "xiaomi-manager",
+      "name": "电视管家",
+      "category": "设备内置",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.xiaomi.mitv.tvmanager",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "电视管家",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "电视管家",
+          "pinyin": "dianshiguanjia",
+          "initials": "dsgj",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "小米电视管家",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "小米电视管家",
+          "pinyin": "xiaomidianshiguanjia",
+          "initials": "xmdsgj",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "清理",
+        "小米"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "xiaomi-calendar",
+      "name": "日历",
+      "category": "设备内置",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.xiaomi.mitv.calendar",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "日历",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "日历",
+          "pinyin": "rili",
+          "initials": "rl",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "小米日历",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "小米日历",
+          "pinyin": "xiaomirili",
+          "initials": "xmrl",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "小米"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "xiaomi-weather",
+      "name": "天气",
+      "category": "设备内置",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.xiaomi.tweather",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "天气",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "天气",
+          "pinyin": "tianqi",
+          "initials": "tq",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "小米天气",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "小米天气",
+          "pinyin": "xiaomitianqi",
+          "initials": "xmtq",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "小米"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "xiaomi-tvhome",
+      "name": "小米原生桌面",
+      "category": "设备内置",
+      "identityStatus": "pending_label_review",
+      "bindings": [
+        {
+          "packageName": "com.mitv.tvhome",
+          "evidence": "device_package_observed_label_pending",
+          "sourceIds": [
+            "device-order"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "小米原生桌面",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "小米原生桌面",
+          "pinyin": "xiaomiyuanshengzhuomian",
+          "initials": "xmyszm",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "小米桌面",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "小米桌面",
+          "pinyin": "xiaomizhuomian",
+          "initials": "xmzm",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "绑定实机组件包；不以“首页”“Home”泛词替代所有桌面应用。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "首页",
+        "Home"
+      ],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "xiaomi-voice",
+      "name": "语音设置",
+      "category": "设备内置",
+      "identityStatus": "pending_label_review",
+      "bindings": [
+        {
+          "packageName": "com.xiaomi.voicecontrol",
+          "evidence": "device_package_observed_label_pending",
+          "sourceIds": [
+            "device-order"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "语音设置",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "语音设置",
+          "pinyin": "yuyinshezhi",
+          "initials": "yysz",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "包名已在顺序快照观察；当前标签尚无本次本地图像证据，转待核实标签。",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [],
+      "review": "pending_product_review"
+    },
+    {
+      "id": "xiaomi-handbook",
+      "name": "玩机手册",
+      "category": "设备内置",
+      "identityStatus": "bound_draft",
+      "bindings": [
+        {
+          "packageName": "com.xiaomi.mitv.handbook",
+          "evidence": "device_observed",
+          "sourceIds": [
+            "device-order",
+            "device-home",
+            "device-scrolled"
+          ],
+          "review": "draft"
+        }
+      ],
+      "terms": [
+        {
+          "text": "玩机手册",
+          "kind": "product_name",
+          "match": "partial",
+          "normalized": "玩机手册",
+          "pinyin": "wanjishouce",
+          "initials": "wjsc",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "电视说明书",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "电视说明书",
+          "pinyin": "dianshishuomingshu",
+          "initials": "dssms",
+          "phoneticReview": "library_baseline"
+        },
+        {
+          "text": "小米电视手册",
+          "kind": "alias_proposal",
+          "match": "partial",
+          "normalized": "小米电视手册",
+          "pinyin": "xiaomidianshishouce",
+          "initials": "xmdssc",
+          "phoneticReview": "library_baseline"
+        }
+      ],
+      "sourceIds": [],
+      "notes": "",
+      "lifecycle": "not_assessed",
+      "excludedAliases": [
+        "小米"
+      ],
+      "review": "pending_product_review"
+    }
+  ]
+}

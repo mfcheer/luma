@@ -88,6 +88,7 @@ public final class GridWallView extends ScrollView {
   }
 
   public void setEntries(List<AppEntry> apps, String focusKey, boolean animate, boolean takeFocus) {
+    Map<String, AppEntry> previous = new HashMap<>(entries);
     entries.clear();
     List<String> next = new ArrayList<>();
     for (AppEntry app : apps) {
@@ -95,9 +96,13 @@ public final class GridWallView extends ScrollView {
       next.add(app.id);
     }
     for (String key : new ArrayList<>(cards.keySet())) {
-      if (!next.contains(key)) {
-        content.removeView(cards.remove(key));
-      }
+      AppEntry before = previous.get(key), after = entries.get(key);
+      boolean changed =
+          before != null
+              && after != null
+              && (!before.label.equals(after.label)
+                  || !before.fingerprint.equals(after.fingerprint));
+      if (after == null || changed) content.removeView(cards.remove(key));
     }
     order = next;
     int rows = Math.max(1, (order.size() + COLUMNS - 1) / COLUMNS);

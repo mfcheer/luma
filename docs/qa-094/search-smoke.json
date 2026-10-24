@@ -1,0 +1,32 @@
+{
+  "checks": [
+    {
+      "theme": "light",
+      "installedYouTubeAlias": true,
+      "menuNoUsage": true,
+      "frequencyTieBreak": true,
+      "returnNoDirectoryWork": true,
+      "returnFocusAndRankFrozen": true,
+      "actualProcessDeathFrozen": true,
+      "nextSearchLearns": true,
+      "searchAndHomeSingleCount": true,
+      "liveUninstallAndReinstall": true,
+      "homeOrderUnchanged": true
+    },
+    {
+      "theme": "dark",
+      "installedYouTubeAlias": true,
+      "menuNoUsage": true,
+      "frequencyTieBreak": true,
+      "returnNoDirectoryWork": true,
+      "returnFocusAndRankFrozen": true,
+      "actualProcessDeathFrozen": true,
+      "nextSearchLearns": true,
+      "searchAndHomeSingleCount": true,
+      "liveUninstallAndReinstall": true,
+      "homeOrderUnchanged": true
+    }
+  ],
+  "originalPreferencesAndUsageRestored": true,
+  "fixtureApkRestored": true
+}

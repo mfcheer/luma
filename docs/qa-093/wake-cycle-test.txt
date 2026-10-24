@@ -1,0 +1,1 @@
+PASS: initial awake/asleep, duplicate events, 1000 sleep/wake cycles

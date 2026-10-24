@@ -1,0 +1,91 @@
+{
+  "statistics": {
+    "records": 68,
+    "terms": 200,
+    "exactPackageBindings": 60,
+    "identityStatusCounts": {
+      "pending_label_review": 9,
+      "bound_draft": 48,
+      "pending_binding": 11
+    },
+    "categories": {
+      "国内视频": 12,
+      "音乐K歌": 6,
+      "本地媒体与NAS": 12,
+      "国际影音": 12,
+      "投屏与工具": 11,
+      "游戏与健身": 6,
+      "儿童教育": 2,
+      "设备内置": 7
+    },
+    "crossProductTokenCollisions": 2,
+    "phoneticOverrides": 8
+  },
+  "crossProductCollisions": [
+    {
+      "token": "iqiyi",
+      "hits": [
+        {
+          "appId": "iqiyi-cn-tv",
+          "term": "iqiyi",
+          "field": "normalized"
+        },
+        {
+          "appId": "iqiyi-cn-tv",
+          "term": "iqiyi",
+          "field": "pinyin"
+        },
+        {
+          "appId": "iqiyi-cn-tv",
+          "term": "iqiyi",
+          "field": "initials"
+        },
+        {
+          "appId": "iqiyi-intl-tv",
+          "term": "iQIYI",
+          "field": "normalized"
+        },
+        {
+          "appId": "iqiyi-intl-tv",
+          "term": "iQIYI",
+          "field": "pinyin"
+        },
+        {
+          "appId": "iqiyi-intl-tv",
+          "term": "iQIYI",
+          "field": "initials"
+        }
+      ]
+    },
+    {
+      "token": "mgtv",
+      "hits": [
+        {
+          "appId": "mango-tv",
+          "term": "芒果TV",
+          "field": "initials"
+        },
+        {
+          "appId": "mango-tv",
+          "term": "MGTV",
+          "field": "normalized"
+        },
+        {
+          "appId": "mango-tv",
+          "term": "MGTV",
+          "field": "pinyin"
+        },
+        {
+          "appId": "mango-tv",
+          "term": "MGTV",
+          "field": "initials"
+        },
+        {
+          "appId": "migu-tv",
+          "term": "咪咕TV",
+          "field": "initials"
+        }
+      ]
+    }
+  ]
+}

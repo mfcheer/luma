@@ -36,6 +36,7 @@ public final class AppActionMenuView extends FrameLayout {
   private final float unit;
   private final View scrim;
   private final LinearLayout panel;
+  private final View initialFocus;
   private final PathInterpolator settle = new PathInterpolator(.18f, .85f, .25f, 1);
   private boolean closing, selected;
 
@@ -171,7 +172,7 @@ public final class AppActionMenuView extends FrameLayout {
     panel.setScaleX(.94f);
     panel.setScaleY(.94f);
     panel.setTranslationY(px(12));
-    controls.get(0).requestFocus();
+    initialFocus = controls.get(0);
   }
 
   private TextView text(Context c, String value, float size, int color) {
@@ -202,6 +203,11 @@ public final class AppActionMenuView extends FrameLayout {
   }
 
   public void reveal() {
+    // Request after attachment: a detached row can still inherit touch-mode state.
+    post(
+        () -> {
+          if (!closing && isAttachedToWindow()) initialFocus.requestFocus();
+        });
     scrim.animate().alpha(1).setDuration(220).start();
     panel
         .animate()

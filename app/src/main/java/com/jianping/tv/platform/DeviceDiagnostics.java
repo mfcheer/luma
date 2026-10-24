@@ -95,6 +95,18 @@ public final class DeviceDiagnostics {
         + "）"
         + "\nHome 解析组件  "
         + (resolved == null ? "未解析" : resolved.flattenToShortString())
+        + "\n自动进入  "
+        + (p.bootEnabled() ? "已开启" : "已关闭")
+        + "\n唤醒支持  "
+        + (AutoEntry.supportsWake() ? "Android 6–9 实验适配" : "此系统尚未适配")
+        + "\n唤醒监听  "
+        + (WakeEntryService.running() ? "正在运行" : p.read("wakeMonitor"))
+        + "\n最近亮屏  "
+        + p.read("wakeReceived")
+        + "\n唤醒请求  "
+        + p.read("wakeAttempt")
+        + "\n唤醒进入  "
+        + p.read("wakeVisible")
         + "\n开机通知  "
         + p.read("bootReceived")
         + "\n启动请求  "

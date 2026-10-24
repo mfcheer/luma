@@ -1,0 +1,9 @@
+{
+  "version": "0.9.4",
+  "versionCode": 22,
+  "emulatorInstalledApkMatchesOutput": true,
+  "sha256": "0a2cb97d345093a494cc1bab8db252901a46a80d814b769577eb52e852613220",
+  "physicalTvUpdated": true,
+  "websitePublished": false,
+  "physicalTvInstallRecord": "tv-install.json"
+}

@@ -2,7 +2,7 @@ plugins { id 'com.android.application' }
 android {
  namespace 'com.jianping.tv'
  compileSdk 35
- defaultConfig { applicationId 'com.jianping.tv'; minSdk 23; targetSdk 35; versionCode 20; versionName '0.9.2' }
+ defaultConfig { applicationId 'com.jianping.tv'; minSdk 23; targetSdk 35; versionCode 22; versionName '0.9.4' }
  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
  lint { abortOnError true }
 }

@@ -13,6 +13,7 @@ public final class BootReceiver extends BroadcastReceiver {
     Preferences p = new Preferences(c);
     p.record("bootReceived", DateFormat.getDateTimeInstance().format(new Date()));
     if (!p.bootEnabled()) return;
+    AutoEntry.sync(c);
     p.record("bootAttempt", "已请求打开；是否成功请查看界面记录");
     try {
       c.startActivity(

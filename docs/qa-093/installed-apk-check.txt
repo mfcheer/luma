@@ -1,0 +1,1 @@
+PASS: installed APK hash matches output; real unified switch enabled; original order; TV asleep

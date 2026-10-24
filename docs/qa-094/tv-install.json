@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-24",
+  "device": "Xiaomi MiTV-ANSP0",
+  "android": 9,
+  "api": 28,
+  "previousVersion": "0.9.3",
+  "version": "0.9.4",
+  "versionCode": 22,
+  "installReplace": "Success",
+  "sameSigningCertificate": true,
+  "installedApkMatchesOutput": true,
+  "sha256": "0a2cb97d345093a494cc1bab8db252901a46a80d814b769577eb52e852613220",
+  "launcherPreferencesPreserved": true,
+  "onlyPreferenceChanged": "homeVisible (launch diagnostics timestamp)",
+  "defaultHomePreserved": true,
+  "processRunning": true,
+  "wakeEntryServiceRunning": true,
+  "crashBufferEmpty": true,
+  "finalDisplayState": "OFF",
+  "interactiveSearchValidation": false,
+  "note": "Install and runtime/process checks only; TV was asleep during UI inspection and was not reawakened."
+}
