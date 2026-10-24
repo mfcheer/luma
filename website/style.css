@@ -145,6 +145,7 @@ video {
 }
 .hero h1 span {
   color: #858a92;
+  margin-inline-start: 0.14em;
 }
 .hero-copy {
   font-size: 18px;
@@ -554,12 +555,6 @@ img {
   .hero h1 {
     font-size: clamp(62px, 6.5vw, 88px);
   }
-  .hero h1 > br {
-    display: none;
-  }
-  .hero h1 span {
-    margin-inline-start: 0.14em;
-  }
   .hero-copy {
     font-size: 16px;
     margin: 22px 0;
@@ -660,9 +655,10 @@ img {
     margin-bottom: 18px;
   }
   .hero h1 {
-    font-size: 59px;
+    font-size: clamp(32px, 10.5vw, 59px);
     letter-spacing: -0.04em;
     line-height: 1.19;
+    white-space: nowrap;
   }
   .hero-copy {
     font-size: 14px;
