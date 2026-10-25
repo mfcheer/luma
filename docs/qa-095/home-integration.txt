@@ -1,0 +1,2 @@
+INSTRUMENTATION_RESULT: result=PASS: 16 integration checks: candidates, single/multiple, remembered/stale, explicit launch, rejection, default Home and pending wake cancellation
+INSTRUMENTATION_CODE: -1

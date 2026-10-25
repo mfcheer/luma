@@ -1,0 +1,12 @@
+{
+  "device": "MiTV-ANSP0",
+  "api": 28,
+  "declaredHome": "com.mitv.tvhome/com.mitv.tvhome.MainActivityUserMode",
+  "declaredHomePermission": "com.mitv.tvhome.permission.HOME_STATE",
+  "declaredHomePermissionProtection": "signature",
+  "publicAlias": "com.mitv.tvhome/com.mitv.tvhome.MainActivity",
+  "aliasTarget": "com.mitv.tvhome.MainActivityUserMode",
+  "aliasExported": true,
+  "aliasPermission": null,
+  "source": "Installed package manifest and PackageManager resolve-activity output; no permission changes"
+}

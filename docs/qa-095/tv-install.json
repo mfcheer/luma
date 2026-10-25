@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-24",
+  "device": "MiTV-ANSP0",
+  "api": 28,
+  "previousVersion": "0.9.4",
+  "version": "0.9.5",
+  "versionCode": 23,
+  "installReplace": "Success",
+  "sameSigningCertificate": true,
+  "installedApkMatchesOutput": true,
+  "sha256": "4c2e4430752b86f23cc4f30af7300c30a452f31e538fb6c396f6d6ccc514a022",
+  "optionsAndOrderPreserved": true,
+  "usagePreserved": true,
+  "defaultHomePreserved": true,
+  "realDesktopSwitchTestCompleted": true,
+  "realDesktopSwitchTestStatus": "Passed: first and remembered public-alias entry, native foreground stays stable, actual Home returns to Still grid.",
+  "currentForeground": "Still home before standby",
+  "powerRestorationPending": false,
+  "fixturesInstalled": false,
+  "finalPower": "Asleep",
+  "displayState": "OFF",
+  "realDesktopSwitchRecord": "tv-smoke.json"
+}

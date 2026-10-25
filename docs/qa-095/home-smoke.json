@@ -1,0 +1,34 @@
+{
+  "version": "0.9.5",
+  "checks": [
+    {
+      "theme": "light",
+      "singleDirectOpen": true,
+      "homeFollowsSystemDefault": true,
+      "hintFocusOnly": true,
+      "lastRowScrollsFullyVisible": true,
+      "noImmediateReturn": true
+    },
+    {
+      "theme": "dark",
+      "singleDirectOpen": true,
+      "homeFollowsSystemDefault": true,
+      "hintFocusOnly": true,
+      "lastRowScrollsFullyVisible": true,
+      "noImmediateReturn": true
+    },
+    {
+      "protectedHomePublicAlias": true
+    },
+    {
+      "multiplePicker": true,
+      "pickerStartsOnFirstDesktop": true,
+      "cancelRetainsFocus": true,
+      "rememberedDirectOpen": true,
+      "removedTargetReopensPicker": true
+    }
+  ],
+  "preferencesRestored": true,
+  "defaultHomeRestored": true,
+  "fixturesRemoved": true
+}

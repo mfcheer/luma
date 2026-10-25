@@ -56,6 +56,14 @@ public final class Preferences {
     prefs.edit().putBoolean("showAppNames", visible).apply();
   }
 
+  public String otherHome() {
+    return prefs.getString("otherHome", "");
+  }
+
+  public void otherHome(String component) {
+    prefs.edit().putString("otherHome", component).apply();
+  }
+
   public void record(String key, String value) {
     prefs.edit().putString(key, value).commit();
   }

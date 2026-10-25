@@ -15,6 +15,7 @@ public final class WakeEntryService extends Service {
   private static final String CHANNEL = "still_auto_entry";
   private static final int NOTIFICATION = 21;
   private static boolean active;
+  private static WakeEntryService instance;
   private final Handler handler = new Handler(Looper.getMainLooper());
   private Preferences prefs;
   private PowerManager power;
@@ -24,6 +25,14 @@ public final class WakeEntryService extends Service {
 
   public static boolean running() {
     return active;
+  }
+
+  /** A deliberate desktop switch wins over a return already queued for this wake cycle. */
+  public static void cancelPendingReturn() {
+    if (instance == null) return;
+    instance.handler.removeCallbacks(instance.returnHome);
+    instance.handler.removeCallbacks(instance.confirmEntry);
+    instance.pendingId = 0;
   }
 
   private final Runnable confirmEntry =
@@ -86,7 +95,8 @@ public final class WakeEntryService extends Service {
       return;
     }
     try {
-      NotificationManager notifications = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+      NotificationManager notifications =
+          (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
       if (Build.VERSION.SDK_INT >= 26) {
         NotificationChannel channel =
             new NotificationChannel(CHANNEL, "自动进入 Still", NotificationManager.IMPORTANCE_LOW);
@@ -96,9 +106,12 @@ public final class WakeEntryService extends Service {
       }
       Intent open = new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
       PendingIntent content =
-          PendingIntent.getActivity(this, 0, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+          PendingIntent.getActivity(
+              this, 0, open, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
       Notification.Builder notification =
-          Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(this, CHANNEL) : new Notification.Builder(this);
+          Build.VERSION.SDK_INT >= 26
+              ? new Notification.Builder(this, CHANNEL)
+              : new Notification.Builder(this);
       startForeground(
           NOTIFICATION,
           notification
@@ -117,6 +130,7 @@ public final class WakeEntryService extends Service {
       registerReceiver(screen, filter);
       registered = true;
       active = true;
+      instance = this;
       prefs.record("wakeMonitor", now() + " · 正在监听待机唤醒");
       Log.i("StillWake", "monitorStarted interactive=" + power.isInteractive());
     } catch (RuntimeException e) {
@@ -137,6 +151,7 @@ public final class WakeEntryService extends Service {
   @Override
   public void onDestroy() {
     active = false;
+    if (instance == this) instance = null;
     handler.removeCallbacksAndMessages(null);
     if (registered) unregisterReceiver(screen);
     stopForeground(true);

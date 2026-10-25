@@ -14,9 +14,10 @@ import android.view.*;
 import android.widget.*;
 import com.jianping.tv.R;
 import com.jianping.tv.data.*;
-import com.jianping.tv.platform.DeviceDiagnostics;
-import com.jianping.tv.platform.AutoEntry;
 import com.jianping.tv.platform.AppLaunch;
+import com.jianping.tv.platform.AutoEntry;
+import com.jianping.tv.platform.DeviceDiagnostics;
+import com.jianping.tv.platform.OtherHome;
 import com.jianping.tv.platform.WakeEntryService;
 import java.text.*;
 import java.util.*;
@@ -42,7 +43,7 @@ public final class MainActivity extends Activity {
   private TextView clock, calendarDate, moveHint;
   private GridWallView homeWall;
   private View menuReturn;
-  private String selectedSetting = "默认桌面", selectedId = "", page = "home";
+  private String selectedSetting = "打开电视原生桌面", selectedId = "", page = "home";
   private String pendingSearchTarget = "";
   private AmbientBackgroundView ambient;
   private float scale = 1;
@@ -710,14 +711,37 @@ public final class MainActivity extends Activity {
     list.addView(heading, new LinearLayout.LayoutParams(-1, px(30)));
     Map<String, SettingsRowView> rows = new LinkedHashMap<>();
     LinearLayout desktop = settingsGroup(list, "桌面", false);
-    String home = DeviceDiagnostics.homeLabel(this);
+    TextView desktopHint = text("", 11, palette.muted);
+    desktopHint.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
+    put(desktopHint, 212, 509, 552, 20);
     SettingsRowView first =
-        settingsRow(desktop, rows, "默认桌面", R.drawable.settings_home, home, false);
-    homeSetting = first;
+        settingsRow(desktop, rows, "打开电视原生桌面", R.drawable.settings_open_desktop, "", false);
     first.setId(R.id.first_app);
-    first.setOnClickListener(v -> requestHome());
+    first.setOnClickListener(v -> openOtherHome());
+    View.OnFocusChangeListener desktopFocus = first.getOnFocusChangeListener();
+    first.setOnFocusChangeListener(
+        (v, focused) -> {
+          desktopFocus.onFocusChange(v, focused);
+          desktopHint.setText(
+              focused
+                  ? (getPackageName().equals(DeviceDiagnostics.homePackage(this))
+                      ? "临时打开，按 Home 返回 Still"
+                      : "临时打开，不更改默认桌面")
+                  : "");
+        });
+    String home = DeviceDiagnostics.homeLabel(this);
+    SettingsRowView defaultHome =
+        settingsRow(desktop, rows, "默认桌面", R.drawable.settings_home, home, false);
+    homeSetting = defaultHome;
+    defaultHome.setOnClickListener(v -> requestHome());
     SettingsRowView boot =
-        settingsRow(desktop, rows, "自动进入 Still", R.drawable.settings_power_settings_new, AutoEntry.supportsWake() ? "" : "仅开机", true);
+        settingsRow(
+            desktop,
+            rows,
+            "自动进入 Still",
+            R.drawable.settings_power_settings_new,
+            AutoEntry.supportsWake() ? "" : "仅开机",
+            true);
     boot.checked(prefs.bootEnabled());
     boot.setOnClickListener(
         v -> {
@@ -725,9 +749,10 @@ public final class MainActivity extends Activity {
           boot.checked(prefs.bootEnabled());
           boolean ready = AutoEntry.sync(this);
           if (prefs.bootEnabled())
-            toast(AutoEntry.supportsWake()
-                ? (ready ? "已开启：开机和待机唤醒后返回 Still" : "开机启动已开启，唤醒监听未能启动，请查看设备信息")
-                : "此系统暂仅尝试开机进入，待机唤醒尚未适配");
+            toast(
+                AutoEntry.supportsWake()
+                    ? (ready ? "已开启：开机和待机唤醒后返回 Still" : "开机启动已开启，唤醒监听未能启动，请查看设备信息")
+                    : "此系统暂仅尝试开机进入，待机唤醒尚未适配");
           else toast("已关闭自动进入 Still");
         });
     SettingsRowView names =
@@ -760,7 +785,8 @@ public final class MainActivity extends Activity {
         v ->
             new AlertDialog.Builder(this)
                 .setTitle("设备与启动信息")
-                .setMessage(DeviceDiagnostics.report(this) + "\n\n自动进入由同一个开关控制；系统重启、待机唤醒和长时间待机需分别验证。")
+                .setMessage(
+                    DeviceDiagnostics.report(this) + "\n\n自动进入由同一个开关控制；系统重启、待机唤醒和长时间待机需分别验证。")
                 .setPositiveButton(
                     "复制报告",
                     (d, w) -> {
@@ -866,37 +892,41 @@ public final class MainActivity extends Activity {
   }
 
   private List<android.content.pm.ResolveInfo> otherHomes() {
-    List<android.content.pm.ResolveInfo> result = new ArrayList<>();
-    for (android.content.pm.ResolveInfo info : DeviceDiagnostics.homeCandidates(this))
-      if (!getPackageName().equals(info.activityInfo.packageName)
-          && DeviceDiagnostics.usableHome(info)) result.add(info);
-    return result;
+    return new OtherHome(this).candidates();
   }
 
   private void openOtherHome() {
-    List<android.content.pm.ResolveInfo> candidates = otherHomes();
+    OtherHome launcher = new OtherHome(this);
+    List<android.content.pm.ResolveInfo> candidates = launcher.candidates();
+    ComponentName preferred = launcher.preferred(candidates);
     if (candidates.isEmpty()) {
-      toast("未发现其他可打开的桌面");
+      toast("暂时无法打开电视原生桌面");
+      return;
+    }
+    if (preferred != null) {
+      if (!launcher.open(preferred)) toast("暂时无法打开电视原生桌面");
       return;
     }
     String[] labels = new String[candidates.size()];
     for (int i = 0; i < labels.length; i++)
       labels[i] = candidates.get(i).loadLabel(getPackageManager()).toString();
-    new AlertDialog.Builder(this)
-        .setTitle("打开其他桌面")
-        .setItems(
-            labels,
-            (d, which) -> {
-              android.content.pm.ActivityInfo activity = candidates.get(which).activityInfo;
-              safeStart(
-                  DeviceDiagnostics.homeIntent()
-                      .setComponent(new ComponentName(activity.packageName, activity.name))
-                      .addFlags(
-                          Intent.FLAG_ACTIVITY_NEW_TASK
-                              | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED));
-            })
-        .setNegativeButton("取消", null)
-        .show();
+    AlertDialog picker =
+        new AlertDialog.Builder(this)
+            .setTitle("选择电视桌面")
+            .setItems(
+                labels,
+                (d, which) -> {
+                  if (!launcher.open(OtherHome.component(candidates.get(which))))
+                    toast("暂时无法打开电视原生桌面");
+                })
+            .setNegativeButton("取消", null)
+            .create();
+    picker.setOnShowListener(
+        d -> {
+          picker.getListView().requestFocus();
+          picker.getListView().setSelection(0);
+        });
+    picker.show();
   }
 
   private void openHomeSettings() {

@@ -1,0 +1,27 @@
+{
+  "version": "0.9.5",
+  "device": "MiTV-ANSP0",
+  "api": 28,
+  "checks": [
+    {
+      "case": "first-entry",
+      "openedPublicAlias": true,
+      "nativeStaysForegroundSeconds": 4,
+      "homeReturnsToStillGrid": true
+    },
+    {
+      "case": "remembered-entry",
+      "openedPublicAlias": true,
+      "nativeStaysForegroundSeconds": 4,
+      "homeReturnsToStillGrid": true
+    }
+  ],
+  "optionsAndOrderPreserved": true,
+  "usagePreserved": true,
+  "defaultHomePreserved": true,
+  "finalPage": "Still home",
+  "finalPower": "Asleep",
+  "fixturesInstalled": false,
+  "sleepWakeTested": false,
+  "displayState": "OFF"
+}

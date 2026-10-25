@@ -1,0 +1,12 @@
+{
+  "version": "0.9.5",
+  "versionCode": 23,
+  "sha256": "4c2e4430752b86f23cc4f30af7300c30a452f31e538fb6c396f6d6ccc514a022",
+  "emulatorInstalledApkMatchesOutput": true,
+  "physicalTvUpdated": true,
+  "tvConnection": "authorized",
+  "websitePublished": false,
+  "physicalTvInstallRecord": "tv-install.json",
+  "realDesktopSwitchTestCompleted": true,
+  "finalTvPower": "Asleep"
+}
