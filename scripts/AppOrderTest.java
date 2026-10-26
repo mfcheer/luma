@@ -26,9 +26,25 @@ public final class AppOrderTest {
         || !AppOrder.moveToFront(promoted, "b/.Tv").equals(promoted)
         || !AppOrder.moveToFront(original, "gone/.Tv").equals(original))
       throw new AssertionError("Promotion must preserve other entries/input and be stable");
+    for (String target : original) {
+      List<String> demoted = AppOrder.moveToEnd(original, target);
+      List<String> others = new ArrayList<>(original);
+      others.remove(target);
+      if (!demoted.get(demoted.size() - 1).equals(target)
+          || !demoted.subList(0, demoted.size() - 1).equals(others)
+          || !AppOrder.moveToEnd(demoted, target).equals(demoted)
+          || !AppOrder.reconcile(demoted, original).equals(demoted)
+          || !original.equals(Arrays.asList("a/.Tv", "b/.Tv", "new/.Tv")))
+        throw new AssertionError("Move to end must preserve other entries/input and survive refresh");
+    }
+    if (!AppOrder.moveToEnd(original, "gone/.Tv").equals(original)
+        || !AppOrder.moveToEnd(Collections.emptyList(), "gone/.Tv").isEmpty()
+        || !AppOrder.moveToEnd(Collections.singletonList("a/.Tv"), "a/.Tv")
+            .equals(Collections.singletonList("a/.Tv")))
+      throw new AssertionError("Move to end must handle missing, empty and single-entry orders");
     System.out.println(
         "PASS: fresh install, legacy prefix, append/remove/deduplicate, activity rename, TV entry"
             + " preference, invalid IDs, empty list, refresh stability and immutable/stable"
-            + " promotion");
+            + " promotion and move to end");
   }
 }

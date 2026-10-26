@@ -13,6 +13,13 @@ public final class AppOrder {
     return result;
   }
 
+  /** Send one existing entry to the end while preserving every other entry's relative order. */
+  public static List<String> moveToEnd(List<String> order, String id) {
+    List<String> result = new ArrayList<>(order);
+    if (result.remove(id)) result.add(id);
+    return result;
+  }
+
   public static List<String> reconcile(List<String> previous, List<String> available) {
     Map<String, String> remaining = new LinkedHashMap<>();
     for (String id : available) {

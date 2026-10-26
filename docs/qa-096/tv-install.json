@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-25",
+  "device": "MiTV-ANSP0",
+  "api": 28,
+  "previousVersion": "0.9.5",
+  "version": "0.9.6",
+  "versionCode": 24,
+  "installReplace": "Success",
+  "sameSigningCertificate": true,
+  "installedApkMatchesOutput": true,
+  "sha256": "035bf1e6d3761529387dc93e56dcd2c40a7c4ee1ec20ac503fa958ee29441b95",
+  "optionsAndOrderPreserved": true,
+  "usagePreserved": true,
+  "defaultHomePreserved": true,
+  "fixturesInstalled": false,
+  "uiInteractionTested": false,
+  "finalPower": "Asleep",
+  "displayState": "OFF"
+}

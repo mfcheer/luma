@@ -1,0 +1,23 @@
+{
+  "checks": [
+    {
+      "theme": "light",
+      "homeAndSearchMoveLast": true,
+      "relativeOrderAndPersistence": true,
+      "repeatedActionStable": true,
+      "queryAndFocusPreserved": true,
+      "homeHandoff": true,
+      "existingFrontMoveInfoLocateAndCancel": true
+    },
+    {
+      "theme": "dark",
+      "homeAndSearchMoveLast": true,
+      "relativeOrderAndPersistence": true,
+      "repeatedActionStable": true,
+      "queryAndFocusPreserved": true,
+      "homeHandoff": true,
+      "existingFrontMoveInfoLocateAndCancel": true
+    }
+  ],
+  "originalPreferencesRestored": true
+}

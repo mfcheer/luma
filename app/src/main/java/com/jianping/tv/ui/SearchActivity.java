@@ -468,6 +468,9 @@ public final class SearchActivity extends Activity {
             "移到最前", R.drawable.menu_move_first, false, () -> moveToFront(app)));
     items.add(
         new AppActionMenuView.Item(
+            "移到最后", R.drawable.menu_move_last, false, () -> moveToEdge(app, false)));
+    items.add(
+        new AppActionMenuView.Item(
             "在首页定位",
             R.drawable.settings_home,
             false,
@@ -520,18 +523,23 @@ public final class SearchActivity extends Activity {
   }
 
   private void moveToFront(AppEntry app) {
+    moveToEdge(app, true);
+  }
+
+  private void moveToEdge(AppEntry app, boolean first) {
     Preferences prefs = new Preferences(this);
     List<String> order = prefs.appOrder();
     if (!order.contains(app.id)) {
       Toast.makeText(this, "应用已变更，请返回首页刷新列表", Toast.LENGTH_LONG).show();
       return;
     }
-    if (order.get(0).equals(app.id)) {
-      Toast.makeText(this, "已在首页最前", Toast.LENGTH_SHORT).show();
+    if (order.get(first ? 0 : order.size() - 1).equals(app.id)) {
+      Toast.makeText(this, first ? "已在首页最前" : "已在首页最后", Toast.LENGTH_SHORT).show();
       return;
     }
     // Preserve entries installed while search was open, even if absent from its snapshot.
-    prefs.saveAppOrder(AppOrder.moveToFront(order, app.id));
+    prefs.saveAppOrder(
+        first ? AppOrder.moveToFront(order, app.id) : AppOrder.moveToEnd(order, app.id));
     homeTarget = app.id;
     publishHomeTarget();
     List<String> available = new ArrayList<>();
@@ -541,7 +549,7 @@ public final class SearchActivity extends Activity {
     // Explicit home reordering reuses prepared terms and the same session's frozen usage.
     index = SearchIndex.prepare(this, ordered, usageSnapshot);
     updateResults(true);
-    Toast.makeText(this, "已移到首页最前", Toast.LENGTH_SHORT).show();
+    Toast.makeText(this, first ? "已移到首页最前" : "已移到首页最后", Toast.LENGTH_SHORT).show();
   }
 
   private void publishHomeTarget() {

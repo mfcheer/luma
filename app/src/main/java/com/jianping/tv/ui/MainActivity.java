@@ -575,6 +575,9 @@ public final class MainActivity extends Activity {
             "移到最前", R.drawable.menu_move_first, false, () -> moveToFront(app)));
     items.add(
         new AppActionMenuView.Item(
+            "移到最后", R.drawable.menu_move_last, false, () -> moveToEdge(app, false)));
+    items.add(
+        new AppActionMenuView.Item(
             "应用信息",
             R.drawable.menu_info,
             false,
@@ -621,16 +624,21 @@ public final class MainActivity extends Activity {
   }
 
   private void moveToFront(AppEntry app) {
+    moveToEdge(app, true);
+  }
+
+  private void moveToEdge(AppEntry app, boolean first) {
     List<String> order = AppOrder.reconcile(prefs.appOrder(), installedIds());
     if (!order.contains(app.id)) {
       toast("应用已变更，请重试");
       return;
     }
-    prefs.saveAppOrder(AppOrder.moveToFront(order, app.id));
+    prefs.saveAppOrder(
+        first ? AppOrder.moveToFront(order, app.id) : AppOrder.moveToEnd(order, app.id));
     selectedId = app.id;
     homeOffset = 0;
     homeWall.setEntries(orderedApps(), selectedId, false);
-    toast("已移到最前");
+    toast(first ? "已移到最前" : "已移到最后");
   }
 
   private void beginMove(AppEntry app) {
