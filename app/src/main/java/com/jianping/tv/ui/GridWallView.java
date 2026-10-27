@@ -20,6 +20,10 @@ public final class GridWallView extends ScrollView {
   public static final int COLUMNS = 5;
 
   public interface Listener {
+    default String label(AppEntry app) {
+      return app.label;
+    }
+
     Drawable artwork(AppEntry app);
 
     Drawable preview(AppEntry app);
@@ -114,7 +118,7 @@ public final class GridWallView extends ScrollView {
           new AppCardView(
               getContext(),
               unit,
-              app.label,
+              listener.label(app),
               listener.artwork(app),
               listener.preview(app),
               listener.accent(app),
@@ -148,6 +152,7 @@ public final class GridWallView extends ScrollView {
       cards.put(key, card);
       content.addView(card);
     }
+    refreshLabels();
     layoutCards(animate);
     movingKey(movingKey);
     navigation();
@@ -164,6 +169,10 @@ public final class GridWallView extends ScrollView {
       listener.focused(entries.get(key), key);
       post(() -> notifyAnchor(true));
     }
+  }
+
+  public void refreshLabels() {
+    for (String id : order) cards.get(id).label(listener.label(entries.get(id)));
   }
 
   public void movingKey(String key) {

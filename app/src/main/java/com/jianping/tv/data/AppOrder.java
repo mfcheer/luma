@@ -6,6 +6,13 @@ import java.util.*;
 public final class AppOrder {
   private AppOrder() {}
 
+  /** Retain the selected app, or its nearest remaining slot after a confirmed removal. */
+  public static String focusAfterRemoval(List<String> before, List<String> after, String selected) {
+    if (after.contains(selected)) return selected;
+    if (after.isEmpty()) return "";
+    return after.get(Math.max(0, Math.min(before.indexOf(selected), after.size() - 1)));
+  }
+
   /** Promote one existing entry without mutating the caller's order or other positions. */
   public static List<String> moveToFront(List<String> order, String id) {
     List<String> result = new ArrayList<>(order);

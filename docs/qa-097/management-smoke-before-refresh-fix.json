@@ -1,0 +1,17 @@
+{
+  "themeFilter": "dark",
+  "uninstallOnly": true,
+  "checks": [
+    {
+      "theme": "dark",
+      "originalAndCustomSearch": true,
+      "systemUninstallCancel": true,
+      "actualSystemConfirmedUninstall": true,
+      "originalHomeFocusPreserved": true,
+      "adjacentSearchFocus": true,
+      "reinstallAndSystemAppProtection": true,
+      "homeSystemUninstallCancelSuccessAndLastCardFallback": true
+    }
+  ],
+  "originalPreferencesNamesUsageAndFixtureRestored": true
+}

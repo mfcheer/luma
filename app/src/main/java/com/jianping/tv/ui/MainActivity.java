@@ -15,6 +15,7 @@ import android.widget.*;
 import com.jianping.tv.R;
 import com.jianping.tv.data.*;
 import com.jianping.tv.platform.AppLaunch;
+import com.jianping.tv.platform.AppUninstall;
 import com.jianping.tv.platform.AutoEntry;
 import com.jianping.tv.platform.DeviceDiagnostics;
 import com.jianping.tv.platform.OtherHome;
@@ -26,6 +27,9 @@ import java.util.concurrent.*;
 /** Native TV launcher; persistent data remains independent from its remote-driven presentation. */
 public final class MainActivity extends Activity {
   private Preferences prefs;
+  private AppNames names;
+  private AppRenameDialog renameDialog;
+  private String pendingUninstall = "";
   private UiPalette palette;
   private AppRepository repository;
   private AppCatalogCache catalog;
@@ -77,6 +81,7 @@ public final class MainActivity extends Activity {
   @Override
   public void onCreate(Bundle state) {
     prefs = new Preferences(this);
+    names = new AppNames(this);
     palette = UiPalette.from(prefs.lightTheme());
     setTheme(palette.light ? R.style.AppThemeLight : R.style.AppTheme);
     super.onCreate(state);
@@ -92,6 +97,7 @@ public final class MainActivity extends Activity {
       selectedId = state.getString("selected", "");
       homeOffset = state.getInt("homeOffset", 0);
       pendingSearchTarget = state.getString("searchTarget", "");
+      pendingUninstall = state.getString("uninstall", "");
     }
     recordEntry(getIntent());
     AutoEntry.sync(this);
@@ -114,6 +120,7 @@ public final class MainActivity extends Activity {
     setIntent(intent);
     recordEntry(intent);
     boolean needsRender = !page.equals("home") || actionLayer != null || draftOrder != null;
+    if (renameDialog != null) renameDialog.cancel();
     draftOrder = null;
     movingId = null;
     page = "home";
@@ -135,12 +142,22 @@ public final class MainActivity extends Activity {
     b.putString("selected", selectedId);
     b.putInt("homeOffset", homeWall == null ? homeOffset : homeWall.getScrollY());
     b.putString("searchTarget", pendingSearchTarget);
+    b.putString("uninstall", pendingUninstall);
     super.onSaveInstanceState(b);
   }
 
   @Override
   protected void onActivityResult(int request, int result, Intent data) {
     super.onActivityResult(request, result, data);
+    if (request == AppUninstall.REQUEST) {
+      if (!pendingUninstall.isEmpty() && !AppUninstall.installed(this, pendingUninstall)) {
+        names.removed(pendingUninstall);
+        new AppUsageStore(this).removed(pendingUninstall);
+        reload(false);
+      }
+      pendingUninstall = "";
+      return;
+    }
     if (request != SearchActivity.REQUEST || result != RESULT_OK || data == null) return;
     String target = data.getStringExtra(SearchActivity.HOME_TARGET);
     if (target == null || target.isEmpty()) return;
@@ -170,6 +187,7 @@ public final class MainActivity extends Activity {
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     // Returning from another app keeps the existing wall and decoded artwork intact.
+    if (homeWall != null) homeWall.refreshLabels();
     if (page.equals("home") && homeWall != null && root.findFocus() == null)
       homeWall.restoreFocus(selectedId, homeWall.getScrollY());
     if (homeSetting != null && page.equals("settings"))
@@ -184,6 +202,11 @@ public final class MainActivity extends Activity {
 
   @Override
   protected void onDestroy() {
+    if (renameDialog != null) {
+      renameDialog.setOnDismissListener(null);
+      renameDialog.dismiss();
+      renameDialog = null;
+    }
     handler.removeCallbacksAndMessages(null);
     unregisterReceiver(packageChanges);
     worker.shutdownNow();
@@ -282,6 +305,8 @@ public final class MainActivity extends Activity {
   private void acceptCatalog(AppCatalogCache.Snapshot next, int generation, boolean fresh) {
     if (isDestroyed() || generation != loadGeneration) return;
     boolean changed = !next.samePresentation(snapshot);
+    List<String> previousOrder = new ArrayList<>();
+    for (AppEntry app : orderedApps()) previousOrder.add(app.id);
     snapshot = next;
     catalog.remember(next);
     apps = next.apps;
@@ -289,10 +314,12 @@ public final class MainActivity extends Activity {
     catalogError = false;
     if (fresh) {
       List<String> order = AppOrder.reconcile(prefs.appOrder(), installedIds());
+      selectedId = AppOrder.focusAfterRemoval(previousOrder, order, selectedId);
+      if (!order.contains(pendingSearchTarget)) pendingSearchTarget = "";
       if (!prefs.hasAppOrder() || !order.equals(prefs.appOrder())) prefs.saveAppOrder(order);
     }
     if (!changed) return;
-    if (draftOrder != null || actionLayer != null) pendingRender = true;
+    if (draftOrder != null || actionLayer != null || renameDialog != null) pendingRender = true;
     else render();
   }
 
@@ -486,6 +513,10 @@ public final class MainActivity extends Activity {
 
   private GridWallView.Listener wallListener() {
     return new GridWallView.Listener() {
+      public String label(AppEntry app) {
+        return names.label(app);
+      }
+
       public Drawable artwork(AppEntry app) {
         return MainActivity.this.artwork(app, false);
       }
@@ -576,6 +607,7 @@ public final class MainActivity extends Activity {
     items.add(
         new AppActionMenuView.Item(
             "移到最后", R.drawable.menu_move_last, false, () -> moveToEdge(app, false)));
+    items.add(new AppActionMenuView.Item("重命名", R.drawable.menu_rename, false, () -> rename(app)));
     items.add(
         new AppActionMenuView.Item(
             "应用信息",
@@ -586,17 +618,57 @@ public final class MainActivity extends Activity {
                     new Intent(
                         Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
                         Uri.parse("package:" + app.component.getPackageName())))));
+    String blockedReason = AppUninstall.blockedReason(this, app);
+    boolean removable = blockedReason.isEmpty();
+    items.add(
+        new AppActionMenuView.Item(
+            "卸载应用",
+            R.drawable.menu_uninstall,
+            true,
+            removable ? () -> uninstall(app) : null,
+            blockedReason));
     actionLayer =
         new AppActionMenuView(
             this,
             scale,
-            app.label,
+            names.label(app),
+            names.custom(app).isEmpty() ? "" : "原名称：" + app.label,
             artwork(app, false),
             items,
             action -> closeMenu(false, action),
             palette);
     root.addView(actionLayer, new FrameLayout.LayoutParams(-1, -1));
     actionLayer.reveal();
+  }
+
+  private void rename(AppEntry app) {
+    renameDialog =
+        new AppRenameDialog(
+            this,
+            app,
+            names,
+            palette,
+            scale,
+            () -> {
+              if (homeWall != null) homeWall.refreshLabels();
+              toast("名称已保存");
+            });
+    renameDialog.setOnDismissListener(
+        d -> {
+          renameDialog = null;
+          if (pendingRender) render();
+        });
+    renameDialog.show();
+  }
+
+  private void uninstall(AppEntry app) {
+    pendingUninstall = app.component.getPackageName();
+    try {
+      AppUninstall.request(this, app);
+    } catch (RuntimeException e) {
+      pendingUninstall = "";
+      toast("当前系统无法卸载此应用，可在应用信息中查看");
+    }
   }
 
   private void closeMenu(boolean restore) {

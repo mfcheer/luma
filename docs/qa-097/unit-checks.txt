@@ -1,0 +1,3 @@
+PASS: Chinese/English/pinyin/initials, mixed TV names, NFKC/case/whitespace, ranking/stable ties, empty/no match, repeat and immutable home order
+PASS: 553 checks: reviewed asset, identity/alias boundaries, ranking/dedupe, whole-name pinyin, frozen usage, cache invalidation, corrupt data and time decay
+PASS: fresh install, legacy prefix, append/remove/deduplicate, activity rename, TV entry preference, invalid IDs, empty list, refresh stability and immutable/stable promotion and move to end

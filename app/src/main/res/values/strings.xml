@@ -1,0 +1,3 @@
+<resources>
+    <string name="rename_invalid_name">名称不能为空，最多 %1$d 个字符</string>
+</resources>

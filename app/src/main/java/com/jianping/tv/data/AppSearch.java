@@ -38,7 +38,7 @@ public final class AppSearch {
   }
 
   public static final class Item {
-    public final String id, label, packageName;
+    public final String id, label, packageName, customName;
     private final List<Term> terms = new ArrayList<>();
 
     public Item(String id, String label) {
@@ -46,15 +46,30 @@ public final class AppSearch {
     }
 
     public Item(String id, String label, String packageName, AppAliases dictionary) {
+      this(id, label, packageName, dictionary, "");
+    }
+
+    public Item(
+        String id, String label, String packageName, AppAliases dictionary, String customName) {
       this.id = id;
       this.label = label;
       this.packageName = packageName;
+      this.customName = customName;
       String name = normalize(label);
       List<AppAliases.Term> aliases = dictionary.terms(packageName);
+      terms.add(nameTerm(name, aliases));
+      String custom = normalize(customName);
+      if (!custom.isEmpty() && !custom.equals(name)) terms.add(nameTerm(custom, aliases));
+      for (AppAliases.Term term : aliases)
+        if (!term.text.equals(name))
+          terms.add(new Term(term.text, term.pinyin, term.initials, term.source, term.exactOnly));
+    }
+
+    private static Term nameTerm(String name, List<AppAliases.Term> aliases) {
       AppAliases.Term reviewed = null;
       for (AppAliases.Term term : aliases) if (term.text.equals(name)) reviewed = term;
       // Whole-name corrections only: never turn 拼音/乐园 into 拼/音乐/园.
-      if (reviewed != null) terms.add(new Term(name, reviewed.pinyin, reviewed.initials, 0, false));
+      if (reviewed != null) return new Term(name, reviewed.pinyin, reviewed.initials, 0, false);
       else {
         StringBuilder full = new StringBuilder(), shortName = new StringBuilder();
         for (char c : name.toCharArray()) {
@@ -62,11 +77,8 @@ public final class AppSearch {
           full.append(syllable);
           shortName.append(Pinyin.isChinese(c) ? syllable.substring(0, 1) : String.valueOf(c));
         }
-        terms.add(new Term(name, full.toString(), shortName.toString(), 0, false));
+        return new Term(name, full.toString(), shortName.toString(), 0, false);
       }
-      for (AppAliases.Term term : aliases)
-        if (!term.text.equals(name))
-          terms.add(new Term(term.text, term.pinyin, term.initials, term.source, term.exactOnly));
     }
 
     private int score(String query) {
@@ -96,13 +108,24 @@ public final class AppSearch {
 
     public synchronized Item get(
         String id, String label, String packageName, String fingerprint, AppAliases dictionary) {
+      return get(id, label, packageName, fingerprint, dictionary, "");
+    }
+
+    public synchronized Item get(
+        String id,
+        String label,
+        String packageName,
+        String fingerprint,
+        AppAliases dictionary,
+        String customName) {
       Cached cached = entries.get(id);
       if (cached != null
           && cached.dictionary == dictionary
           && cached.fingerprint.equals(fingerprint)
           && cached.item.label.equals(label)
+          && cached.item.customName.equals(customName)
           && cached.item.packageName.equals(packageName)) return cached.item;
-      Item item = new Item(id, label, packageName, dictionary);
+      Item item = new Item(id, label, packageName, dictionary, customName);
       entries.put(id, new Cached(fingerprint, dictionary, item));
       return item;
     }

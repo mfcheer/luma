@@ -1,0 +1,27 @@
+{
+  "themeFilter": "both",
+  "uninstallOnly": true,
+  "checks": [
+    {
+      "theme": "light",
+      "originalAndCustomSearch": true,
+      "systemUninstallCancel": true,
+      "actualSystemConfirmedUninstall": true,
+      "originalHomeFocusPreserved": true,
+      "emptySearchFocus": true,
+      "reinstallAndSystemAppProtection": true
+    },
+    {
+      "theme": "dark",
+      "originalAndCustomSearch": true,
+      "systemUninstallCancel": true,
+      "actualSystemConfirmedUninstall": true,
+      "originalHomeFocusPreserved": true,
+      "adjacentSearchFocus": true,
+      "reinstallAndSystemAppProtection": true,
+      "homeSystemUninstallCancelSuccessAndLastCardFallback": true
+    }
+  ],
+  "originalPreferencesNamesUsageAndFixtureRestored": true,
+  "testedApkSha256": "ed61c3a197c4d93055d81556c986668db7c6316f6e290631d86088f1d1e7c9ac"
+}

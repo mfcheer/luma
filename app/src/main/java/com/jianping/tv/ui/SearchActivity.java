@@ -17,6 +17,7 @@ import android.widget.*;
 import com.jianping.tv.R;
 import com.jianping.tv.data.*;
 import com.jianping.tv.platform.AppLaunch;
+import com.jianping.tv.platform.AppUninstall;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
@@ -29,12 +30,17 @@ public final class SearchActivity extends Activity {
   private final ExecutorService worker = Executors.newSingleThreadExecutor();
   private final Map<String, AppEntry> entries = new HashMap<>();
   private UiPalette palette;
+  private AppNames names;
+  private long namesRevision;
+  private AppRenameDialog renameDialog;
+  private String pendingUninstall = "";
   private AppCatalogCache.Snapshot snapshot;
   private AppRepository repository;
   private AppSearch index;
   private Map<String, Double> usageSnapshot;
   private Map<String, String> usageEpochs;
   private int loadGeneration;
+  private boolean metadataDirty;
   private Future<?> loadTask;
   private final Runnable catalogReload = () -> load(true);
   private final BroadcastReceiver packageChanges =
@@ -75,6 +81,8 @@ public final class SearchActivity extends Activity {
 
   @Override
   public void onCreate(Bundle state) {
+    names = new AppNames(this);
+    namesRevision = names.revision();
     palette = UiPalette.from(new Preferences(this).lightTheme());
     setTheme(palette.light ? R.style.AppThemeLight : R.style.AppTheme);
     super.onCreate(state);
@@ -85,6 +93,8 @@ public final class SearchActivity extends Activity {
     resultOffset = state == null ? 0 : state.getInt("offset", 0);
     restoreResult = state != null && state.getBoolean("resultFocus", false);
     homeTarget = state == null ? "" : state.getString("homeTarget", "");
+    pendingUninstall = state == null ? "" : state.getString("uninstall", "");
+    metadataDirty = state != null && state.getBoolean("metadataDirty", false);
     if (!homeTarget.isEmpty()) publishHomeTarget();
     if (state != null && state.containsKey("usagePackages")) {
       ArrayList<String> packages = state.getStringArrayList("usagePackages");
@@ -118,7 +128,7 @@ public final class SearchActivity extends Activity {
       registerReceiver(packageChanges, filter, Context.RECEIVER_EXPORTED);
     else registerReceiver(packageChanges, filter);
     build();
-    load(false);
+    load(!pendingUninstall.isEmpty());
   }
 
   private void build() {
@@ -198,6 +208,10 @@ public final class SearchActivity extends Activity {
             135,
             palette,
             new GridWallView.Listener() {
+              public String label(AppEntry app) {
+                return names.label(app);
+              }
+
               public Drawable artwork(AppEntry app) {
                 return image(app, false);
               }
@@ -328,6 +342,9 @@ public final class SearchActivity extends Activity {
   }
 
   private void load(boolean refreshMetadata) {
+    // A name refresh/resume must not downgrade an unfinished package reconciliation.
+    metadataDirty |= refreshMetadata;
+    final boolean discover = metadataDirty;
     final int generation = ++loadGeneration;
     if (loadTask != null) loadTask.cancel(true);
     loadTask =
@@ -338,8 +355,9 @@ public final class SearchActivity extends Activity {
                 AppCatalogCache.Snapshot loaded = cache.memory();
                 if (loaded == null) loaded = cache.read();
                 // Discovery only for a package event or missing/corrupt cache, never on app return.
-                if (refreshMetadata || loaded == null) {
+                if (discover || loaded == null) {
                   List<AppEntry> apps = repository.load();
+                  if (Thread.currentThread().isInterrupted()) return;
                   Map<String, AppCatalogCache.Visual> visuals = new HashMap<>();
                   for (AppEntry app : apps) {
                     if (Thread.currentThread().isInterrupted()) return;
@@ -400,19 +418,30 @@ public final class SearchActivity extends Activity {
                 runOnUiThread(
                     () -> {
                       if (isDestroyed() || isFinishing() || generation != loadGeneration) return;
+                      if (discover) metadataDirty = false;
                       boolean keepFocus = results.hasFocus() || restoreResult;
                       restoreResult =
                           false; // Consume saved focus once; later package events keep editing
-                                 // focus.
+                      // focus.
                       int offset = ready ? results.getScrollY() : resultOffset;
                       boolean wasReady = ready;
+                      List<String> previousMatches =
+                          index == null ? Collections.emptyList() : index.find(query);
+                      selected =
+                          AppOrder.focusAfterRemoval(
+                              previousMatches, prepared.find(query), selected);
                       snapshot = restored;
                       cache.remember(restored);
                       usageSnapshot = frozenWeights;
                       usageEpochs = frozenEpochs;
                       index = prepared;
+                      namesRevision = names.revision();
                       entries.clear();
                       entries.putAll(byId);
+                      if (!homeTarget.isEmpty() && !byId.containsKey(homeTarget)) {
+                        homeTarget = "";
+                        setResult(RESULT_CANCELED);
+                      }
                       ready = true;
                       updateResults(keepFocus);
                       if (keepFocus && results.getVisibility() == View.VISIBLE)
@@ -479,6 +508,7 @@ public final class SearchActivity extends Activity {
               publishHomeTarget();
               leave();
             }));
+    items.add(new AppActionMenuView.Item("重命名", R.drawable.menu_rename, false, () -> rename(app)));
     items.add(
         new AppActionMenuView.Item(
             "应用信息",
@@ -496,11 +526,72 @@ public final class SearchActivity extends Activity {
                 Toast.makeText(this, "当前系统不支持此入口", Toast.LENGTH_LONG).show();
               }
             }));
+    String blockedReason = AppUninstall.blockedReason(this, app);
+    boolean removable = blockedReason.isEmpty();
+    items.add(
+        new AppActionMenuView.Item(
+            "卸载应用",
+            R.drawable.menu_uninstall,
+            true,
+            removable ? () -> uninstall(app) : null,
+            blockedReason));
     actionLayer =
         new AppActionMenuView(
-            this, unit, app.label, image(app, false), items, action -> closeMenu(action), palette);
+            this,
+            unit,
+            names.label(app),
+            names.custom(app).isEmpty() ? "" : "原名称：" + app.label,
+            image(app, false),
+            items,
+            action -> closeMenu(action),
+            palette);
     root.addView(actionLayer, new FrameLayout.LayoutParams(-1, -1));
     actionLayer.reveal();
+  }
+
+  private void rename(AppEntry app) {
+    autoKeyboard = false;
+    renameDialog =
+        new AppRenameDialog(
+            this,
+            app,
+            names,
+            palette,
+            unit,
+            () -> {
+              resultOffset = results.getScrollY();
+              restoreResult = true;
+              load(false);
+              Toast.makeText(this, "名称已保存", Toast.LENGTH_SHORT).show();
+            });
+    renameDialog.setOnDismissListener(d -> renameDialog = null);
+    renameDialog.show();
+  }
+
+  private void uninstall(AppEntry app) {
+    autoKeyboard = false;
+    resultOffset = results.getScrollY();
+    restoreResult = true;
+    pendingUninstall = app.component.getPackageName();
+    try {
+      AppUninstall.request(this, app);
+    } catch (RuntimeException e) {
+      pendingUninstall = "";
+      restoreResult = false;
+      Toast.makeText(this, "当前系统无法卸载此应用，可在应用信息中查看", Toast.LENGTH_LONG).show();
+    }
+  }
+
+  @Override
+  protected void onActivityResult(int request, int result, Intent data) {
+    super.onActivityResult(request, result, data);
+    if (request != AppUninstall.REQUEST) return;
+    if (!pendingUninstall.isEmpty() && !AppUninstall.installed(this, pendingUninstall)) {
+      names.removed(pendingUninstall);
+      new AppUsageStore(this).removed(pendingUninstall);
+      load(true);
+    }
+    pendingUninstall = "";
   }
 
   private void closeMenu(Runnable action) {
@@ -653,6 +744,8 @@ public final class SearchActivity extends Activity {
     state.putInt("offset", results.getScrollY());
     state.putBoolean("resultFocus", results.hasFocus() || restoreResult || actionLayer != null);
     state.putString("homeTarget", homeTarget);
+    state.putString("uninstall", pendingUninstall);
+    state.putBoolean("metadataDirty", metadataDirty);
     state.putBoolean("keyboard", imeOpen);
     super.onSaveInstanceState(state);
   }
@@ -667,6 +760,7 @@ public final class SearchActivity extends Activity {
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     handler.post(clockTick);
+    if (ready && namesRevision != names.revision()) load(false);
     if (ready && restoreResult) {
       results.post(() -> results.restoreFocus(selected, resultOffset));
       restoreResult = false;
@@ -682,6 +776,11 @@ public final class SearchActivity extends Activity {
 
   @Override
   protected void onDestroy() {
+    if (renameDialog != null) {
+      renameDialog.setOnDismissListener(null);
+      renameDialog.dismiss();
+      renameDialog = null;
+    }
     handler.removeCallbacksAndMessages(null);
     unregisterReceiver(packageChanges);
     worker.shutdownNow();

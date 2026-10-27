@@ -1,0 +1,2 @@
+INSTRUMENTATION_RESULT: result=PASS: 45 name/search/installation-generation/system-uninstall/focus integration checks
+INSTRUMENTATION_CODE: -1

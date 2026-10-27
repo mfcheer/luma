@@ -49,7 +49,8 @@ public final class AppRepository {
               new AppEntry(
                   new ComponentName(a.packageName, a.name),
                   info.loadLabel(pm).toString(),
-                  pkg.lastUpdateTime + ":" + version + ":" + locale));
+                  pkg.lastUpdateTime + ":" + version + ":" + locale,
+                  pkg.firstInstallTime));
         } catch (RuntimeException | PackageManager.NameNotFoundException ignored) {
         }
       }

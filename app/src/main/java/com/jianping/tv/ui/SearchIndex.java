@@ -28,13 +28,19 @@ final class SearchIndex {
   static AppSearch prepare(Context context, List<AppEntry> apps, Map<String, Double> usage) {
     long began = android.os.SystemClock.elapsedRealtime();
     AppAliases dictionary = aliases(context);
+    AppNames names = new AppNames(context);
     List<AppSearch.Item> items = new ArrayList<>();
     List<String> ids = new ArrayList<>();
     for (AppEntry app : apps) {
       ids.add(app.id);
       items.add(
           ITEMS.get(
-              app.id, app.label, app.component.getPackageName(), app.fingerprint, dictionary));
+              app.id,
+              app.label,
+              app.component.getPackageName(),
+              app.fingerprint,
+              dictionary,
+              names.custom(app)));
     }
     ITEMS.retain(ids);
     Log.i(

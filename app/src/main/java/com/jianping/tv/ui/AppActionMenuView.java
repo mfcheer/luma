@@ -20,12 +20,18 @@ public final class AppActionMenuView extends FrameLayout {
     final int icon;
     final boolean destructive;
     final Runnable action;
+    final String note;
 
     public Item(String label, int icon, boolean destructive, Runnable action) {
+      this(label, icon, destructive, action, "");
+    }
+
+    public Item(String label, int icon, boolean destructive, Runnable action, String note) {
       this.label = label;
       this.icon = icon;
       this.destructive = destructive;
       this.action = action;
+      this.note = note;
     }
   }
 
@@ -48,6 +54,18 @@ public final class AppActionMenuView extends FrameLayout {
       Context c,
       float unit,
       String title,
+      Drawable artwork,
+      List<Item> items,
+      Selection selection,
+      UiPalette palette) {
+    this(c, unit, title, "", artwork, items, selection, palette);
+  }
+
+  public AppActionMenuView(
+      Context c,
+      float unit,
+      String title,
+      String subtitle,
       Drawable artwork,
       List<Item> items,
       Selection selection,
@@ -88,30 +106,52 @@ public final class AppActionMenuView extends FrameLayout {
     header.addView(thumb, tp);
     TextView heading = text(c, title, 20, palette.text);
     heading.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-    LayoutParams hp = new LayoutParams(px(204), px(42));
+    LayoutParams hp = new LayoutParams(px(204), px(subtitle.isEmpty() ? 42 : 26));
     hp.leftMargin = px(87);
     hp.topMargin = px(6);
     header.addView(heading, hp);
+    if (!subtitle.isEmpty()) {
+      TextView original = text(c, subtitle, 11, palette.secondary);
+      LayoutParams op = new LayoutParams(px(204), px(18));
+      op.leftMargin = px(87);
+      op.topMargin = px(32);
+      header.addView(original, op);
+    }
     panel.addView(header, new LinearLayout.LayoutParams(-1, px(64)));
     List<View> controls = new ArrayList<>();
     for (Item item : items) {
+      boolean enabled = item.action != null;
+      int danger = palette.light ? 0xFF9C4D4F : 0xFFE0A3A3;
+      int resting = !enabled ? palette.muted : (item.destructive ? danger : palette.text);
+      if (item.destructive) {
+        View divider = new View(c);
+        divider.setBackgroundColor(palette.divider);
+        LinearLayout.LayoutParams dp = new LinearLayout.LayoutParams(-1, Math.max(1, px(.5f)));
+        dp.topMargin = px(5);
+        dp.bottomMargin = px(5);
+        panel.addView(divider, dp);
+      }
       LinearLayout row = new LinearLayout(c);
       row.setOrientation(LinearLayout.HORIZONTAL);
       row.setGravity(Gravity.CENTER_VERTICAL);
       row.setPadding(px(16), 0, px(16), 0);
-      row.setFocusable(true);
-      row.setClickable(true);
-      row.setContentDescription(item.label);
+      row.setFocusable(enabled);
+      row.setClickable(enabled);
+      row.setEnabled(enabled);
+      row.setAlpha(enabled ? 1 : .6f);
+      row.setContentDescription(item.label + (item.note.isEmpty() ? "" : "，" + item.note));
       row.setId(View.generateViewId());
       ImageView icon = new ImageView(c);
       icon.setImageResource(item.icon);
-      icon.setColorFilter(item.destructive ? 0xFFC17171 : palette.icon);
+      icon.setColorFilter(enabled && item.destructive ? danger : palette.icon);
       icon.setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
       row.addView(icon, new LinearLayout.LayoutParams(px(22), px(22)));
-      TextView label = text(c, item.label, 17, palette.text);
+      TextView label = text(c, item.label, 17, resting);
       LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(0, -1, 1);
       lp.leftMargin = px(15);
       row.addView(label, lp);
+      if (!item.note.isEmpty())
+        row.addView(text(c, item.note, 11, palette.muted), new LinearLayout.LayoutParams(-2, -1));
       GradientDrawable focus =
           new GradientDrawable(
               GradientDrawable.Orientation.TL_BR,
@@ -138,12 +178,12 @@ public final class AppActionMenuView extends FrameLayout {
                       float amount = alpha / 255f;
                       label.setTextColor(
                           blend(
-                              palette.text,
+                              resting,
                               item.destructive ? 0xFF713D40 : palette.rowFocusText,
                               amount));
                       icon.setColorFilter(
                           blend(
-                              item.destructive ? 0xFFC17171 : palette.icon,
+                              item.destructive ? danger : palette.icon,
                               item.destructive ? 0xFF875155 : palette.rowFocusIcon,
                               amount));
                     })
@@ -155,10 +195,11 @@ public final class AppActionMenuView extends FrameLayout {
             selected = true;
             selection.selected(item.action);
           });
-      LinearLayout.LayoutParams rp = new LinearLayout.LayoutParams(-1, px(52));
+      LinearLayout.LayoutParams rp =
+          new LinearLayout.LayoutParams(-1, px(items.size() >= 6 ? 46 : 52));
       if (!controls.isEmpty()) rp.topMargin = px(4);
       panel.addView(row, rp);
-      controls.add(row);
+      if (enabled) controls.add(row);
     }
     for (int i = 0; i < controls.size(); i++) {
       View row = controls.get(i);

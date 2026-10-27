@@ -1,0 +1,4 @@
+API33 Android TV emulator, Still 0.9.7 / versionCode 25
+PASS: light rename/search/real system uninstall/focus recovery
+
+Light-theme assertions completed in the both-theme run before the dark-theme ADB input timing failure. Covered: six-row menus, IME-safe Back, rename cancel/save/restore/cold restart, original/custom-name search, system uninstall cancel/confirmation, empty-result input focus, retained Home focus/order, reinstall cleanup and disabled system-app uninstall. Preferences and fixture restored by the run finally block. Dark theme rerun separately after waiting for IME/input and catalog readiness in the test driver. These initial UI checks precede the final refresh-race fix; the final APK is checked by the deterministic native race probe and a fresh uninstall-only run in both themes.

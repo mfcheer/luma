@@ -138,6 +138,11 @@ public final class AppCardView extends LinearLayout {
     this.action = action;
   }
 
+  public void label(String value) {
+    if (!value.contentEquals(name.getText())) name.setText(value);
+    setContentDescription(value);
+  }
+
   public void showName(boolean visible) {
     // False means focus-only. The label slot and accessible card name never change size.
     namesVisible = visible;

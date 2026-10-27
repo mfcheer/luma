@@ -48,6 +48,7 @@ public final class AppCatalogCache {
         AppEntry a = apps.get(i), b = other.apps.get(i);
         if (!a.id.equals(b.id)
             || !a.label.equals(b.label)
+            || a.firstInstallTime != b.firstInstallTime
             || !a.fingerprint.equals(b.fingerprint)
             || visuals.get(a.id) != other.visuals.get(b.id)) return false;
       }
@@ -85,7 +86,11 @@ public final class AppCatalogCache {
         ComponentName component = ComponentName.unflattenFromString(item.getString("id"));
         if (component == null) return null;
         AppEntry entry =
-            new AppEntry(component, item.getString("label"), item.getString("fingerprint"));
+            new AppEntry(
+                component,
+                item.getString("label"),
+                item.getString("fingerprint"),
+                item.optLong("firstInstallTime", 0));
         Visual visual = readVisual(entry);
         if (visual == null)
           return null; // A missing/corrupt cache falls back to metadata reconciliation.
@@ -166,6 +171,7 @@ public final class AppCatalogCache {
             new JSONObject()
                 .put("id", entry.id)
                 .put("label", entry.label)
+                .put("firstInstallTime", entry.firstInstallTime)
                 .put("fingerprint", entry.fingerprint));
       }
       if (Thread.currentThread().isInterrupted()) return;
