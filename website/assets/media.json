@@ -2,25 +2,25 @@
   "device": "Xiaomi TV 5 Pro 55 / MiTV-ANSP0",
   "android": 9,
   "api": 28,
-  "applicationCount": 41,
   "sourceResolution": [
     1920,
     1080
   ],
+  "applicationCount": 42,
   "screenshots": {
-    "version": "0.9.2",
-    "captureDate": "2026-10-23",
+    "version": "0.9.7",
+    "captureDate": "2026-11-03",
     "source": "Direct ADB screencap on the real television; WebP encoding only",
     "files": {
-      "home-light.webp": "64c4e853a82240f683653ab7d91470975d0251ef71a78d140c4da104575df421",
-      "home-dark.webp": "5d8d4e6c279d182ca8b5fbedda6d3d73344c65795c957ff1b62ba25870b42a79",
-      "scrolled-light.webp": "ac4330b3844b2198c60d60249f5daa1112f958c3048c91d42491fb7ee12df1e4",
-      "scrolled-dark.webp": "f929a1a17a40cec4287a4da18350d6c378b1f24d1e05ea359c61d4bcd5e7bc74",
-      "settings-light.webp": "0ae98fe777e01a6b61fe31aefbf8e7c179b9b6d123191c7d0e61ba752222010f",
-      "settings-dark.webp": "ad26fe7b390f83fc0658a1c921f397cafa2dcb5d0a96dda2e362edd52ed18b4c",
-      "menu-light.webp": "b993449debc65c48c0567f660aa122801744b6d97062fe0ea85c1127dc647893",
-      "search-light.webp": "a377346455e7db641e8d93d2388ccaddba6d6bed7580abe49c9470f5e347b0ba",
-      "video-poster.webp": "64c4e853a82240f683653ab7d91470975d0251ef71a78d140c4da104575df421"
+      "home-light.webp": "a7e7e99fef362e44c99b72b54716e1508781ac531fccb8ec07c8c3cb48e8c6dd",
+      "home-dark.webp": "1213f1831b8e967f336c205534678cbd6fcb69d4c0ff268819001804c2b618f8",
+      "scrolled-light.webp": "36189ff26e10941b1fbff52fb3e3c4054a3992382fbf381d4b917b03c1c94da7",
+      "scrolled-dark.webp": "bf0beb61de92a82f6710a4456d22823ebc2f65e15ad95f00baefe42465cb4b0a",
+      "settings-light.webp": "08921948047103e0e5ec5e75b1ccbbe0d27fe4a8ae547899571ea92d2f20cdc2",
+      "settings-dark.webp": "0898273c2d958b7de9e01d96bc4a9379826a7dcdb89b2f5ae01933d6711d65b7",
+      "menu-light.webp": "dff9b7e0f53d7304b6cc7c6b531c0736688f07ef99f49cf99acaeac227f49b99",
+      "search-light.webp": "bc5cc855e38b037cfb4b35800cafe5e69266e956ae0bfd725cfddb93ea4048a2",
+      "video-poster.webp": "a7e7e99fef362e44c99b72b54716e1508781ac531fccb8ec07c8c3cb48e8c6dd"
     }
   },
   "legacyScreenshots": {
@@ -33,10 +33,10 @@
   },
   "animatedPreview": {
     "file": "still-tv-preview.gif",
-    "version": "0.9.2",
-    "captureDate": "2026-10-23",
+    "version": "0.9.7",
+    "captureDate": "2026-11-03",
     "source": "Native light-theme clip (up to 30 seconds); 10 fps, 768px wide, original speed",
-    "sha256": "8e9202e9734f099733458799bdd67a715c6374e21856b42d8cbbae255120c46d"
+    "sha256": "96809b362ffbcc08a7336540c529d2daf02dd1991229630e2910a9c8bbaea14c"
   },
   "video": {
     "programs": [],
@@ -48,14 +48,14 @@
       }
     ],
     "format": {
-      "duration": "58.030000",
-      "size": "1323417"
+      "duration": "57.824000",
+      "size": "1342700"
     },
     "file": "still-tv-demo.mp4",
-    "version": "0.9.2",
-    "captureDate": "2026-10-23",
+    "version": "0.9.7",
+    "captureDate": "2026-11-03",
     "source": "Direct ADB screenrecord on the real television",
-    "sha256": "f9ae429b147f744d2e0112b695df81b5a20f7835b31c78ab64dac054e6c4f669"
+    "sha256": "a471a36401c7ad897eafa75fa6e5298df2e6b3fee0885971ed96b908aff39860"
   },
   "videoEdit": "Three native clips (light navigation, search menu, dark navigation) joined at original playback speed; no frame interpolation; audio omitted",
   "comparison": {
@@ -70,15 +70,15 @@
       1920,
       1080
     ],
-    "stillVersion": "0.9.2",
+    "stillVersion": "0.9.7",
     "stillUncropped": true,
     "source": "Existing user-approved full native screenshot retained; updated full Still screenshot from same real TV; WebP encoding only",
     "files": {
       "comparison-xiaomi.webp": "21dabbacf039e5c3ce521c36aa7d0a6f8891b5c8efabbcd3761d170825027e87",
-      "home-light.webp": "64c4e853a82240f683653ab7d91470975d0251ef71a78d140c4da104575df421"
+      "home-light.webp": "a7e7e99fef362e44c99b72b54716e1508781ac531fccb8ec07c8c3cb48e8c6dd"
     },
     "stillSourceFile": "home-light.webp",
-    "stillSource": "Full Still 0.9.2 screenshot captured on the same TV on 2026-10-23",
+    "stillSource": "Full Still 0.9.7 screenshot captured on the same TV on 2026-11-03",
     "nativeUncropped": true,
     "presentation": "One staggered composition at all viewport sizes: native upper-left, Still lower-right"
   }

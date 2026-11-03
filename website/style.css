@@ -429,7 +429,7 @@ video {
   transform: translate(-50%, -50%);
 }
 .menu-panel .feature-art img {
-  width: 180%;
+  width: 145%;
 }
 .download-section {
   background: linear-gradient(150deg, #f4f6fb, #faf9f5 80%);

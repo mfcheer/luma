@@ -8,13 +8,13 @@ controls.forEach((button) => {
     const request = ++latestRequest;
     const dark = button.dataset.theme === "dark";
     const next = new Image();
-    next.src = dark ? "./assets/home-dark.webp?v=092-5d8d4e6c279d" : "./assets/home-light.webp?v=092-64c4e853a822";
+    next.src = dark ? "./assets/home-dark.webp?v=097dev-1213f1831b8e" : "./assets/home-light.webp?v=097dev-a7e7e99fef36";
     preview.setAttribute("aria-busy", "true");
     try {
       await next.decode();
       if (request !== latestRequest) return;
       preview.src = next.src;
-      preview.alt = `Still 0.9.2 ${dark ? "深色" : "浅色"}首页，小米电视实机截屏，选中应用显示名称，五列卡片与底部渐隐续行`;
+      preview.alt = `Still 0.9.7 开发版 ${dark ? "深色" : "浅色"}首页，小米电视实机截屏，选中应用显示名称，五列卡片与底部渐隐续行`;
       controls.forEach((item) =>
         item.setAttribute("aria-pressed", String(item === button)),
       );
