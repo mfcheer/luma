@@ -18,6 +18,7 @@ import com.jianping.tv.platform.AppLaunch;
 import com.jianping.tv.platform.AppUninstall;
 import com.jianping.tv.platform.AutoEntry;
 import com.jianping.tv.platform.DeviceDiagnostics;
+import com.jianping.tv.platform.NetworkMonitor;
 import com.jianping.tv.platform.OtherHome;
 import com.jianping.tv.platform.WakeEntryService;
 import java.text.*;
@@ -31,6 +32,10 @@ public final class MainActivity extends Activity {
   private AppRenameDialog renameDialog;
   private String pendingUninstall = "";
   private UiPalette palette;
+  private NetworkMonitor networkMonitor;
+  private NetworkMonitor.State networkState = NetworkMonitor.State.DISCONNECTED;
+  private ImageView networkGlyph;
+  private View networkButton;
   private AppRepository repository;
   private AppCatalogCache catalog;
   private AppCatalogCache.Snapshot snapshot;
@@ -101,6 +106,13 @@ public final class MainActivity extends Activity {
     }
     recordEntry(getIntent());
     AutoEntry.sync(this);
+    networkMonitor = new NetworkMonitor(this);
+    networkState = NetworkMonitor.current(this);
+    networkMonitor.start(
+        state1 -> {
+          networkState = state1;
+          updateNetworkView();
+        });
     IntentFilter filter = new IntentFilter();
     filter.addAction(Intent.ACTION_PACKAGE_ADDED);
     filter.addAction(Intent.ACTION_PACKAGE_REMOVED);
@@ -180,6 +192,8 @@ public final class MainActivity extends Activity {
       pendingWakeEntry = 0;
     }
     AutoEntry.sync(this);
+    networkState = NetworkMonitor.current(this);
+    updateNetworkView();
     getWindow()
         .getDecorView()
         .setSystemUiVisibility(
@@ -206,6 +220,10 @@ public final class MainActivity extends Activity {
       renameDialog.setOnDismissListener(null);
       renameDialog.dismiss();
       renameDialog = null;
+    }
+    if (networkMonitor != null) {
+      networkMonitor.stop();
+      networkMonitor = null;
     }
     handler.removeCallbacksAndMessages(null);
     unregisterReceiver(packageChanges);
@@ -357,6 +375,54 @@ public final class MainActivity extends Activity {
     return d;
   }
 
+  private View networkAction(Runnable action) {
+    FrameLayout button = new FrameLayout(this);
+    ImageView glyph = new ImageView(this);
+    networkGlyph = glyph;
+    int glyphSize = px(20);
+    // Align the network icon optically with the search magnifier and settings gear.
+    glyph.setTranslationY(px(1.5f));
+    button.addView(glyph, new FrameLayout.LayoutParams(glyphSize, glyphSize, Gravity.CENTER));
+    button.setFocusable(true);
+    button.setClickable(true);
+    updateNetworkView(button, glyph);
+    button.setOnFocusChangeListener(
+        (v, focus) -> {
+          button.setBackground(rounded(focus ? palette.headerFocus : Color.TRANSPARENT, 18));
+          glyph.setColorFilter(
+              focus
+                  ? palette.headerFocusIcon
+                  : (networkState.connected ? palette.icon : palette.muted));
+          glyph.setAlpha((!focus && !networkState.connected) ? 0.6f : 1f);
+          button
+              .animate()
+              .scaleX(focus ? 1.12f : 1)
+              .scaleY(focus ? 1.12f : 1)
+              .setDuration(180)
+              .start();
+          if (focus) toast(networkState.label + (networkState.connected ? "" : " · 按确定打开网络设置"));
+        });
+    button.setOnClickListener(v -> action.run());
+    return button;
+  }
+
+  private void updateNetworkView() {
+    if (networkButton != null && networkGlyph != null) {
+      updateNetworkView(networkButton, networkGlyph);
+    }
+  }
+
+  private void updateNetworkView(View button, ImageView glyph) {
+    glyph.setImageResource(networkState.iconRes);
+    button.setContentDescription(networkState.label);
+    boolean focused = button.hasFocus();
+    glyph.setColorFilter(
+        focused
+            ? palette.headerFocusIcon
+            : (networkState.connected ? palette.icon : palette.muted));
+    glyph.setAlpha((!focused && !networkState.connected) ? 0.6f : 1f);
+  }
+
   private View headerAction(boolean home, Runnable action) {
     return headerAction(
         home ? R.drawable.nav_settings : R.drawable.nav_back, home ? "设置" : "返回", action);
@@ -434,11 +500,11 @@ public final class MainActivity extends Activity {
     clock.setLetterSpacing(.015f);
     clock.setFontFeatureSettings("'tnum' 1");
     clock.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
-    put(clock, page.equals("home") ? 648 : 698, 20, 176, 25);
+    put(clock, page.equals("home") ? 598 : 648, 20, 176, 25);
     calendarDate = text("", 12, palette.muted);
     calendarDate.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
     calendarDate.setFontFeatureSettings("'tnum' 1");
-    put(calendarDate, page.equals("home") ? 648 : 698, 46, 176, 18);
+    put(calendarDate, page.equals("home") ? 598 : 648, 46, 176, 18);
     updateClock();
     View settings =
         headerAction(
@@ -454,6 +520,19 @@ public final class MainActivity extends Activity {
     settings.setId(R.id.settings_button);
     put(settings, 884, 23, 42, 42);
     if (page.equals("home")) {
+      View network =
+          networkAction(
+              () -> {
+                if (draftOrder != null) {
+                  finishMove(false);
+                  return;
+                }
+                NetworkMonitor.openSettings(this);
+              });
+      network.setId(View.generateViewId());
+      networkButton = network;
+      put(network, 784, 23, 42, 42);
+
       View search =
           headerAction(
               R.drawable.nav_search,
@@ -474,6 +553,16 @@ public final class MainActivity extends Activity {
       search.setId(View.generateViewId());
       put(search, 834, 23, 42, 42);
       home(search);
+      network.setOnKeyListener(
+          (v, code, event) -> {
+            if (code == KeyEvent.KEYCODE_DPAD_DOWN
+                && event.getAction() == KeyEvent.ACTION_DOWN
+                && homeWall != null) {
+              homeWall.focusKey(selectedId, false);
+              return true;
+            }
+            return false;
+          });
       search.setOnKeyListener(
           (v, code, event) -> {
             if (code == KeyEvent.KEYCODE_DPAD_DOWN
@@ -484,12 +573,25 @@ public final class MainActivity extends Activity {
             }
             return false;
           });
+      network.setNextFocusRightId(search.getId());
+      network.setNextFocusLeftId(network.getId());
+      network.setNextFocusDownId(apps.isEmpty() ? network.getId() : homeWall.firstId());
       search.setNextFocusRightId(settings.getId());
-      search.setNextFocusLeftId(search.getId());
+      search.setNextFocusLeftId(network.getId());
+      search.setNextFocusDownId(apps.isEmpty() ? search.getId() : homeWall.firstId());
       settings.setNextFocusLeftId(search.getId());
       settings.setNextFocusRightId(settings.getId());
       settings.setNextFocusDownId(apps.isEmpty() ? search.getId() : homeWall.firstId());
     } else {
+      View network = networkAction(() -> NetworkMonitor.openSettings(this));
+      network.setId(View.generateViewId());
+      networkButton = network;
+      put(network, 834, 23, 42, 42);
+      network.setNextFocusRightId(settings.getId());
+      network.setNextFocusLeftId(network.getId());
+      network.setNextFocusDownId(R.id.first_app);
+      settings.setNextFocusLeftId(network.getId());
+      settings.setNextFocusRightId(settings.getId());
       settings.setNextFocusDownId(R.id.first_app);
       settingsPage();
     }
@@ -556,7 +658,7 @@ public final class MainActivity extends Activity {
 
   private void home(View settings) {
     moveHint = text("", 14, palette.secondary);
-    put(moveHint, 210, 36, 480, 30);
+    put(moveHint, 180, 36, 400, 30);
     homeWall = new GridWallView(this, scale, 156, palette, wallListener());
     homeWall.focusBaselineLift(px(2.5f));
     homeWall.showNames(prefs.showAppNames());

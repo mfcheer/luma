@@ -18,6 +18,7 @@ import com.jianping.tv.R;
 import com.jianping.tv.data.*;
 import com.jianping.tv.platform.AppLaunch;
 import com.jianping.tv.platform.AppUninstall;
+import com.jianping.tv.platform.NetworkMonitor;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
@@ -30,6 +31,10 @@ public final class SearchActivity extends Activity {
   private final ExecutorService worker = Executors.newSingleThreadExecutor();
   private final Map<String, AppEntry> entries = new HashMap<>();
   private UiPalette palette;
+  private NetworkMonitor networkMonitor;
+  private NetworkMonitor.State networkState = NetworkMonitor.State.DISCONNECTED;
+  private ImageView networkGlyph;
+  private View networkButton;
   private AppNames names;
   private long namesRevision;
   private AppRenameDialog renameDialog;
@@ -127,6 +132,13 @@ public final class SearchActivity extends Activity {
     if (Build.VERSION.SDK_INT >= 33)
       registerReceiver(packageChanges, filter, Context.RECEIVER_EXPORTED);
     else registerReceiver(packageChanges, filter);
+    networkMonitor = new NetworkMonitor(this);
+    networkState = NetworkMonitor.current(this);
+    networkMonitor.start(
+        state1 -> {
+          networkState = state1;
+          updateNetworkView();
+        });
     build();
     load(!pendingUninstall.isEmpty());
   }
@@ -147,9 +159,12 @@ public final class SearchActivity extends Activity {
     clock.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
     date = text("", 12, palette.secondary);
     date.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
-    place(clock, 698, 20, 176, 25);
-    place(date, 698, 46, 176, 18);
+    place(clock, 648, 20, 176, 25);
+    place(date, 648, 46, 176, 18);
     updateClock();
+    View network = networkAction(() -> NetworkMonitor.openSettings(this));
+    networkButton = network;
+    place(network, 834, 23, 42, 42);
     inputBox = new FrameLayout(this);
     inputBox.setBackground(round(palette.light ? 0xFFE8EBEF : 0xFF202B3A, 10));
     place(inputBox, 78, 86, 804, 48);
@@ -753,6 +768,8 @@ public final class SearchActivity extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
+    networkState = NetworkMonitor.current(this);
+    updateNetworkView();
     getWindow()
         .getDecorView()
         .setSystemUiVisibility(
@@ -781,6 +798,10 @@ public final class SearchActivity extends Activity {
       renameDialog.dismiss();
       renameDialog = null;
     }
+    if (networkMonitor != null) {
+      networkMonitor.stop();
+      networkMonitor = null;
+    }
     handler.removeCallbacksAndMessages(null);
     unregisterReceiver(packageChanges);
     worker.shutdownNow();
@@ -804,6 +825,59 @@ public final class SearchActivity extends Activity {
     text.setIncludeFontPadding(false);
     text.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
     return text;
+  }
+
+  private View networkAction(Runnable action) {
+    FrameLayout button = new FrameLayout(this);
+    ImageView glyph = new ImageView(this);
+    networkGlyph = glyph;
+    int glyphSize = px(20);
+    // Align the network icon optically with the search magnifier and settings gear.
+    glyph.setTranslationY(px(1.5f));
+    button.addView(glyph, new FrameLayout.LayoutParams(glyphSize, glyphSize, Gravity.CENTER));
+    button.setFocusable(true);
+    button.setClickable(true);
+    updateNetworkView(button, glyph);
+    button.setOnFocusChangeListener(
+        (v, focus) -> {
+          button.setBackground(round(focus ? palette.headerFocus : Color.TRANSPARENT, 18));
+          glyph.setColorFilter(
+              focus
+                  ? palette.headerFocusIcon
+                  : (networkState.connected ? palette.icon : palette.muted));
+          glyph.setAlpha((!focus && !networkState.connected) ? 0.6f : 1f);
+          button
+              .animate()
+              .scaleX(focus ? 1.12f : 1)
+              .scaleY(focus ? 1.12f : 1)
+              .setDuration(180)
+              .start();
+          if (focus)
+            Toast.makeText(
+                    this,
+                    networkState.label + (networkState.connected ? "" : " · 按确定打开网络设置"),
+                    Toast.LENGTH_SHORT)
+                .show();
+        });
+    button.setOnClickListener(v -> action.run());
+    return button;
+  }
+
+  private void updateNetworkView() {
+    if (networkButton != null && networkGlyph != null) {
+      updateNetworkView(networkButton, networkGlyph);
+    }
+  }
+
+  private void updateNetworkView(View button, ImageView glyph) {
+    glyph.setImageResource(networkState.iconRes);
+    button.setContentDescription(networkState.label);
+    boolean focused = button.hasFocus();
+    glyph.setColorFilter(
+        focused
+            ? palette.headerFocusIcon
+            : (networkState.connected ? palette.icon : palette.muted));
+    glyph.setAlpha((!focused && !networkState.connected) ? 0.6f : 1f);
   }
 
   private View icon(int resource, String label, Runnable action) {
