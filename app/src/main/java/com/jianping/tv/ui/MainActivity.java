@@ -21,6 +21,9 @@ import com.jianping.tv.platform.DeviceDiagnostics;
 import com.jianping.tv.platform.NetworkMonitor;
 import com.jianping.tv.platform.OtherHome;
 import com.jianping.tv.platform.WakeEntryService;
+import com.jianping.tv.platform.AppInstaller;
+import com.jianping.tv.platform.AppUpdate;
+import java.io.File;
 import java.text.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -30,7 +33,9 @@ public final class MainActivity extends Activity {
   private Preferences prefs;
   private AppNames names;
   private AppRenameDialog renameDialog;
+  private AppUpdateDialog updateDialog;
   private String pendingUninstall = "";
+  private File pendingInstallApk;
   private UiPalette palette;
   private NetworkMonitor networkMonitor;
   private NetworkMonitor.State networkState = NetworkMonitor.State.DISCONNECTED;
@@ -103,9 +108,20 @@ public final class MainActivity extends Activity {
       homeOffset = state.getInt("homeOffset", 0);
       pendingSearchTarget = state.getString("searchTarget", "");
       pendingUninstall = state.getString("uninstall", "");
+      String apkPath = state.getString("pendingInstallApk", null);
+      if (apkPath != null) pendingInstallApk = new File(apkPath);
     }
     recordEntry(getIntent());
     AutoEntry.sync(this);
+    if (pendingInstallApk != null && pendingInstallApk.exists() && AppInstaller.canRequestInstall(this)) {
+      File apk = pendingInstallApk;
+      try {
+        AppInstaller.installApk(this, apk);
+        pendingInstallApk = null;
+      } catch (Exception e) {
+        toast("启动安装程序失败，请重试");
+      }
+    }
     networkMonitor = new NetworkMonitor(this);
     networkState = NetworkMonitor.current(this);
     networkMonitor.start(
@@ -155,12 +171,29 @@ public final class MainActivity extends Activity {
     b.putInt("homeOffset", homeWall == null ? homeOffset : homeWall.getScrollY());
     b.putString("searchTarget", pendingSearchTarget);
     b.putString("uninstall", pendingUninstall);
+    if (pendingInstallApk != null) b.putString("pendingInstallApk", pendingInstallApk.getAbsolutePath());
     super.onSaveInstanceState(b);
   }
 
   @Override
   protected void onActivityResult(int request, int result, Intent data) {
     super.onActivityResult(request, result, data);
+    if (request == AppInstaller.REQUEST_INSTALL_PERM) {
+      if (pendingInstallApk != null && pendingInstallApk.exists()) {
+        if (AppInstaller.canRequestInstall(this)) {
+          File apk = pendingInstallApk;
+          try {
+            AppInstaller.installApk(this, apk);
+            pendingInstallApk = null;
+          } catch (Exception e) {
+            toast("启动安装程序失败，请重试");
+          }
+        } else {
+          toast("未授予安装权限，无法安装更新");
+        }
+      }
+      return;
+    }
     if (request == AppUninstall.REQUEST) {
       if (!pendingUninstall.isEmpty() && !AppUninstall.installed(this, pendingUninstall)) {
         names.removed(pendingUninstall);
@@ -220,6 +253,11 @@ public final class MainActivity extends Activity {
       renameDialog.setOnDismissListener(null);
       renameDialog.dismiss();
       renameDialog = null;
+    }
+    if (updateDialog != null) {
+      updateDialog.setOnDismissListener(null);
+      updateDialog.dismiss();
+      updateDialog = null;
     }
     if (networkMonitor != null) {
       networkMonitor.stop();
@@ -980,6 +1018,15 @@ public final class MainActivity extends Activity {
                     })
                 .setNegativeButton("关闭", null)
                 .show());
+    SettingsRowView checkUpdate =
+        settingsRow(
+            device,
+            rows,
+            "检查更新",
+            R.drawable.settings_update,
+            "v" + DeviceDiagnostics.appVersion(this),
+            false);
+    checkUpdate.setOnClickListener(v -> showUpdateDialog());
     List<SettingsRowView> order = new ArrayList<>(rows.values());
     for (int i = 0; i < order.size(); i++) {
       SettingsRowView row = order.get(i);
@@ -989,6 +1036,47 @@ public final class MainActivity extends Activity {
       row.setNextFocusRightId(row.getId());
     }
     (rows.containsKey(selectedSetting) ? rows.get(selectedSetting) : first).requestFocus();
+  }
+
+  private void showUpdateDialog() {
+    if (isFinishing() || isDestroyed()) return;
+    if (updateDialog != null && updateDialog.isShowing()) return;
+    if (updateDialog != null) {
+      updateDialog.dismiss();
+      updateDialog = null;
+    }
+    updateDialog =
+        new AppUpdateDialog(
+            this,
+            palette,
+            scale,
+            apk -> {
+              if (isFinishing() || isDestroyed()) return;
+              pendingInstallApk = apk;
+              if (!AppInstaller.canRequestInstall(this)) {
+                try {
+                  toast("请在系统设置中允许 Still 安装应用，返回后继续安装");
+                  AppInstaller.requestInstallPermission(this);
+                } catch (Exception e) {
+                  try {
+                    AppInstaller.installApk(this, apk);
+                  } catch (Exception installError) {
+                    toast("设备缺少安装权限设置页面且无法直接安装: " + e.getMessage());
+                  }
+                }
+              } else {
+                try {
+                  AppInstaller.installApk(this, apk);
+                } catch (Exception e) {
+                  toast("启动安装程序失败: " + e.getMessage());
+                }
+              }
+            });
+    updateDialog.setOnDismissListener(
+        d -> {
+          if (updateDialog == d) updateDialog = null;
+        });
+    updateDialog.show();
   }
 
   private LinearLayout settingsGroup(LinearLayout list, String title, boolean gap) {

@@ -2,8 +2,11 @@ plugins { id 'com.android.application' }
 android {
  namespace 'com.jianping.tv'
  compileSdk 35
- defaultConfig { applicationId 'com.jianping.tv'; minSdk 23; targetSdk 35; versionCode 25; versionName '0.9.7' }
+ defaultConfig { applicationId 'com.jianping.tv'; minSdk 23; targetSdk 35; versionCode 26; versionName '0.9.8' }
  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
  lint { abortOnError true }
 }
-dependencies { implementation 'me.majiajie:tinypinyin:2.0.3' }
+dependencies { implementation 'me.majiajie:tinypinyin:2.0.3'
+ testImplementation 'org.json:json:20240303' }
+
+tasks.register('copyTestDeps', Copy) { from configurations.debugUnitTestRuntimeClasspath; into layout.buildDirectory.dir('test-libs') }

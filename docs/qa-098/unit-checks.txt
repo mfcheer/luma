@@ -1,0 +1,4 @@
+PASS: valid JSON with escapes, malformed/boundary JSON rejection, size/version/minSdk boundaries, strict HTTPS, SHA-256 verification, and FileProvider path security verified.
+PASS: fresh install, legacy prefix, append/remove/deduplicate, activity rename, TV entry preference, invalid IDs, empty list, refresh stability and immutable/stable promotion and move to end
+PASS: Chinese/English/pinyin/initials, mixed TV names, NFKC/case/whitespace, ranking/stable ties, empty/no match, repeat and immutable home order
+PASS: NetworkMonitor state transitions, labels, and types verified.

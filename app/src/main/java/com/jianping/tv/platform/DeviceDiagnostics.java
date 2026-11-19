@@ -68,6 +68,22 @@ public final class DeviceDiagnostics {
     }
   }
 
+  public static String appVersion(Context c) {
+    try {
+      return c.getPackageManager().getPackageInfo(c.getPackageName(), 0).versionName;
+    } catch (PackageManager.NameNotFoundException | RuntimeException e) {
+      return "";
+    }
+  }
+
+  public static int appVersionCode(Context c) {
+    try {
+      return c.getPackageManager().getPackageInfo(c.getPackageName(), 0).versionCode;
+    } catch (PackageManager.NameNotFoundException | RuntimeException e) {
+      return 0;
+    }
+  }
+
   public static String report(Context c) {
     Preferences p = new Preferences(c);
     ComponentName resolved = resolvedHome(c);
