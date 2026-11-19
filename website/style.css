@@ -451,6 +451,12 @@ video {
   gap: 22px;
   box-shadow: 0 9px 24px -14px #315efb66;
 }
+.download-note {
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.9;
+}
 .help-list {
   max-width: 620px;
   text-align: left;
@@ -459,6 +465,7 @@ video {
 }
 .help-list details {
   border-bottom: 1px solid #dfe3ea;
+  scroll-margin-top: 96px;
 }
 .help-list summary {
   padding: 21px 0;
@@ -486,6 +493,10 @@ video {
 }
 .help-content p {
   margin: 0;
+}
+.help-content ol + p,
+.help-content p + p {
+  margin-top: 12px;
 }
 .help-content .install-version {
   margin-bottom: 16px;
