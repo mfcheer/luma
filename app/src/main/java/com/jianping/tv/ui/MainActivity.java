@@ -963,8 +963,18 @@ public final class MainActivity extends Activity {
         });
     SettingsRowView appearance =
         settingsRow(
-            desktop, rows, "外观主题", R.drawable.settings_theme, palette.light ? "浅色" : "深色", false);
-    appearance.setOnClickListener(v -> showThemePicker());
+            desktop, rows, "外观主题", R.drawable.settings_theme, palette.light ? "浅色" : "深色", true);
+    appearance.checked(palette.light);
+    appearance.setContentDescription("外观主题，当前" + (palette.light ? "浅色" : "深色") + "，按确定切换");
+    appearance.setOnClickListener(
+        v -> {
+          boolean light = !prefs.lightTheme();
+          prefs.lightTheme(light);
+          palette = UiPalette.from(light);
+          setTheme(light ? R.style.AppThemeLight : R.style.AppTheme);
+          selectedSetting = "外观主题";
+          render();
+        });
     LinearLayout application = settingsGroup(list, "应用", true);
     SettingsRowView system =
         settingsRow(application, rows, "系统设置", R.drawable.settings_settings, "", false);
@@ -1081,25 +1091,6 @@ public final class MainActivity extends Activity {
     group.addView(row, new LinearLayout.LayoutParams(-1, px(42)));
     rows.put(title, row);
     return row;
-  }
-
-  private void showThemePicker() {
-    new AlertDialog.Builder(this)
-        .setTitle("外观主题")
-        .setSingleChoiceItems(
-            new String[] {"浅色", "深色"},
-            palette.light ? 0 : 1,
-            (dialog, which) -> {
-              dialog.dismiss();
-              boolean light = which == 0;
-              if (light == palette.light) return;
-              prefs.lightTheme(light);
-              palette = UiPalette.from(light);
-              setTheme(light ? R.style.AppThemeLight : R.style.AppTheme);
-              render();
-            })
-        .setNegativeButton("取消", null)
-        .show();
   }
 
   private void requestHome() {

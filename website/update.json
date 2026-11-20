@@ -1,9 +1,9 @@
 {
-  "versionCode": 27,
-  "versionName": "0.9.9",
-  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.9.apk",
-  "sha256": "6184c5f9d99c63fd1831427aba0e0d05d770402c011a1202c4a54f3148c88600",
-  "size": 661144,
-  "releaseNotes": "1. 离开更新窗口后继续下载，重新进入可查看进度\n2. 安装授权、取消安装或重启后，可继续安装已下载的有效安装包\n3. 安装前重新校验完整性、包名、版本与签名，按实际运行版本确认升级成功\n4. 完善网络、更新服务和空间异常提示及重试入口",
+  "versionCode": 28,
+  "versionName": "0.9.10",
+  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.10.apk",
+  "sha256": "3e00ad4af869e7e22daddbc622f596191dac5dc5b77ccab90fd836dc8fc860b3",
+  "size": 629924,
+  "releaseNotes": "1. 外观主题改为一键切换，按确定直接切换浅色／深色，无需进入列表\n2. 与“始终显示名称”使用一致的开关交互，切换后保留焦点并自动保存选择\n3. 保留 0.9.9 在线更新闭环：继续下载、恢复安装、安装前校验和实际版本确认",
   "minSdk": 23
 }
