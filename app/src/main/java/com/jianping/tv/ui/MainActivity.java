@@ -22,8 +22,7 @@ import com.jianping.tv.platform.NetworkMonitor;
 import com.jianping.tv.platform.OtherHome;
 import com.jianping.tv.platform.WakeEntryService;
 import com.jianping.tv.platform.AppInstaller;
-import com.jianping.tv.platform.AppUpdate;
-import java.io.File;
+import com.jianping.tv.platform.UpdateSession;
 import java.text.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -35,7 +34,6 @@ public final class MainActivity extends Activity {
   private AppRenameDialog renameDialog;
   private AppUpdateDialog updateDialog;
   private String pendingUninstall = "";
-  private File pendingInstallApk;
   private UiPalette palette;
   private NetworkMonitor networkMonitor;
   private NetworkMonitor.State networkState = NetworkMonitor.State.DISCONNECTED;
@@ -108,20 +106,9 @@ public final class MainActivity extends Activity {
       homeOffset = state.getInt("homeOffset", 0);
       pendingSearchTarget = state.getString("searchTarget", "");
       pendingUninstall = state.getString("uninstall", "");
-      String apkPath = state.getString("pendingInstallApk", null);
-      if (apkPath != null) pendingInstallApk = new File(apkPath);
     }
     recordEntry(getIntent());
     AutoEntry.sync(this);
-    if (pendingInstallApk != null && pendingInstallApk.exists() && AppInstaller.canRequestInstall(this)) {
-      File apk = pendingInstallApk;
-      try {
-        AppInstaller.installApk(this, apk);
-        pendingInstallApk = null;
-      } catch (Exception e) {
-        toast("启动安装程序失败，请重试");
-      }
-    }
     networkMonitor = new NetworkMonitor(this);
     networkState = NetworkMonitor.current(this);
     networkMonitor.start(
@@ -171,7 +158,6 @@ public final class MainActivity extends Activity {
     b.putInt("homeOffset", homeWall == null ? homeOffset : homeWall.getScrollY());
     b.putString("searchTarget", pendingSearchTarget);
     b.putString("uninstall", pendingUninstall);
-    if (pendingInstallApk != null) b.putString("pendingInstallApk", pendingInstallApk.getAbsolutePath());
     super.onSaveInstanceState(b);
   }
 
@@ -179,19 +165,7 @@ public final class MainActivity extends Activity {
   protected void onActivityResult(int request, int result, Intent data) {
     super.onActivityResult(request, result, data);
     if (request == AppInstaller.REQUEST_INSTALL_PERM) {
-      if (pendingInstallApk != null && pendingInstallApk.exists()) {
-        if (AppInstaller.canRequestInstall(this)) {
-          File apk = pendingInstallApk;
-          try {
-            AppInstaller.installApk(this, apk);
-            pendingInstallApk = null;
-          } catch (Exception e) {
-            toast("启动安装程序失败，请重试");
-          }
-        } else {
-          toast("未授予安装权限，无法安装更新");
-        }
-      }
+      // onResume restores the durable update state and presents the next action.
       return;
     }
     if (request == AppUninstall.REQUEST) {
@@ -220,6 +194,10 @@ public final class MainActivity extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
+    UpdateSession updates = UpdateSession.get(this);
+    String updated = updates.reconcileInstalledVersion();
+    if (updated != null) toast(updated);
+    else if (updates.returnedFromSystem()) showUpdateDialog();
     if (pendingWakeEntry != 0) {
       WakeEntryService.recordVisible(this, pendingWakeEntry);
       pendingWakeEntry = 0;
@@ -1045,33 +1023,10 @@ public final class MainActivity extends Activity {
       updateDialog.dismiss();
       updateDialog = null;
     }
-    updateDialog =
-        new AppUpdateDialog(
-            this,
-            palette,
-            scale,
-            apk -> {
-              if (isFinishing() || isDestroyed()) return;
-              pendingInstallApk = apk;
-              if (!AppInstaller.canRequestInstall(this)) {
-                try {
-                  toast("请在系统设置中允许 Still 安装应用，返回后继续安装");
-                  AppInstaller.requestInstallPermission(this);
-                } catch (Exception e) {
-                  try {
-                    AppInstaller.installApk(this, apk);
-                  } catch (Exception installError) {
-                    toast("设备缺少安装权限设置页面且无法直接安装: " + e.getMessage());
-                  }
-                }
-              } else {
-                try {
-                  AppInstaller.installApk(this, apk);
-                } catch (Exception e) {
-                  toast("启动安装程序失败: " + e.getMessage());
-                }
-              }
-            });
+    updateDialog = new AppUpdateDialog(this, palette, scale, () -> {
+      page = "home";
+      render();
+    });
     updateDialog.setOnDismissListener(
         d -> {
           if (updateDialog == d) updateDialog = null;

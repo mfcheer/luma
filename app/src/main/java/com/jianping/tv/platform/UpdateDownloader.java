@@ -13,13 +13,15 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import javax.net.ssl.HttpsURLConnection;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
+import java.net.ConnectException;
 
 /**
  * Handles HTTPS manifest fetching and APK streaming download, enforces size and storage
  * boundaries, reports real-time progress, and executes post-download verification.
  */
-public final class UpdateDownloader {
+public class UpdateDownloader {
   public interface CheckCallback {
     void onCheckSuccess(AppUpdate.UpdateInfo info);
 
@@ -28,6 +30,8 @@ public final class UpdateDownloader {
 
   public interface DownloadCallback {
     void onProgress(int percent, long currentBytes, long totalBytes);
+
+    default void onVerifying() {}
 
     void onSuccess(File apkFile);
 
@@ -48,6 +52,10 @@ public final class UpdateDownloader {
   private volatile boolean cancelled = false;
   private volatile HttpURLConnection activeConnection = null;
 
+  HttpURLConnection openConnection(URL url) throws IOException {
+    return (HttpURLConnection) url.openConnection();
+  }
+
   public void cancel() {
     cancelled = true;
     HttpURLConnection conn = activeConnection;
@@ -58,6 +66,23 @@ public final class UpdateDownloader {
 
   public boolean isCancelled() {
     return cancelled;
+  }
+
+  public interface VerifyCallback {
+    void onVerified(AppUpdate.VerificationResult result);
+  }
+
+  public void verifyCached(Context context, File file, AppUpdate.UpdateInfo info, VerifyCallback callback) {
+    EXECUTOR.execute(() -> {
+      AppUpdate.VerificationResult result;
+      try {
+        result = AppUpdate.verifyApk(context, file, info);
+      } catch (RuntimeException e) {
+        result = AppUpdate.VerificationResult.failure("无法读取安装包，请重新下载。");
+      }
+      final AppUpdate.VerificationResult checked = result;
+      post(() -> callback.onVerified(checked));
+    });
   }
 
   public void checkUpdate(String manifestUrl, CheckCallback callback) {
@@ -71,17 +96,18 @@ public final class UpdateDownloader {
           HttpURLConnection conn = null;
           try {
             URL url = new URL(manifestUrl);
-            conn = (HttpURLConnection) url.openConnection();
+            conn = openConnection(url);
             activeConnection = conn;
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(AppUpdate.CONNECT_TIMEOUT_MS);
             conn.setReadTimeout(AppUpdate.READ_TIMEOUT_MS);
             conn.setUseCaches(false);
+            conn.setInstanceFollowRedirects(false);
             conn.setRequestProperty("Accept", "application/json");
 
             int code = conn.getResponseCode();
             if (code != HttpURLConnection.HTTP_OK) {
-              post(() -> callback.onCheckError("更新服务器响应异常 (HTTP " + code + ")"));
+              post(() -> callback.onCheckError(serverError(code)));
               return;
             }
 
@@ -110,7 +136,7 @@ public final class UpdateDownloader {
             if (cancelled) {
               post(() -> callback.onCheckError("检查更新已取消"));
             } else {
-              post(() -> callback.onCheckError("无法获取更新信息: " + safeErrorMessage(e)));
+              post(() -> callback.onCheckError(networkError(e)));
             }
           } finally {
             activeConnection = null;
@@ -133,7 +159,7 @@ public final class UpdateDownloader {
           }
 
           if (!AppUpdate.hasEnoughSpace(targetDir, info.size)) {
-            post(() -> callback.onError("存储空间不足，无法下载新版本"));
+            post(() -> callback.onError("存储空间不足，请至少留出 " + AppUpdate.formatSize(AppUpdate.requiredSpace(info.size)) + " 后重试。"));
             return;
           }
 
@@ -149,17 +175,18 @@ public final class UpdateDownloader {
           InputStream in = null;
           try {
             URL url = new URL(info.downloadUrl);
-            conn = (HttpURLConnection) url.openConnection();
+            conn = openConnection(url);
             activeConnection = conn;
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(AppUpdate.CONNECT_TIMEOUT_MS);
             conn.setReadTimeout(AppUpdate.READ_TIMEOUT_MS);
             conn.setUseCaches(false);
+            conn.setInstanceFollowRedirects(false);
             conn.setRequestProperty("Accept-Encoding", "identity");
 
             int code = conn.getResponseCode();
             if (code != HttpURLConnection.HTTP_OK) {
-              post(() -> callback.onError("下载服务器响应异常 (HTTP " + code + ")"));
+              post(() -> callback.onError(serverError(code)));
               return;
             }
 
@@ -205,7 +232,7 @@ public final class UpdateDownloader {
                 return;
               }
 
-              int percent = totalBytes > 0 ? (int) (currentBytes * 100 / totalBytes) : 0;
+              int percent = totalBytes > 0 ? (int) Math.min(100, currentBytes * 100 / totalBytes) : 0;
               long now = System.currentTimeMillis();
               if (percent != lastPercent && (now - lastNotifyTime >= 100 || percent == 100)) {
                 lastPercent = percent;
@@ -225,6 +252,7 @@ public final class UpdateDownloader {
               return;
             }
 
+            post(callback::onVerifying);
             // 1. Verify SHA-256 before renaming
             String actualSha256 = AppUpdate.calculateSha256(tempFile);
             if (!actualSha256.equalsIgnoreCase(info.sha256)) {
@@ -252,14 +280,18 @@ public final class UpdateDownloader {
               return;
             }
 
-            // All checks passed!
+            if (cancelled) {
+              cleanup(finalApk);
+              post(callback::onCancelled);
+              return;
+            }
             post(() -> callback.onSuccess(finalApk));
           } catch (Exception e) {
             cleanup(tempFile);
             if (cancelled) {
               post(callback::onCancelled);
             } else {
-              post(() -> callback.onError("下载安装包失败: " + safeErrorMessage(e)));
+              post(() -> callback.onError(networkError(e)));
             }
           } finally {
             activeConnection = null;
@@ -295,11 +327,19 @@ public final class UpdateDownloader {
     mainHandler.post(r);
   }
 
-  private static String safeErrorMessage(Exception e) {
-    String msg = e.getMessage();
-    if (msg == null || msg.trim().isEmpty()) {
-      return e.getClass().getSimpleName();
-    }
-    return msg;
+  static String serverError(int code) {
+    return "更新服务暂不可用（HTTP " + code + "），请稍后重试，或从官网下载。";
+  }
+
+  static String networkError(Exception e) {
+    if (e instanceof UnknownHostException || e instanceof ConnectException)
+      return "无法连接更新服务，请检查网络后重试。";
+    if (e instanceof SocketTimeoutException)
+      return "连接或下载超时，请检查网络后重试。";
+    if (e instanceof IllegalArgumentException)
+      return "更新信息格式异常，请稍后重试，或从官网下载。";
+    if (e instanceof javax.net.ssl.SSLException)
+      return "无法建立安全连接，请检查系统时间或从官网下载。";
+    return "更新未完成，请检查网络和存储空间后重试。";
   }
 }

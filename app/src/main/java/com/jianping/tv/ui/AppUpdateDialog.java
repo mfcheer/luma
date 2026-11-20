@@ -19,9 +19,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import com.jianping.tv.platform.AppUpdate;
 import com.jianping.tv.platform.DeviceDiagnostics;
-import com.jianping.tv.platform.StillFileProvider;
-import com.jianping.tv.platform.UpdateDownloader;
-import java.io.File;
+import com.jianping.tv.platform.UpdateSession;
+import android.content.Intent;
+import android.net.Uri;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,15 +30,12 @@ import java.util.List;
  * progress tracking, cancellation/retry, and installation launch.
  */
 public final class AppUpdateDialog extends Dialog {
-  public interface OnInstallRequested {
-    void onInstall(File apkFile);
-  }
-
   private final Activity activity;
   private final UiPalette palette;
   private final float unit;
-  private final OnInstallRequested installCallback;
-  private final UpdateDownloader downloader = new UpdateDownloader();
+  private final UpdateSession session;
+  private final Runnable returnToDesktop;
+  private final UpdateSession.Listener listener = this::renderState;
 
   private TextView titleView;
   private TextView subtitleView;
@@ -51,20 +48,20 @@ public final class AppUpdateDialog extends Dialog {
   private TextView errorView;
   private LinearLayout buttonBar;
 
-  private AppUpdate.UpdateInfo currentUpdateInfo;
-  private File verifiedApk;
-  private int currentProgressPercent = 0;
+  private int currentProgressPercent;
+  private UpdateSession.State renderedState;
 
-  public AppUpdateDialog(
-      Activity activity,
-      UiPalette palette,
-      float unit,
-      OnInstallRequested installCallback) {
+  public AppUpdateDialog(Activity activity, UiPalette palette, float unit) {
+    this(activity, palette, unit, null);
+  }
+
+  public AppUpdateDialog(Activity activity, UiPalette palette, float unit, Runnable returnToDesktop) {
     super(activity);
     this.activity = activity;
     this.palette = palette;
     this.unit = unit;
-    this.installCallback = installCallback;
+    this.session = UpdateSession.get(activity);
+    this.returnToDesktop = returnToDesktop;
   }
 
   private int px(float value) {
@@ -95,7 +92,7 @@ public final class AppUpdateDialog extends Dialog {
 
     // Subtitle / Version Info
     subtitleView = text("正在连接更新服务器...", 13, palette.secondary, false);
-    panel.addView(subtitleView, new LinearLayout.LayoutParams(-1, px(26)));
+    panel.addView(subtitleView, new LinearLayout.LayoutParams(-1, -2));
 
     // Release notes scrollable container with explicit view ID and D-pad focus
     notesScroll = new ScrollView(activity);
@@ -193,172 +190,126 @@ public final class AppUpdateDialog extends Dialog {
                   | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
     }
 
-    startUpdateCheck();
+    renderState();
   }
 
-  private void startUpdateCheck() {
-    titleView.setText("检查更新");
-    subtitleView.setText("正在连接更新服务器...");
+  @Override
+  protected void onStart() {
+    super.onStart();
+    session.addListener(listener);
+    if (session.state == UpdateSession.State.IDLE) session.check();
+    else renderState();
+  }
+
+  @Override
+  protected void onStop() {
+    session.removeListener(listener);
+    super.onStop();
+  }
+
+  private void renderState() {
+    if (titleView == null) return;
+    if (renderedState == UpdateSession.State.DOWNLOADING && session.state == renderedState) {
+      updateProgress(session.percent, session.bytes, session.total);
+      return;
+    }
+    renderedState = session.state;
     notesScroll.setVisibility(View.GONE);
     progressArea.setVisibility(View.GONE);
     errorView.setVisibility(View.GONE);
-
-    setButtons(
-        new ButtonSpec("取消", this::cancelAndDismiss, true));
-
-    downloader.checkUpdate(
-        AppUpdate.DEFAULT_UPDATE_URL,
-        new UpdateDownloader.CheckCallback() {
-          @Override
-          public void onCheckSuccess(AppUpdate.UpdateInfo info) {
-            if (!isShowing()) return;
-            handleCheckResult(info);
-          }
-
-          @Override
-          public void onCheckError(String message) {
-            if (!isShowing()) return;
-            showError("检查更新失败: " + message, true);
-          }
-        });
-  }
-
-  private void handleCheckResult(AppUpdate.UpdateInfo info) {
-    this.currentUpdateInfo = info;
-    int currentCode = DeviceDiagnostics.appVersionCode(activity);
-    String currentName = DeviceDiagnostics.appVersion(activity);
-
-    if (info.versionCode > currentCode) {
-      // Check system compatibility
-      if (!AppUpdate.isSystemCompatible(info.minSdk)) {
-        showIncompatible(info);
+    String current = DeviceDiagnostics.appVersion(activity);
+    subtitleView.setText("当前版本 Still " + current);
+    switch (session.state) {
+      case IDLE:
+      case CHECKING:
+        titleView.setText("检查更新");
+        subtitleView.setText("当前版本 Still " + current + " · 正在连接更新服务器…");
+        setButtons(new ButtonSpec("取消", () -> { session.cancel(); dismiss(); }, true));
+        break;
+      case CURRENT:
+        titleView.setText("当前已是最新版");
+        setButtons(new ButtonSpec("确定", this::dismiss, true));
+        break;
+      case INCOMPATIBLE:
+        titleView.setText("设备系统暂不支持");
+        subtitleView.setText("新版要求 API " + session.info.minSdk + "，当前为 API " + Build.VERSION.SDK_INT + "。");
+        setButtons(new ButtonSpec("关闭", this::dismiss, true));
+        break;
+      case AVAILABLE:
+        titleView.setText("发现新版本 Still " + session.info.versionName);
+        subtitleView.setText("当前 " + current + " · 安装包 " + AppUpdate.formatSize(session.info.size));
+        notesView.setText("更新内容：\n" + (TextUtils.isEmpty(session.info.releaseNotes) ? "本次未提供更新说明。" : session.info.releaseNotes));
+        notesScroll.setVisibility(View.VISIBLE);
+        setButtons(new ButtonSpec("稍后", this::dismiss, false),
+            new ButtonSpec("下载并更新", session::download, true));
+        break;
+      case DOWNLOADING:
+        titleView.setText("正在下载 Still " + session.info.versionName);
+        subtitleView.setText("可返回桌面继续使用，再次检查更新可查看进度。");
+        progressArea.setVisibility(View.VISIBLE);
+        updateProgress(session.percent, session.bytes, session.total);
+        setButtons(new ButtonSpec("取消下载", session::cancel, false),
+            new ButtonSpec("返回桌面", this::returnHome, true));
+        break;
+      case VERIFYING:
+        titleView.setText("正在校验安装包");
+        subtitleView.setText("正在核对完整性、应用身份和签名，请稍候…");
+        setButtons(new ButtonSpec("返回桌面", this::returnHome, true));
+        break;
+      case READY:
+        titleView.setText("可继续安装 Still " + session.info.versionName);
+        subtitleView.setText(com.jianping.tv.platform.AppInstaller.canRequestInstall(activity)
+            ? "安装前会重新校验；请在系统界面确认安装，原有设置将保留。"
+            : "需要允许 Still 安装应用，才能更新。返回后可继续安装，无需重新下载。");
+        setButtons(new ButtonSpec("稍后安装", this::dismiss, false),
+            new ButtonSpec(com.jianping.tv.platform.AppInstaller.canRequestInstall(activity) ? "继续安装" : "前往授权", () -> session.install(activity), true));
+        break;
+      case PERMISSION:
+      case INSTALLING:
+        dismiss();
         return;
-      }
-
-      // Check if already downloaded and verified
-      File cacheDir = StillFileProvider.getUpdateDir(activity);
-      File potentialApk = new File(cacheDir, AppUpdate.getUpdateApkFileName(info.versionCode));
-      if (potentialApk.exists()) {
-        AppUpdate.VerificationResult vr =
-            AppUpdate.verifyApk(activity, potentialApk, info);
-        if (vr.success) {
-          verifiedApk = potentialApk;
-          showReadyToInstall(info);
-          return;
-        } else {
-          potentialApk.delete();
-        }
-      }
-      showUpdateAvailable(info, currentName, currentCode);
-    } else {
-      showUpToDate(currentName);
+      case ERROR:
+        titleView.setText("更新未完成");
+        setButtons(new ButtonSpec("关闭", this::dismiss, false),
+            new ButtonSpec(session.message.startsWith("存储空间不足") ? "清理空间" : "官网",
+                session.message.startsWith("存储空间不足") ? this::openStorageSettings : this::openWebsite, false),
+            new ButtonSpec("重试", session::retry, true));
+        break;
+    }
+    if (!TextUtils.isEmpty(session.message)) {
+      errorView.setTextColor(session.state == UpdateSession.State.ERROR
+          ? (palette.light ? 0xFFB33A3A : 0xFFE57373) : palette.secondary);
+      errorView.setText(session.message);
+      errorView.setVisibility(View.VISIBLE);
     }
   }
 
-  private void showIncompatible(AppUpdate.UpdateInfo info) {
-    titleView.setText("设备系统暂不支持");
-    subtitleView.setText(
-        "Still "
-            + info.versionName
-            + " 要求最低系统版本 API "
-            + info.minSdk
-            + "，当前设备系统为 API "
-            + Build.VERSION.SDK_INT
-            + "，无法在此设备上更新。");
-    notesScroll.setVisibility(View.GONE);
-    progressArea.setVisibility(View.GONE);
-    errorView.setVisibility(View.GONE);
-
-    setButtons(new ButtonSpec("我知道了", this::dismiss, true));
+  private void returnHome() {
+    dismiss();
+    if (returnToDesktop != null) returnToDesktop.run();
   }
 
-  private void showUpToDate(String currentName) {
-    titleView.setText("当前已是最新版");
-    subtitleView.setText("当前版本 Still " + currentName + " 已是最新，暂无新版发布。");
-    notesScroll.setVisibility(View.GONE);
-    progressArea.setVisibility(View.GONE);
-    errorView.setVisibility(View.GONE);
-
-    setButtons(new ButtonSpec("确定", this::dismiss, true));
-  }
-
-  private void showUpdateAvailable(
-      AppUpdate.UpdateInfo info, String currentName, int currentCode) {
-    titleView.setText("发现新版本 Still " + info.versionName);
-    subtitleView.setText(
-        "当前版本: "
-            + currentName
-            + " (代号 "
-            + currentCode
-            + ")  ·  大小: "
-            + AppUpdate.formatSize(info.size));
-
-    if (!TextUtils.isEmpty(info.releaseNotes)) {
-      notesView.setText("更新内容：\n" + info.releaseNotes);
-      notesScroll.setVisibility(View.VISIBLE);
-    } else {
-      notesScroll.setVisibility(View.GONE);
+  private void openStorageSettings() {
+    try {
+      activity.startActivity(new Intent(android.provider.Settings.ACTION_INTERNAL_STORAGE_SETTINGS));
+    } catch (RuntimeException e) {
+      session.message = "请在电视系统设置中清理存储空间，再返回重试。";
+      renderState();
     }
-
-    progressArea.setVisibility(View.GONE);
-    errorView.setVisibility(View.GONE);
-
-    setButtons(
-        new ButtonSpec("取消", this::dismiss, false),
-        new ButtonSpec("下载并更新", () -> startDownload(info), true));
   }
 
-  private void startDownload(AppUpdate.UpdateInfo info) {
-    titleView.setText("正在下载 Still " + info.versionName);
-    subtitleView.setText("正在下载安装包，请稍候...");
-    notesScroll.setVisibility(View.GONE);
-    progressArea.setVisibility(View.VISIBLE);
-    errorView.setVisibility(View.GONE);
-    updateProgress(0, 0, info.size);
-
-    setButtons(new ButtonSpec("取消下载", this::cancelDownload, true));
-
-    File targetDir = StillFileProvider.getUpdateDir(activity);
-    downloader.downloadApk(
-        activity,
-        info,
-        targetDir,
-        new UpdateDownloader.DownloadCallback() {
-          @Override
-          public void onProgress(int percent, long currentBytes, long totalBytes) {
-            if (!isShowing()) return;
-            updateProgress(percent, currentBytes, totalBytes);
-          }
-
-          @Override
-          public void onSuccess(File apkFile) {
-            if (!isShowing()) return;
-            verifiedApk = apkFile;
-            showReadyToInstall(info);
-          }
-
-          @Override
-          public void onError(String message) {
-            if (!isShowing()) return;
-            showError("下载失败: " + message, true);
-          }
-
-          @Override
-          public void onCancelled() {
-            if (!isShowing()) return;
-            titleView.setText("下载已取消");
-            subtitleView.setText("已取消下载并清理未完成的文件。");
-            progressArea.setVisibility(View.GONE);
-            setButtons(
-                new ButtonSpec("重新下载", () -> startDownload(info), true),
-                new ButtonSpec("关闭", AppUpdateDialog.this::dismiss, false));
-          }
-        });
+  private void openWebsite() {
+    try {
+      activity.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://mfcheer.github.io/luma/#download")));
+    } catch (RuntimeException e) {
+      session.message = "请用手机或电脑访问 mfcheer.github.io/luma 下载。";
+      renderState();
+    }
   }
 
   private void updateProgress(int percent, long currentBytes, long totalBytes) {
     currentProgressPercent = Math.max(0, Math.min(100, percent));
-    progressLabel.setText(
+    progressLabel.setText(totalBytes <= 0 ? "已下载 " + AppUpdate.formatSize(currentBytes) :
         currentProgressPercent
             + "% ("
             + AppUpdate.formatSize(currentBytes)
@@ -378,63 +329,9 @@ public final class AppUpdateDialog extends Dialog {
         });
   }
 
-  private void showReadyToInstall(AppUpdate.UpdateInfo info) {
-    titleView.setText("下载完成");
-    subtitleView.setText("Still " + info.versionName + " 校验通过，可立即开始安装。");
-    notesScroll.setVisibility(View.GONE);
-    progressArea.setVisibility(View.GONE);
-    errorView.setVisibility(View.GONE);
-
-    setButtons(
-        new ButtonSpec("稍后安装", this::dismiss, false),
-        new ButtonSpec(
-            "立即安装",
-            () -> {
-              if (verifiedApk != null && verifiedApk.exists()) {
-                dismiss();
-                if (installCallback != null) {
-                  installCallback.onInstall(verifiedApk);
-                }
-              }
-            },
-            true));
-  }
-
-  private void showError(String message, boolean canRetry) {
-    errorView.setText(message);
-    errorView.setVisibility(View.VISIBLE);
-    progressArea.setVisibility(View.GONE);
-
-    if (canRetry) {
-      setButtons(
-          new ButtonSpec("取消", this::dismiss, false),
-          new ButtonSpec(
-              "重试",
-              () -> {
-                if (currentUpdateInfo != null) {
-                  startDownload(currentUpdateInfo);
-                } else {
-                  startUpdateCheck();
-                }
-              },
-              true));
-    } else {
-      setButtons(new ButtonSpec("关闭", this::dismiss, true));
-    }
-  }
-
-  private void cancelDownload() {
-    downloader.cancel();
-  }
-
-  private void cancelAndDismiss() {
-    downloader.cancel();
-    dismiss();
-  }
-
   @Override
   public void dismiss() {
-    downloader.cancel();
+    session.removeListener(listener);
     super.dismiss();
   }
 

@@ -248,7 +248,14 @@ public final class AppUpdate {
   }
 
   public static boolean isHttpsUrl(String url) {
-    return url != null && url.trim().toLowerCase(Locale.US).startsWith("https://");
+    if (url == null) return false;
+    try {
+      java.net.URI uri = new java.net.URI(url.trim());
+      return "https".equalsIgnoreCase(uri.getScheme()) && uri.getHost() != null
+          && !uri.getHost().isEmpty() && uri.getRawUserInfo() == null && uri.getFragment() == null;
+    } catch (java.net.URISyntaxException e) {
+      return false;
+    }
   }
 
   public static boolean isSystemCompatible(int currentSdk, int minSdk) {
@@ -270,8 +277,11 @@ public final class AppUpdate {
   public static boolean hasEnoughSpace(File dir, long requiredBytes) {
     if (dir == null) return false;
     long usable = dir.getUsableSpace();
-    long needed = Math.max(1024 * 1024L, requiredBytes) + SAFETY_MARGIN_BYTES;
-    return usable >= needed;
+    return usable >= requiredSpace(requiredBytes);
+  }
+
+  public static long requiredSpace(long size) {
+    return (size > 0 ? size : MAX_APK_SIZE) + SAFETY_MARGIN_BYTES;
   }
 
   public static String calculateSha256(File file) throws IOException {
