@@ -1,9 +1,9 @@
 {
-  "versionCode": 26,
-  "versionName": "0.9.8",
-  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.8.apk",
-  "sha256": "746cdbd5308fb853c6f072861fe70fcf464f0421aaecb9bca259ed8976058466",
-  "size": 708699,
-  "releaseNotes": "1. 设置页新增手动检查在线更新，支持直接下载并调起系统安装\n2. 下载过程实时展示进度与校验，支持取消与失败重试\n3. 安装前校验 SHA-256 完整性、包名与开发签名一致性，旧版安全保留",
+  "versionCode": 27,
+  "versionName": "0.9.9",
+  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.9.apk",
+  "sha256": "6184c5f9d99c63fd1831427aba0e0d05d770402c011a1202c4a54f3148c88600",
+  "size": 661144,
+  "releaseNotes": "1. 离开更新窗口后继续下载，重新进入可查看进度\n2. 安装授权、取消安装或重启后，可继续安装已下载的有效安装包\n3. 安装前重新校验完整性、包名、版本与签名，按实际运行版本确认升级成功\n4. 完善网络、更新服务和空间异常提示及重试入口",
   "minSdk": 23
 }
