@@ -575,6 +575,13 @@ img {
   }
 }
 @media (max-width: 900px) {
+  .dual-features-stage {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .dual-features-section.section {
+    padding-block: 52px 64px;
+  }
   .shell {
     width: calc(100% - 56px);
   }
@@ -611,6 +618,16 @@ img {
   }
 }
 @media (max-width: 600px) {
+  .dual-feature-copy {
+    padding: 20px 20px 24px;
+  }
+  .dual-feature-copy h3 {
+    font-size: 20px;
+  }
+  .dual-feature-copy p {
+    font-size: 13.5px;
+  }
+
   .comparison-section.section {
     padding-block: 0 64px;
   }
@@ -804,4 +821,105 @@ img {
     animation: none !important;
     transition: none !important;
   }
+}
+
+
+/* Dual Features Section: LAN Air Install & Web Shortcuts */
+.dual-features-section.section {
+  padding-block: 72px 88px;
+  border-top: 1px solid var(--line);
+}
+.dual-features-title {
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  text-align: center;
+  margin: 0 0 12px;
+}
+.dual-features-subtitle {
+  font-size: clamp(14px, 1.6vw, 17px);
+  line-height: 1.6;
+  color: var(--muted);
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 48px;
+}
+.dual-features-stage {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 40px;
+}
+.dual-feature-card {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 14px 38px -18px rgba(30, 37, 55, 0.08);
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.dual-feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 22px 50px -20px rgba(30, 37, 55, 0.15);
+}
+.dual-feature-frame {
+  position: relative;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background: #111827;
+}
+.dual-feature-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.dual-feature-copy {
+  padding: 26px 28px 30px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.dual-feature-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.1);
+  color: #0284c7;
+  margin-bottom: 12px;
+}
+.dual-feature-badge.badge-web {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+.dual-feature-copy h3 {
+  font-size: 23px;
+  line-height: 1.35;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  color: var(--ink);
+  margin: 0 0 10px;
+}
+.dual-feature-copy p {
+  font-size: 14.5px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin: 0;
+  flex-grow: 1;
+}
+.dual-features-note {
+  margin: 36px 0 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--muted);
 }
