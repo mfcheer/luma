@@ -1,9 +1,9 @@
 {
-  "versionCode": 28,
-  "versionName": "0.9.10",
-  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.10.apk",
-  "sha256": "3e00ad4af869e7e22daddbc622f596191dac5dc5b77ccab90fd836dc8fc860b3",
-  "size": 629924,
-  "releaseNotes": "1. 外观主题改为一键切换，按确定直接切换浅色／深色，无需进入列表\n2. 与“始终显示名称”使用一致的开关交互，切换后保留焦点并自动保存选择\n3. 保留 0.9.9 在线更新闭环：继续下载、恢复安装、安装前校验和实际版本确认",
+  "versionCode": 29,
+  "versionName": "0.9.11",
+  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.11.apk",
+  "sha256": "8d360a396ec28f868c723d992ef0988c430bfec113b350379a5d71e86ee718de",
+  "size": 969923,
+  "releaseNotes": "1. 支持添加常用网页快捷方式至电视桌面，手机扫码即可极简配网添加\n2. 采用独立浏览进程运行网页，遥控器一键退出并释放全部内存，永不影响桌面流畅度\n3. 内置百度、GitHub、B站等主流站点高清质感矢量 Logo，支持个人主页与通用站点 Favicon 自动抓取与持久化缓存\n4. 智能外网适配（默认 HTTPS 协议补全）与老旧电视浏览器内核渲染兼容",
   "minSdk": 23
 }

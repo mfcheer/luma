@@ -376,14 +376,14 @@ public final class WebBrowserActivity extends Activity {
       return;
     }
     if (customView != null) {
-      if (webView != null && webView.getWebChromeClient() != null) {
-        // Hide custom view
-        container.removeView(customView);
-        customView = null;
-        if (customViewCallback != null) {
-          customViewCallback.onCustomViewHidden();
-          customViewCallback = null;
-        }
+      // Hide custom view
+      container.removeView(customView);
+      customView = null;
+      if (customViewCallback != null) {
+        customViewCallback.onCustomViewHidden();
+        customViewCallback = null;
+      }
+      if (webView != null) {
         webView.setVisibility(View.VISIBLE);
       }
       return;

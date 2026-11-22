@@ -92,7 +92,15 @@ public final class WebShortcutStore {
   public synchronized void delete(String id) {
     if (id == null || id.isEmpty()) return;
     List<WebShortcut> current = loadAll();
-    boolean removed = current.removeIf(s -> id.equals(s.id));
+    Iterator<WebShortcut> it = current.iterator();
+    boolean removed = false;
+    while (it.hasNext()) {
+      WebShortcut s = it.next();
+      if (id.equals(s.id)) {
+        it.remove();
+        removed = true;
+      }
+    }
     if (removed) {
       persist(current);
       notifyChanged();
