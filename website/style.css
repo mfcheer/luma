@@ -431,6 +431,14 @@ video {
 .menu-panel .feature-art img {
   width: 145%;
 }
+.airinstall-panel .feature-art img,
+.shortcuts-panel .feature-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: static;
+  transform: none;
+}
 .download-section {
   background: linear-gradient(150deg, #f4f6fb, #faf9f5 80%);
   text-align: center;
@@ -608,85 +616,6 @@ img {
   }
   .tv-screen {
     border-radius: 12px;
-  }
-}
-@media (max-width: 768px) {
-  .dual-features-section.section {
-    padding-block: 40px 48px;
-  }
-  .dual-features-title {
-    font-size: 24px;
-    margin-bottom: 6px;
-  }
-  .dual-features-subtitle {
-    font-size: 13px;
-    margin-bottom: 18px;
-  }
-  .dual-features-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 4px;
-    padding: 3px;
-    border-radius: 30px;
-    background: #f0f0f2;
-    width: fit-content;
-    margin: 0 auto 18px;
-  }
-  .dual-features-tabs .tab-btn {
-    border: 0;
-    background: transparent;
-    color: #69727e;
-    font-size: 12px;
-    font-weight: 500;
-    border-radius: 24px;
-    padding: 6px 14px;
-    min-height: 32px;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s, box-shadow 0.2s;
-  }
-  .dual-features-tabs .tab-btn.active {
-    background: #ffffff;
-    color: #24262b;
-    box-shadow: 0 1px 4px rgba(21, 29, 48, 0.08);
-    font-weight: 600;
-  }
-  .dual-features-stage {
-    display: flex;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    gap: 14px;
-    padding-inline: 4px 20px;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .dual-features-stage::-webkit-scrollbar {
-    display: none;
-  }
-  .dual-feature-card {
-    flex: 0 0 calc(100% - 24px);
-    max-width: 380px;
-    scroll-snap-align: center;
-    border-radius: 16px;
-  }
-  .dual-feature-copy {
-    padding: 14px 16px 18px;
-  }
-  .dual-feature-badge {
-    font-size: 10px;
-    padding: 2px 7px;
-    margin-bottom: 6px;
-  }
-  .dual-feature-copy h3 {
-    font-size: 17px;
-    margin-bottom: 4px;
-  }
-  .dual-feature-copy p {
-    font-size: 12.5px;
-    line-height: 1.5;
-  }
-  .dual-features-note {
-    margin-top: 16px;
-    font-size: 10.5px;
   }
 }
 @media (max-width: 600px) {
@@ -884,107 +813,4 @@ img {
     animation: none !important;
     transition: none !important;
   }
-}
-
-
-/* Dual Features Section: LAN Air Install & Web Shortcuts */
-.dual-features-section.section {
-  padding-block: 64px 80px;
-  border-top: 1px solid var(--line);
-}
-.dual-features-title {
-  font-size: clamp(28px, 3.8vw, 44px);
-  line-height: 1.35;
-  font-weight: 600;
-  letter-spacing: -0.045em;
-  text-align: center;
-  margin: 0 0 10px;
-}
-.dual-features-subtitle {
-  font-size: clamp(14px, 1.5vw, 16px);
-  line-height: 1.5;
-  color: var(--muted);
-  text-align: center;
-  max-width: 600px;
-  margin: 0 auto 36px;
-}
-.dual-features-tabs {
-  display: none;
-}
-.dual-features-stage {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 36px;
-}
-.dual-feature-card {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  background: #ffffff;
-  border-radius: 20px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  box-shadow: 0 12px 34px -16px rgba(30, 37, 55, 0.08);
-  overflow: hidden;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-.dual-feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 46px -18px rgba(30, 37, 55, 0.14);
-}
-.dual-feature-frame {
-  position: relative;
-  aspect-ratio: 16/9;
-  overflow: hidden;
-  background: #111827;
-}
-.dual-feature-frame img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.dual-feature-copy {
-  padding: 22px 24px 26px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-.dual-feature-badge {
-  align-self: flex-start;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: rgba(14, 165, 233, 0.1);
-  color: #0284c7;
-  margin-bottom: 10px;
-}
-.dual-feature-badge.badge-web {
-  background: rgba(16, 185, 129, 0.1);
-  color: #059669;
-}
-.dual-feature-copy h3 {
-  font-size: 21px;
-  line-height: 1.35;
-  font-weight: 600;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-  margin: 0 0 6px;
-}
-.dual-feature-copy p {
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--muted);
-  margin: 0;
-}
-.dual-features-note {
-  margin: 28px 0 0;
-  text-align: center;
-  font-size: 11.5px;
-  line-height: 1.7;
-  color: var(--muted);
 }
