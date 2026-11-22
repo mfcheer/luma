@@ -343,7 +343,6 @@ public final class LanConfigServer {
         + "      font-size: 11px;\n"
         + "      font-weight: 600;\n"
         + "      letter-spacing: 0.08em;\n"
-        + "      text-transform: uppercase;\n"
         + "      color: var(--text-sec);\n"
         + "      margin-bottom: 6px;\n"
         + "    }\n"

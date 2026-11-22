@@ -15,8 +15,10 @@ import android.widget.*;
 public final class WebBrowserActivity extends Activity {
   public static final String EXTRA_URL = "com.jianping.tv.browser.EXTRA_URL";
   public static final String EXTRA_TITLE = "com.jianping.tv.browser.EXTRA_TITLE";
+  public static final String EXTRA_ID = "com.jianping.tv.browser.EXTRA_ID";
 
   private FrameLayout container;
+  private String shortcutId;
   private WebView webView;
   private ProgressBar progressBar;
   private View customView;
@@ -50,6 +52,7 @@ public final class WebBrowserActivity extends Activity {
 
     setContentView(container);
 
+    shortcutId = getIntent().getStringExtra(EXTRA_ID);
     String targetUrl = getIntent().getStringExtra(EXTRA_URL);
     if (targetUrl == null || targetUrl.isEmpty()) {
       targetUrl = "about:blank";
@@ -186,6 +189,22 @@ public final class WebBrowserActivity extends Activity {
 
     wv.setWebChromeClient(
         new WebChromeClient() {
+          @Override
+          public void onReceivedIcon(WebView view, android.graphics.Bitmap icon) {
+            super.onReceivedIcon(view, icon);
+            if (icon != null && shortcutId != null && !shortcutId.isEmpty()) {
+              WebIconManager.saveIcon(getApplicationContext(), shortcutId, icon);
+            }
+          }
+
+          @Override
+          public void onReceivedTouchIconUrl(WebView view, String url, boolean precomposed) {
+            super.onReceivedTouchIconUrl(view, url, precomposed);
+            if (url != null && shortcutId != null && !shortcutId.isEmpty()) {
+              WebIconManager.fetchDirectIconAsync(getApplicationContext(), shortcutId, url);
+            }
+          }
+
           @Override
           public void onProgressChanged(WebView view, int newProgress) {
             if (newProgress < 100) {

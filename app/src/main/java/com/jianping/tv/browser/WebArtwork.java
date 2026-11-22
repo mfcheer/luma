@@ -1,5 +1,6 @@
 package com.jianping.tv.browser;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
@@ -16,16 +17,26 @@ public final class WebArtwork {
 
   private WebArtwork() {}
 
-  public static Drawable cardArtwork(Resources res, WebShortcut shortcut, UiPalette palette) {
-    Bitmap bmp = createShortcutBitmap(shortcut, palette);
+  public static Drawable cardArtwork(
+      Context context, Resources res, WebShortcut shortcut, UiPalette palette) {
+    Bitmap bmp = createShortcutBitmap(context, shortcut, palette);
     return new BitmapDrawable(res, bmp);
   }
 
-  public static Drawable previewArtwork(Resources res, WebShortcut shortcut, UiPalette palette) {
-    Bitmap bmp = createShortcutBitmap(shortcut, palette);
+  public static Drawable previewArtwork(
+      Context context, Resources res, WebShortcut shortcut, UiPalette palette) {
+    Bitmap bmp = createShortcutBitmap(context, shortcut, palette);
     Bitmap blurred = blur(bmp);
     bmp.recycle();
     return new BitmapDrawable(res, blurred);
+  }
+
+  public static Drawable cardArtwork(Resources res, WebShortcut shortcut, UiPalette palette) {
+    return cardArtwork(null, res, shortcut, palette);
+  }
+
+  public static Drawable previewArtwork(Resources res, WebShortcut shortcut, UiPalette palette) {
+    return previewArtwork(null, res, shortcut, palette);
   }
 
   public static Drawable addCardArtwork(Resources res, UiPalette palette) {
@@ -40,7 +51,8 @@ public final class WebArtwork {
     return new BitmapDrawable(res, blurred);
   }
 
-  private static Bitmap createShortcutBitmap(WebShortcut shortcut, UiPalette palette) {
+  private static Bitmap createShortcutBitmap(
+      Context context, WebShortcut shortcut, UiPalette palette) {
     Bitmap bmp = Bitmap.createBitmap(WIDTH, HEIGHT, Bitmap.Config.ARGB_8888);
     Canvas canvas = new Canvas(bmp);
 
@@ -48,7 +60,9 @@ public final class WebArtwork {
     clip.addRoundRect(new RectF(0, 0, WIDTH, HEIGHT), RADIUS, RADIUS, Path.Direction.CW);
     canvas.clipPath(clip);
 
-    int accent = shortcut.accent;
+    WebPresetLogo.Preset preset = WebPresetLogo.match(shortcut.url, shortcut.name);
+    int accent = preset != null ? preset.accent : shortcut.accent;
+
     int top = palette.light ? blend(accent, 0xFFFAFBFD, 0.12f) : blend(accent, 0xFF2A3649, 0.35f);
     int bottom =
         palette.light ? blend(accent, 0xFFE2E8F0, 0.25f) : blend(accent, 0xFF141C26, 0.20f);
@@ -64,29 +78,22 @@ public final class WebArtwork {
     glow.setAlpha(palette.light ? 25 : 55);
     canvas.drawCircle(WIDTH / 2f, 105, 70, glow);
 
-    // Center circular badge
-    Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    circlePaint.setColor(palette.light ? 0xFFFFFFFF : 0x2EFFFFFF);
-    canvas.drawCircle(WIDTH / 2f, 105, 46, circlePaint);
+    float cx = WIDTH / 2f;
+    float cy = 105f;
 
-    Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    strokePaint.setStyle(Paint.Style.STROKE);
-    strokePaint.setStrokeWidth(2f);
-    strokePaint.setColor(palette.light ? 0x20000000 : 0x44FFFFFF);
-    canvas.drawCircle(WIDTH / 2f, 105, 46, strokePaint);
+    Bitmap customIcon = WebIconManager.getIcon(context, shortcut.id);
+    if (customIcon != null && !customIcon.isRecycled()) {
+      // 1. Custom downloaded or captured Favicon / Touch Icon
+      drawCustomIconBadge(canvas, customIcon, cx, cy, palette);
+    } else if (preset != null) {
+      // 2. Built-in high-definition vector logo
+      WebPresetLogo.draw(canvas, preset, cx, cy, palette);
+    } else {
+      // 3. Elegant initial glyph fallback
+      drawGlyphBadge(canvas, shortcut, cx, cy, accent, palette);
+    }
 
-    // Center Glyph (first char of name)
-    String glyph = getGlyph(shortcut.name);
-    Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    textPaint.setTextAlign(Paint.Align.CENTER);
-    textPaint.setTypeface(Typeface.create("sans-serif-medium", Typeface.BOLD));
-    textPaint.setTextSize(48f);
-    textPaint.setColor(palette.light ? accent : 0xFFFFFFFF);
-    Paint.FontMetrics fm = textPaint.getFontMetrics();
-    float textY = 105 - (fm.ascent + fm.descent) / 2f;
-    canvas.drawText(glyph, WIDTH / 2f, textY, textPaint);
-
-    // Top-right "WEB" badge
+    // Top-right "Web" badge (clean title case)
     Paint webBadge = new Paint(Paint.ANTI_ALIAS_FLAG);
     webBadge.setColor(palette.light ? 0x18000000 : 0x30FFFFFF);
     RectF badgeRect = new RectF(WIDTH - 76, 20, WIDTH - 24, 42);
@@ -94,11 +101,12 @@ public final class WebArtwork {
 
     Paint webText = new Paint(Paint.ANTI_ALIAS_FLAG);
     webText.setTextAlign(Paint.Align.CENTER);
-    webText.setTypeface(Typeface.create("sans-serif-bold", Typeface.NORMAL));
+    webText.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
     webText.setTextSize(11f);
     webText.setColor(palette.light ? palette.secondary : 0xFFCBD5E1);
     Paint.FontMetrics wfm = webText.getFontMetrics();
-    canvas.drawText("WEB", badgeRect.centerX(), badgeRect.centerY() - (wfm.ascent + wfm.descent) / 2f, webText);
+    canvas.drawText(
+        "Web", badgeRect.centerX(), badgeRect.centerY() - (wfm.ascent + wfm.descent) / 2f, webText);
 
     // Bottom domain / host summary
     String host = extractHost(shortcut.url);
@@ -110,6 +118,65 @@ public final class WebArtwork {
     canvas.drawText(host, WIDTH / 2f, 202, hostPaint);
 
     return bmp;
+  }
+
+  private static void drawCustomIconBadge(
+      Canvas canvas, Bitmap icon, float cx, float cy, UiPalette palette) {
+    // Center circular / rounded rect container
+    Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    circlePaint.setColor(palette.light ? 0xFFFFFFFF : 0x2EFFFFFF);
+    canvas.drawCircle(cx, cy, 46, circlePaint);
+
+    Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    strokePaint.setStyle(Paint.Style.STROKE);
+    strokePaint.setStrokeWidth(2f);
+    strokePaint.setColor(palette.light ? 0x20000000 : 0x44FFFFFF);
+    canvas.drawCircle(cx, cy, 46, strokePaint);
+
+    // Scale and center the icon inside 56x56 area
+    float targetSize = 56f;
+    float w = icon.getWidth();
+    float h = icon.getHeight();
+    float scale = Math.min(targetSize / w, targetSize / h);
+    float drawW = w * scale;
+    float drawH = h * scale;
+    RectF dst =
+        new RectF(
+            cx - drawW / 2f,
+            cy - drawH / 2f,
+            cx + drawW / 2f,
+            cy + drawH / 2f);
+
+    Paint filterPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    canvas.save();
+    Path clip = new Path();
+    clip.addRoundRect(dst, 10f, 10f, Path.Direction.CW);
+    canvas.clipPath(clip);
+    canvas.drawBitmap(icon, null, dst, filterPaint);
+    canvas.restore();
+  }
+
+  private static void drawGlyphBadge(
+      Canvas canvas, WebShortcut shortcut, float cx, float cy, int accent, UiPalette palette) {
+    Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    circlePaint.setColor(palette.light ? 0xFFFFFFFF : 0x2EFFFFFF);
+    canvas.drawCircle(cx, cy, 46, circlePaint);
+
+    Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    strokePaint.setStyle(Paint.Style.STROKE);
+    strokePaint.setStrokeWidth(2f);
+    strokePaint.setColor(palette.light ? 0x20000000 : 0x44FFFFFF);
+    canvas.drawCircle(cx, cy, 46, strokePaint);
+
+    String glyph = getGlyph(shortcut.name);
+    Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    textPaint.setTextAlign(Paint.Align.CENTER);
+    textPaint.setTypeface(Typeface.create("sans-serif-medium", Typeface.BOLD));
+    textPaint.setTextSize(48f);
+    textPaint.setColor(palette.light ? accent : 0xFFFFFFFF);
+    Paint.FontMetrics fm = textPaint.getFontMetrics();
+    float textY = cy - (fm.ascent + fm.descent) / 2f;
+    canvas.drawText(glyph, cx, textY, textPaint);
   }
 
   private static Bitmap createAddCardBitmap(UiPalette palette) {

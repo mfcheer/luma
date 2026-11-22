@@ -37,6 +37,7 @@ public final class MainActivity extends Activity {
   private WebShortcutStore shortcutStore;
   private AddWebShortcutDialog addWebDialog;
   private WebShortcutEditDialog editWebDialog;
+  private WebIconManager.Listener iconListener;
   private String pendingUninstall = "";
   private UiPalette palette;
   private NetworkMonitor networkMonitor;
@@ -101,6 +102,18 @@ public final class MainActivity extends Activity {
                 () -> {
                   if (!loading && page.equals("home")) render();
                 }));
+    iconListener =
+        shortcutId ->
+            runOnUiThread(
+                () -> {
+                  if (homeWall != null && !loading && "home".equals(page)) {
+                    List<AppEntry> wallList = new ArrayList<>(orderedApps());
+                    if (draftOrder == null) wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
+                    homeWall.setEntries(wallList, selectedId, false);
+                  }
+                });
+    WebIconManager.addListener(iconListener);
+    fetchMissingWebIcons();
     palette = UiPalette.from(prefs.lightTheme());
     setTheme(palette.light ? R.style.AppThemeLight : R.style.AppTheme);
     super.onCreate(state);
@@ -219,6 +232,13 @@ public final class MainActivity extends Activity {
     }
     AutoEntry.sync(this);
     networkState = NetworkMonitor.current(this);
+    WebIconManager.syncFromDisk(this);
+    fetchMissingWebIcons();
+    if (homeWall != null && !loading && "home".equals(page)) {
+      List<AppEntry> wallList = new ArrayList<>(orderedApps());
+      if (draftOrder == null) wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
+      homeWall.setEntries(wallList, selectedId, false);
+    }
     updateNetworkView();
     getWindow()
         .getDecorView()
@@ -267,6 +287,7 @@ public final class MainActivity extends Activity {
       networkMonitor = null;
     }
     handler.removeCallbacksAndMessages(null);
+    WebIconManager.removeListener(iconListener);
     unregisterReceiver(packageChanges);
     worker.shutdownNow();
     super.onDestroy();
@@ -516,8 +537,8 @@ public final class MainActivity extends Activity {
       WebShortcut shortcut = shortcutStore.get(WebShortcutStore.extractId(app.id));
       if (shortcut != null) {
         return soft
-            ? WebArtwork.previewArtwork(getResources(), shortcut, palette)
-            : WebArtwork.cardArtwork(getResources(), shortcut, palette);
+            ? WebArtwork.previewArtwork(this, getResources(), shortcut, palette)
+            : WebArtwork.cardArtwork(this, getResources(), shortcut, palette);
       }
     }
     AppCatalogCache.Visual visual = snapshot == null ? null : snapshot.visuals.get(app.id);
@@ -525,6 +546,14 @@ public final class MainActivity extends Activity {
     Drawable image = soft ? visual.preview : visual.card;
     Drawable.ConstantState state = image.getConstantState();
     return state == null ? image : state.newDrawable(getResources()).mutate();
+  }
+
+  private void fetchMissingWebIcons() {
+    for (WebShortcut s : shortcutStore.loadAll()) {
+      if (WebPresetLogo.match(s.url, s.name) == null && !WebIconManager.hasIcon(this, s.id)) {
+        WebIconManager.fetchFaviconAsync(this, s, null);
+      }
+    }
   }
 
   private void updateClock() {
@@ -789,6 +818,7 @@ public final class MainActivity extends Activity {
     Intent intent = new Intent(this, WebBrowserActivity.class);
     intent.putExtra(WebBrowserActivity.EXTRA_URL, shortcut.url);
     intent.putExtra(WebBrowserActivity.EXTRA_TITLE, shortcut.name);
+    intent.putExtra(WebBrowserActivity.EXTRA_ID, shortcut.id);
     startActivity(intent);
   }
 
@@ -853,6 +883,7 @@ public final class MainActivity extends Activity {
   }
 
   private void deleteWebShortcut(WebShortcut shortcut, AppEntry app) {
+    WebIconManager.deleteIcon(this, shortcut.id);
     shortcutStore.delete(shortcut.id);
     List<String> order = AppOrder.reconcile(prefs.appOrder(), installedIds());
     prefs.saveAppOrder(order);
@@ -893,6 +924,9 @@ public final class MainActivity extends Activity {
               selectedId = WebShortcutStore.toAppEntry(added).id;
               render();
               toast("已添加网页快捷卡片");
+              if (!WebIconManager.hasIcon(this, added.id)) {
+                WebIconManager.fetchFaviconAsync(this, added, null);
+              }
             });
     addWebDialog.setOnDismissListener(
         d -> {

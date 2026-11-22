@@ -237,4 +237,82 @@ public class WebShortcutTest {
     assertNotNull(WebArtwork.addCardArtwork(context.getResources(), darkPalette));
     assertNotNull(WebArtwork.addPreviewArtwork(context.getResources(), darkPalette));
   }
+
+  @Test
+  public void presetMatchingRules() {
+    // Baidu matches BAIDU
+    assertEquals(WebPresetLogo.Preset.BAIDU, WebPresetLogo.match("https://www.baidu.com", "百度"));
+    assertEquals(WebPresetLogo.Preset.BAIDU, WebPresetLogo.match("http://baidu.com", "Baidu"));
+
+    // GitHub only matches github.com, NOT personal pages on *.github.io
+    assertEquals(WebPresetLogo.Preset.GITHUB, WebPresetLogo.match("https://github.com", "GitHub"));
+    assertEquals(WebPresetLogo.Preset.GITHUB, WebPresetLogo.match("https://github.com/mfcheer/luma", "GitHub"));
+    assertNull(WebPresetLogo.match("https://mfcheer.github.io", "我的个人主页"));
+    assertNull(WebPresetLogo.match("mfcheer.github.io", "mfcheer"));
+
+    // Bilibili
+    assertEquals(WebPresetLogo.Preset.BILIBILI, WebPresetLogo.match("https://www.bilibili.com", "哔哩哔哩"));
+    assertEquals(WebPresetLogo.Preset.BILIBILI, WebPresetLogo.match("https://b23.tv/xyz", "B站"));
+
+    // Alist
+    assertEquals(WebPresetLogo.Preset.ALIST, WebPresetLogo.match("http://192.168.1.100:5244", "Alist"));
+
+    // Synology / DSM
+    assertEquals(WebPresetLogo.Preset.SYNOLOGY, WebPresetLogo.match("http://192.168.1.100:5000", "群晖"));
+
+    // Router
+    assertEquals(WebPresetLogo.Preset.ROUTER, WebPresetLogo.match("http://192.168.1.1", "路由器后台"));
+    assertEquals(WebPresetLogo.Preset.ROUTER, WebPresetLogo.match("http://192.168.31.1", "网关"));
+  }
+
+  @Test
+  public void mobilePageNoUppercaseStyle() throws Exception {
+    LanConfigServer server = new LanConfigServer(null);
+    server.start();
+    try {
+      HttpURLConnection getConn = (HttpURLConnection) new URL(server.getUrl()).openConnection();
+      assertEquals(200, getConn.getResponseCode());
+      String html = new String(getConn.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+      assertFalse(html.contains("text-transform: uppercase"));
+      assertTrue(html.contains("Still TV"));
+      getConn.disconnect();
+    } finally {
+      server.stop();
+    }
+  }
+
+  @Test
+  public void webIconManagerLifecycleAndListener() {
+    String id = "test_icon_shortcut";
+    assertFalse(WebIconManager.hasIcon(context, id));
+    assertNull(WebIconManager.getIcon(context, id));
+
+    AtomicReference<String> updatedId = new AtomicReference<>("");
+    WebIconManager.Listener listener = updatedId::set;
+    WebIconManager.addListener(listener);
+
+    try {
+      android.graphics.Bitmap testBmp =
+          android.graphics.Bitmap.createBitmap(64, 64, android.graphics.Bitmap.Config.ARGB_8888);
+      WebIconManager.saveIcon(context, id, testBmp);
+
+      Shadows.shadowOf(Looper.getMainLooper()).idle();
+
+      assertEquals(id, updatedId.get());
+      assertTrue(WebIconManager.hasIcon(context, id));
+      assertNotNull(WebIconManager.getIcon(context, id));
+      assertTrue(WebIconManager.getIconVersion(id) > 0L);
+
+      WebShortcut shortcut =
+          new WebShortcut(id, "个人主页", "https://mfcheer.github.io", 1L, false, 0xFF10B981);
+      assertNotNull(
+          WebArtwork.cardArtwork(context, context.getResources(), shortcut, UiPalette.LIGHT));
+
+      WebIconManager.deleteIcon(context, id);
+      assertFalse(WebIconManager.hasIcon(context, id));
+      assertNull(WebIconManager.getIcon(context, id));
+    } finally {
+      WebIconManager.removeListener(listener);
+    }
+  }
 }

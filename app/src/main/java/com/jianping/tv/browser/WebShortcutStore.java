@@ -139,10 +139,11 @@ public final class WebShortcutStore {
 
   public static AppEntry toAppEntry(WebShortcut s) {
     ComponentName cn = new ComponentName(COMPONENT_PKG_PREFIX + s.id, COMPONENT_CLASS);
+    long iconVer = WebIconManager.getIconVersion(s.id);
     return new AppEntry(
         cn,
         s.name,
-        s.url + ":" + s.name + ":" + s.pinned + ":" + s.accent,
+        s.url + ":" + s.name + ":" + s.pinned + ":" + s.accent + ":" + iconVer,
         s.createTime);
   }
 }
