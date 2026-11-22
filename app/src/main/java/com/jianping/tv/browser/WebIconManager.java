@@ -240,17 +240,35 @@ public final class WebIconManager {
     return null;
   }
 
-  private static String findIconUrlFromHtml(String siteUrl) {
-    try {
-      HttpURLConnection conn = (HttpURLConnection) new URL(siteUrl).openConnection();
+  private static HttpURLConnection openConnectionWithRedirects(String urlStr) throws IOException {
+    String currentUrl = urlStr;
+    for (int i = 0; i < 5; i++) {
+      HttpURLConnection conn = (HttpURLConnection) new URL(currentUrl).openConnection();
       conn.setRequestMethod("GET");
       conn.setConnectTimeout(4000);
       conn.setReadTimeout(4000);
-      conn.setInstanceFollowRedirects(true);
+      conn.setInstanceFollowRedirects(false);
       conn.setRequestProperty(
           "User-Agent",
-          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0"
-              + " Safari/537.36");
+          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36");
+      int code = conn.getResponseCode();
+      if (code == 301 || code == 302 || code == 303 || code == 307 || code == 308) {
+        String location = conn.getHeaderField("Location");
+        conn.disconnect();
+        if (location != null && !location.isEmpty()) {
+          currentUrl = resolveUrl(currentUrl, location);
+          continue;
+        }
+      }
+      return conn;
+    }
+    return (HttpURLConnection) new URL(currentUrl).openConnection();
+  }
+
+  private static String findIconUrlFromHtml(String siteUrl) {
+    try {
+      HttpURLConnection conn = openConnectionWithRedirects(siteUrl);
+      String effectiveUrl = conn.getURL().toString();
       int code = conn.getResponseCode();
       if (code < 200 || code >= 400) {
         conn.disconnect();
@@ -274,7 +292,7 @@ public final class WebIconManager {
       if (mApple.find()) {
         String href = extractHref(mApple.group());
         if (href != null && !href.isEmpty()) {
-          return resolveUrl(siteUrl, href);
+          return resolveUrl(effectiveUrl, href);
         }
       }
 
@@ -287,7 +305,7 @@ public final class WebIconManager {
       while (mIcon.find()) {
         String href = extractHref(mIcon.group());
         if (href != null && !href.isEmpty()) {
-          return resolveUrl(siteUrl, href);
+          return resolveUrl(effectiveUrl, href);
         }
       }
     } catch (Throwable ignored) {
@@ -323,14 +341,7 @@ public final class WebIconManager {
 
   private static Bitmap downloadAndDecode(String iconUrl) {
     try {
-      HttpURLConnection conn = (HttpURLConnection) new URL(iconUrl).openConnection();
-      conn.setRequestMethod("GET");
-      conn.setConnectTimeout(4000);
-      conn.setReadTimeout(4000);
-      conn.setInstanceFollowRedirects(true);
-      conn.setRequestProperty(
-          "User-Agent",
-          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/128.0.0.0 Safari/537.36");
+      HttpURLConnection conn = openConnectionWithRedirects(iconUrl);
       if (conn.getResponseCode() != 200) {
         conn.disconnect();
         return null;
