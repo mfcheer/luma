@@ -1,9 +1,9 @@
 {
-  "versionCode": 29,
-  "versionName": "0.9.11",
-  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.11.apk",
-  "sha256": "8d360a396ec28f868c723d992ef0988c430bfec113b350379a5d71e86ee718de",
-  "size": 969923,
-  "releaseNotes": "1. 支持添加常用网页快捷方式至电视桌面，手机扫码即可极简配网添加\n2. 采用独立浏览进程运行网页，遥控器一键退出并释放全部内存，永不影响桌面流畅度\n3. 内置百度、GitHub、B站等主流站点高清质感矢量 Logo，支持个人主页与通用站点 Favicon 自动抓取与持久化缓存\n4. 智能外网适配（默认 HTTPS 协议补全）与老旧电视浏览器内核渲染兼容",
+  "versionCode": 30,
+  "versionName": "0.9.12",
+  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.12.apk",
+  "sha256": "5a739453fa834de2caa446b991503e32d5fc06b4e822de7f6e0e06a08b9cdca2",
+  "size": 966451,
+  "releaseNotes": "1. 网页快捷方式采用纯白极简卡片视觉，彻底去除人工渐变与多余角标，纯粹呈现原始高清图标\n2. 采用独立浏览进程运行网页，遥控器一键退出并释放全部内存，永不影响桌面流畅度\n3. 内置主流站点高清质感矢量 Logo，支持个人主页与通用站点 Favicon 自动抓取与持久化缓存\n4. 智能外网适配（默认 HTTPS 协议补全）与老旧电视浏览器内核渲染兼容",
   "minSdk": 23
 }
