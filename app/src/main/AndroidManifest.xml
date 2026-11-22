@@ -14,6 +14,14 @@
 <intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.HOME"/><category android:name="android.intent.category.DEFAULT"/></intent-filter>
 </activity>
 <activity android:name=".ui.SearchActivity" android:exported="false" android:screenOrientation="landscape" android:windowSoftInputMode="adjustResize" />
+<activity
+    android:name=".browser.WebBrowserActivity"
+    android:process=":browser"
+    android:exported="false"
+    android:screenOrientation="landscape"
+    android:theme="@style/AppThemeLight"
+    android:hardwareAccelerated="true"
+    android:configChanges="orientation|screenSize|keyboardHidden|keyboard" />
 <receiver android:name=".platform.BootReceiver" android:exported="true"><intent-filter><action android:name="android.intent.action.BOOT_COMPLETED"/></intent-filter></receiver>
 <!-- The resource disables this service on API 29+, so Android 14 FGS types never apply. -->
 <service android:name=".platform.WakeEntryService" android:enabled="@bool/wake_service_available" android:exported="false" tools:ignore="ForegroundServiceType" />

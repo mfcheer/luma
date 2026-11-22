@@ -13,16 +13,17 @@ import android.provider.Settings;
 import android.view.*;
 import android.widget.*;
 import com.jianping.tv.R;
+import com.jianping.tv.browser.*;
 import com.jianping.tv.data.*;
+import com.jianping.tv.platform.AppInstaller;
 import com.jianping.tv.platform.AppLaunch;
 import com.jianping.tv.platform.AppUninstall;
 import com.jianping.tv.platform.AutoEntry;
 import com.jianping.tv.platform.DeviceDiagnostics;
 import com.jianping.tv.platform.NetworkMonitor;
 import com.jianping.tv.platform.OtherHome;
-import com.jianping.tv.platform.WakeEntryService;
-import com.jianping.tv.platform.AppInstaller;
 import com.jianping.tv.platform.UpdateSession;
+import com.jianping.tv.platform.WakeEntryService;
 import java.text.*;
 import java.util.*;
 import java.util.concurrent.*;
@@ -33,6 +34,9 @@ public final class MainActivity extends Activity {
   private AppNames names;
   private AppRenameDialog renameDialog;
   private AppUpdateDialog updateDialog;
+  private WebShortcutStore shortcutStore;
+  private AddWebShortcutDialog addWebDialog;
+  private WebShortcutEditDialog editWebDialog;
   private String pendingUninstall = "";
   private UiPalette palette;
   private NetworkMonitor networkMonitor;
@@ -90,6 +94,13 @@ public final class MainActivity extends Activity {
   public void onCreate(Bundle state) {
     prefs = new Preferences(this);
     names = new AppNames(this);
+    shortcutStore = new WebShortcutStore(this);
+    shortcutStore.addListener(
+        () ->
+            runOnUiThread(
+                () -> {
+                  if (!loading && page.equals("home")) render();
+                }));
     palette = UiPalette.from(prefs.lightTheme());
     setTheme(palette.light ? R.style.AppThemeLight : R.style.AppTheme);
     super.onCreate(state);
@@ -136,6 +147,8 @@ public final class MainActivity extends Activity {
     recordEntry(intent);
     boolean needsRender = !page.equals("home") || actionLayer != null || draftOrder != null;
     if (renameDialog != null) renameDialog.cancel();
+    if (addWebDialog != null) addWebDialog.cancel();
+    if (editWebDialog != null) editWebDialog.cancel();
     draftOrder = null;
     movingId = null;
     page = "home";
@@ -185,7 +198,9 @@ public final class MainActivity extends Activity {
     homeOffset = 0;
     page = "home";
     if (homeWall != null && !loading) {
-      homeWall.setEntries(orderedApps(), target, false);
+      List<AppEntry> wallList = new ArrayList<>(orderedApps());
+      if (draftOrder == null) wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
+      homeWall.setEntries(wallList, target, false);
       homeWall.focusKey(target, true);
       pendingSearchTarget = "";
     } else if (!loading) render();
@@ -237,6 +252,16 @@ public final class MainActivity extends Activity {
       updateDialog.dismiss();
       updateDialog = null;
     }
+    if (addWebDialog != null) {
+      addWebDialog.setOnDismissListener(null);
+      addWebDialog.dismiss();
+      addWebDialog = null;
+    }
+    if (editWebDialog != null) {
+      editWebDialog.setOnDismissListener(null);
+      editWebDialog.dismiss();
+      editWebDialog = null;
+    }
     if (networkMonitor != null) {
       networkMonitor.stop();
       networkMonitor = null;
@@ -279,23 +304,17 @@ public final class MainActivity extends Activity {
                 int prepared = 0, reused = 0;
                 for (AppEntry app : result) {
                   if (Thread.currentThread().isInterrupted()) return;
-                  AppCatalogCache.Visual visual =
-                      cached == null ? null : cached.visuals.get(app.id);
-                  boolean dirty = invalidated.contains(app.component.getPackageName());
-                  if (dirty || (visual != null && !app.fingerprint.equals(visual.fingerprint)))
-                    visual = null;
-                  if (visual == null && !dirty) visual = catalog.readVisual(app);
-                  if (visual == null) {
+                  AppCatalogCache.Visual visual = cached == null ? null : cached.visuals.get(app.id);
+                  if (visual == null
+                      || invalidated.contains(app.component.getPackageName())
+                      || !visual.fingerprint.equals(app.fingerprint)) {
                     AppRepository.Artwork raw = repository.artwork(app);
-                    int color = IconPalette.accent(raw.icon);
-                    Drawable art;
-                    try {
-                      art = IconArtwork.landscape(getResources(), raw.icon, raw.banner, color);
-                    } catch (RuntimeException e) {
-                      art = IconArtwork.fallback(getResources(), raw.icon);
-                    }
-                    Drawable soft = IconArtwork.preview(getResources(), art);
-                    visual = new AppCatalogCache.Visual(app.fingerprint, color, art, soft);
+                    int accent = IconPalette.accent(raw.icon);
+                    Drawable card =
+                        IconArtwork.landscape(getResources(), raw.icon, raw.banner, accent);
+                    visual =
+                        new AppCatalogCache.Visual(
+                            app.fingerprint, accent, card, IconArtwork.preview(getResources(), card));
                     prepared++;
                   } else reused++;
                   visuals.put(app.id, visual);
@@ -353,7 +372,11 @@ public final class MainActivity extends Activity {
       if (!prefs.hasAppOrder() || !order.equals(prefs.appOrder())) prefs.saveAppOrder(order);
     }
     if (!changed) return;
-    if (draftOrder != null || actionLayer != null || renameDialog != null) pendingRender = true;
+    if (draftOrder != null
+        || actionLayer != null
+        || renameDialog != null
+        || addWebDialog != null
+        || editWebDialog != null) pendingRender = true;
     else render();
   }
 
@@ -472,12 +495,32 @@ public final class MainActivity extends Activity {
   }
 
   private int appAccent(AppEntry app) {
+    if (WebShortcutStore.isAddWebEntry(app)) {
+      return 0xFF3B82F6;
+    }
+    if (WebShortcutStore.isWebShortcut(app)) {
+      WebShortcut shortcut = shortcutStore.get(WebShortcutStore.extractId(app.id));
+      return shortcut != null ? shortcut.accent : 0xFF2563EB;
+    }
     AppCatalogCache.Visual visual = snapshot == null ? null : snapshot.visuals.get(app.id);
     return visual == null ? 0xFF7092CC : visual.accent;
   }
 
   private Drawable artwork(AppEntry app, boolean soft) {
-    AppCatalogCache.Visual visual = snapshot.visuals.get(app.id);
+    if (WebShortcutStore.isAddWebEntry(app)) {
+      return soft
+          ? WebArtwork.addPreviewArtwork(getResources(), palette)
+          : WebArtwork.addCardArtwork(getResources(), palette);
+    }
+    if (WebShortcutStore.isWebShortcut(app)) {
+      WebShortcut shortcut = shortcutStore.get(WebShortcutStore.extractId(app.id));
+      if (shortcut != null) {
+        return soft
+            ? WebArtwork.previewArtwork(getResources(), shortcut, palette)
+            : WebArtwork.cardArtwork(getResources(), shortcut, palette);
+      }
+    }
+    AppCatalogCache.Visual visual = snapshot == null ? null : snapshot.visuals.get(app.id);
     if (visual == null) return getDrawable(android.R.drawable.sym_def_app_icon);
     Drawable image = soft ? visual.preview : visual.card;
     Drawable.ConstantState state = image.getConstantState();
@@ -616,22 +659,38 @@ public final class MainActivity extends Activity {
   private List<String> installedIds() {
     List<String> ids = new ArrayList<>();
     for (AppEntry app : apps) ids.add(app.id);
+    for (WebShortcut s : shortcutStore.loadAll()) {
+      ids.add(WebShortcutStore.toAppEntry(s).id);
+    }
     return ids;
   }
 
   private List<AppEntry> orderedApps() {
     Map<String, AppEntry> byId = new HashMap<>();
     for (AppEntry app : apps) byId.put(app.id, app);
+    for (WebShortcut s : shortcutStore.loadAll()) {
+      AppEntry e = WebShortcutStore.toAppEntry(s);
+      byId.put(e.id, e);
+    }
     List<AppEntry> result = new ArrayList<>();
     for (String id :
-        AppOrder.reconcile(draftOrder == null ? prefs.appOrder() : draftOrder, installedIds()))
-      result.add(byId.get(id));
+        AppOrder.reconcile(draftOrder == null ? prefs.appOrder() : draftOrder, installedIds())) {
+      AppEntry entry = byId.get(id);
+      if (entry != null) result.add(entry);
+    }
     return result;
   }
 
   private GridWallView.Listener wallListener() {
     return new GridWallView.Listener() {
       public String label(AppEntry app) {
+        if (WebShortcutStore.isAddWebEntry(app)) {
+          return "添加网页";
+        }
+        if (WebShortcutStore.isWebShortcut(app)) {
+          WebShortcut s = shortcutStore.get(WebShortcutStore.extractId(app.id));
+          return s != null ? s.name : app.label;
+        }
         return names.label(app);
       }
 
@@ -658,11 +717,22 @@ public final class MainActivity extends Activity {
 
       public void activate(AppEntry app) {
         if (draftOrder != null) finishMove(true);
-        else launch(app);
+        else if (WebShortcutStore.isAddWebEntry(app)) showAddWebShortcutDialog();
+        else if (WebShortcutStore.isWebShortcut(app)) {
+          WebShortcut s = shortcutStore.get(WebShortcutStore.extractId(app.id));
+          if (s != null) launchWebShortcut(s);
+        } else launch(app);
       }
 
       public void hold(AppEntry app, View source) {
-        if (draftOrder == null) manage(app, source);
+        if (draftOrder == null) {
+          if (WebShortcutStore.isAddWebEntry(app)) return;
+          if (WebShortcutStore.isWebShortcut(app)) {
+            manageWebShortcut(app, source);
+            return;
+          }
+          manage(app, source);
+        }
       }
 
       public boolean key(int code, KeyEvent event) {
@@ -680,13 +750,17 @@ public final class MainActivity extends Activity {
     homeWall.showNames(prefs.showAppNames());
     put(homeWall, 42, 82, 876, 424);
     String previous = selectedId;
-    homeWall.setEntries(orderedApps(), selectedId, false);
+    List<AppEntry> wallList = new ArrayList<>(orderedApps());
+    if (draftOrder == null) {
+      wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
+    }
+    homeWall.setEntries(wallList, selectedId, false);
     if (!pendingSearchTarget.isEmpty() && !apps.isEmpty()) {
       homeWall.focusKey(pendingSearchTarget, true);
       pendingSearchTarget = "";
     } else if (previous.equals(selectedId)) homeWall.restoreFocus(selectedId, homeOffset);
     homeWall.upperFocus(settings.getId());
-    if (apps.isEmpty()) {
+    if (apps.isEmpty() && shortcutStore.loadAll().isEmpty()) {
       TextView empty =
           text(
               loading ? "正在读取应用…" : (catalogError ? "读取失败，请在设置中重试" : "暂无可启动的应用"),
@@ -697,7 +771,7 @@ public final class MainActivity extends Activity {
       // An empty loading wall must not overwrite the saved scroll position on cache restore.
       homeWall = null;
     }
-    settings.setNextFocusDownId(apps.isEmpty() ? settings.getId() : homeWall.firstId());
+    settings.setNextFocusDownId(wallList.isEmpty() ? settings.getId() : homeWall.firstId());
     settings.setNextFocusLeftId(settings.getId());
     settings.setNextFocusRightId(settings.getId());
   }
@@ -709,6 +783,123 @@ public final class MainActivity extends Activity {
       toast("无法打开此应用，请刷新应用列表");
       reload(false);
     }
+  }
+
+  private void launchWebShortcut(WebShortcut shortcut) {
+    Intent intent = new Intent(this, WebBrowserActivity.class);
+    intent.putExtra(WebBrowserActivity.EXTRA_URL, shortcut.url);
+    intent.putExtra(WebBrowserActivity.EXTRA_TITLE, shortcut.name);
+    startActivity(intent);
+  }
+
+  private void manageWebShortcut(AppEntry app, View source) {
+    if (actionLayer != null) return;
+    String shortcutId = WebShortcutStore.extractId(app.id);
+    WebShortcut shortcut = shortcutStore.get(shortcutId);
+    if (shortcut == null) return;
+
+    menuReturn = source;
+    if (source instanceof AppCardView) ((AppCardView) source).contextSelected(true);
+    desktop.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+
+    List<AppActionMenuView.Item> items = new ArrayList<>();
+    items.add(
+        new AppActionMenuView.Item(
+            "打开网页", R.drawable.menu_info, false, () -> launchWebShortcut(shortcut)));
+    items.add(
+        new AppActionMenuView.Item("移动位置", R.drawable.menu_move, false, () -> beginMove(app)));
+    items.add(
+        new AppActionMenuView.Item(
+            shortcut.pinned ? "取消常驻收藏" : "固定到常驻收藏",
+            R.drawable.menu_move_first,
+            false,
+            () -> togglePinShortcut(shortcut, app)));
+    items.add(
+        new AppActionMenuView.Item(
+            "移到最后", R.drawable.menu_move_last, false, () -> moveToEdge(app, false)));
+    items.add(
+        new AppActionMenuView.Item(
+            "重命名", R.drawable.menu_rename, false, () -> editWebShortcut(shortcut, false)));
+    items.add(
+        new AppActionMenuView.Item(
+            "修改网址", R.drawable.settings_settings, false, () -> editWebShortcut(shortcut, true)));
+    items.add(
+        new AppActionMenuView.Item(
+            "删除卡片", R.drawable.menu_uninstall, true, () -> deleteWebShortcut(shortcut, app)));
+
+    actionLayer =
+        new AppActionMenuView(
+            this,
+            scale,
+            shortcut.name,
+            shortcut.url,
+            artwork(app, false),
+            items,
+            action -> closeMenu(false, action),
+            palette);
+    root.addView(actionLayer, new FrameLayout.LayoutParams(-1, -1));
+    actionLayer.reveal();
+  }
+
+  private void togglePinShortcut(WebShortcut shortcut, AppEntry app) {
+    shortcut.pinned = !shortcut.pinned;
+    shortcutStore.save(shortcut);
+    if (shortcut.pinned) {
+      moveToEdge(app, true);
+    } else {
+      render();
+      toast("已取消常驻收藏");
+    }
+  }
+
+  private void deleteWebShortcut(WebShortcut shortcut, AppEntry app) {
+    shortcutStore.delete(shortcut.id);
+    List<String> order = AppOrder.reconcile(prefs.appOrder(), installedIds());
+    prefs.saveAppOrder(order);
+    selectedId = "";
+    render();
+    toast("已删除网页快捷卡片");
+  }
+
+  private void editWebShortcut(WebShortcut shortcut, boolean focusUrl) {
+    editWebDialog =
+        new WebShortcutEditDialog(
+            this,
+            shortcut,
+            shortcutStore,
+            palette,
+            scale,
+            focusUrl,
+            updated -> {
+              render();
+              toast(focusUrl ? "网址已更新" : "名称已更新");
+            });
+    editWebDialog.setOnDismissListener(
+        d -> {
+          editWebDialog = null;
+          if (pendingRender) render();
+        });
+    editWebDialog.show();
+  }
+
+  private void showAddWebShortcutDialog() {
+    addWebDialog =
+        new AddWebShortcutDialog(
+            this,
+            palette,
+            scale,
+            shortcutStore,
+            added -> {
+              selectedId = WebShortcutStore.toAppEntry(added).id;
+              render();
+              toast("已添加网页快捷卡片");
+            });
+    addWebDialog.setOnDismissListener(
+        d -> {
+          addWebDialog = null;
+          if (pendingRender) render();
+        });
+    addWebDialog.show();
   }
 
   private void manage(AppEntry app, View source) {
@@ -827,7 +1018,9 @@ public final class MainActivity extends Activity {
         first ? AppOrder.moveToFront(order, app.id) : AppOrder.moveToEnd(order, app.id));
     selectedId = app.id;
     homeOffset = 0;
-    homeWall.setEntries(orderedApps(), selectedId, false);
+    List<AppEntry> wallList = new ArrayList<>(orderedApps());
+    if (draftOrder == null) wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
+    homeWall.setEntries(wallList, selectedId, false);
     toast(first ? "已移到最前" : "已移到最后");
   }
 
@@ -887,8 +1080,10 @@ public final class MainActivity extends Activity {
     movingId = null;
     homeWall.movingKey(null);
     moveHint.setText("");
+    List<AppEntry> wallList = new ArrayList<>(orderedApps());
+    wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
     if (pendingRender) render();
-    else homeWall.setEntries(orderedApps(), selectedId, true);
+    else homeWall.setEntries(wallList, selectedId, true);
     if (save) toast("顺序已保存");
   }
 
