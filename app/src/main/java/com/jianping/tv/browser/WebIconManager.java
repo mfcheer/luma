@@ -20,7 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Manages downloading, local caching, and lifecycle of website icons and favicons. */
+/** Manages downloading, local caching, and lifecycle of website icons, titles, and favicons. */
 public final class WebIconManager {
   private static final String ICONS_DIR = "web_icons";
   private static final int MAX_CACHE_SIZE = 30;
@@ -34,6 +34,16 @@ public final class WebIconManager {
 
   public interface Listener {
     void onIconUpdated(String shortcutId);
+  }
+
+  public static class SiteMetadata {
+    public final String iconUrl;
+    public final String title;
+
+    public SiteMetadata(String iconUrl, String title) {
+      this.iconUrl = iconUrl;
+      this.title = title;
+    }
   }
 
   private static final List<Listener> LISTENERS = new CopyOnWriteArrayList<>();
@@ -193,9 +203,36 @@ public final class WebIconManager {
     EXECUTOR.execute(
         () -> {
           Bitmap fetched = null;
+          String extractedTitle = null;
           try {
-            fetched = discoverAndFetch(targetUrl);
+            SiteMetadata meta = findMetadataFromHtml(targetUrl);
+            if (meta != null) {
+              extractedTitle = meta.title;
+              if (meta.iconUrl != null) {
+                fetched = downloadAndDecode(meta.iconUrl);
+              }
+            }
+            if (fetched == null) {
+              fetched = discoverFallbackIcon(targetUrl);
+            }
           } catch (Throwable ignored) {
+          }
+
+          final String finalTitle = extractedTitle;
+          if (finalTitle != null && !finalTitle.isEmpty()) {
+            getMainHandler().post(
+                () -> {
+                  try {
+                    WebShortcutStore store = new WebShortcutStore(context);
+                    WebShortcut current = store.get(shortcut.id);
+                    if (current != null && (WebShortcut.isUrlName(current.name, current.url) || current.name.isEmpty())) {
+                      current.name = finalTitle;
+                      store.save(current);
+                      shortcut.name = finalTitle;
+                    }
+                  } catch (Throwable ignored) {
+                  }
+                });
           }
 
           if (fetched != null) {
@@ -208,14 +245,105 @@ public final class WebIconManager {
         });
   }
 
-  private static Bitmap discoverAndFetch(String siteUrl) {
-    // 1. Try extracting explicit touch icon or favicon from HTML
-    String foundIconUrl = findIconUrlFromHtml(siteUrl);
-    if (foundIconUrl != null) {
-      Bitmap bmp = downloadAndDecode(foundIconUrl);
-      if (bmp != null) return bmp;
+  public static String fetchTitleSynchronous(String targetUrl) {
+    if (targetUrl == null || (!targetUrl.startsWith("http://") && !targetUrl.startsWith("https://"))) {
+      return null;
     }
+    try {
+      SiteMetadata meta = findMetadataFromHtml(targetUrl);
+      return meta != null ? meta.title : null;
+    } catch (Throwable ignored) {
+      return null;
+    }
+  }
 
+  public static SiteMetadata findMetadataFromHtml(String siteUrl) {
+    try {
+      HttpURLConnection conn = openConnectionWithRedirects(siteUrl);
+      String effectiveUrl = conn.getURL().toString();
+      int code = conn.getResponseCode();
+      if (code < 200 || code >= 400) {
+        conn.disconnect();
+        return null;
+      }
+
+      InputStream in = conn.getInputStream();
+      byte[] buf = new byte[131072]; // 128KB
+      int totalRead = 0;
+      int r;
+      while (totalRead < buf.length && (r = in.read(buf, totalRead, buf.length - totalRead)) > 0) {
+        totalRead += r;
+      }
+      conn.disconnect();
+      if (totalRead <= 0) return null;
+
+      String html = new String(buf, 0, totalRead, StandardCharsets.UTF_8);
+      String title = extractTitleFromHtml(html);
+      String iconUrl = null;
+
+      // Priority 1: High-res Apple Touch Icon
+      Pattern pApple =
+          Pattern.compile(
+              "<link[^>]+rel=[\\\"']?(?:apple-touch-icon|apple-touch-icon-precomposed)[\\\"']?[^>]*>",
+              Pattern.CASE_INSENSITIVE);
+      Matcher mApple = pApple.matcher(html);
+      if (mApple.find()) {
+        String href = extractHref(mApple.group());
+        if (href != null && !href.isEmpty()) {
+          iconUrl = resolveUrl(effectiveUrl, href);
+        }
+      }
+
+      // Priority 2: Standard Favicon / Icon
+      if (iconUrl == null) {
+        Pattern pIcon =
+            Pattern.compile(
+                "<link[^>]+rel=[\\\"']?(?:icon|shortcut icon)[\\\"']?[^>]*>",
+                Pattern.CASE_INSENSITIVE);
+        Matcher mIcon = pIcon.matcher(html);
+        while (mIcon.find()) {
+          String href = extractHref(mIcon.group());
+          if (href != null && !href.isEmpty()) {
+            iconUrl = resolveUrl(effectiveUrl, href);
+            break;
+          }
+        }
+      }
+
+      return new SiteMetadata(iconUrl, title);
+    } catch (Throwable ignored) {
+    }
+    return null;
+  }
+
+  public static String extractTitleFromHtml(String html) {
+    if (html == null || html.isEmpty()) return null;
+    Pattern p = Pattern.compile("<title[^>]*>([\\s\\S]*?)</title>", Pattern.CASE_INSENSITIVE);
+    Matcher m = p.matcher(html);
+    if (m.find()) {
+      return cleanHtmlTitle(m.group(1));
+    }
+    return null;
+  }
+
+  public static String cleanHtmlTitle(String raw) {
+    if (raw == null) return null;
+    String title = raw.replaceAll("<[^>]+>", " ");
+    title =
+        title
+            .replace("&nbsp;", " ")
+            .replace("&amp;", "&")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&quot;", "\"")
+            .replace("&#39;", "'")
+            .replace("&apos;", "'")
+            .replaceAll("\\s+", " ")
+            .trim();
+    return title.isEmpty() ? null : title;
+  }
+
+  private static Bitmap discoverFallbackIcon(String siteUrl) {
     try {
       URI uri = new URI(siteUrl);
       String scheme = uri.getScheme() != null ? uri.getScheme() : "http";
@@ -223,15 +351,15 @@ public final class WebIconManager {
       int port = uri.getPort();
       if (host != null && !host.isEmpty()) {
         String base = scheme + "://" + host + (port > 0 ? ":" + port : "");
-        // 2. Try Apple touch icon direct path
+        // 1. Try Apple touch icon direct path
         Bitmap appleTouch = downloadAndDecode(base + "/apple-touch-icon.png");
         if (appleTouch != null) return appleTouch;
 
-        // 3. Try favicon.png
+        // 2. Try favicon.png
         Bitmap favPng = downloadAndDecode(base + "/favicon.png");
         if (favPng != null) return favPng;
 
-        // 4. Try favicon.ico
+        // 3. Try favicon.ico
         Bitmap favIco = downloadAndDecode(base + "/favicon.ico");
         if (favIco != null) return favIco;
       }
@@ -263,54 +391,6 @@ public final class WebIconManager {
       return conn;
     }
     return (HttpURLConnection) new URL(currentUrl).openConnection();
-  }
-
-  private static String findIconUrlFromHtml(String siteUrl) {
-    try {
-      HttpURLConnection conn = openConnectionWithRedirects(siteUrl);
-      String effectiveUrl = conn.getURL().toString();
-      int code = conn.getResponseCode();
-      if (code < 200 || code >= 400) {
-        conn.disconnect();
-        return null;
-      }
-
-      InputStream in = conn.getInputStream();
-      byte[] buf = new byte[65536];
-      int read = in.read(buf);
-      conn.disconnect();
-      if (read <= 0) return null;
-
-      String html = new String(buf, 0, read, StandardCharsets.UTF_8);
-
-      // Priority 1: High-res Apple Touch Icon
-      Pattern pApple =
-          Pattern.compile(
-              "<link[^>]+rel=[\\\"']?(?:apple-touch-icon|apple-touch-icon-precomposed)[\\\"']?[^>]*>",
-              Pattern.CASE_INSENSITIVE);
-      Matcher mApple = pApple.matcher(html);
-      if (mApple.find()) {
-        String href = extractHref(mApple.group());
-        if (href != null && !href.isEmpty()) {
-          return resolveUrl(effectiveUrl, href);
-        }
-      }
-
-      // Priority 2: Standard Favicon / Icon
-      Pattern pIcon =
-          Pattern.compile(
-              "<link[^>]+rel=[\\\"']?(?:icon|shortcut icon)[\\\"']?[^>]*>",
-              Pattern.CASE_INSENSITIVE);
-      Matcher mIcon = pIcon.matcher(html);
-      while (mIcon.find()) {
-        String href = extractHref(mIcon.group());
-        if (href != null && !href.isEmpty()) {
-          return resolveUrl(effectiveUrl, href);
-        }
-      }
-    } catch (Throwable ignored) {
-    }
-    return null;
   }
 
   private static String extractHref(String tag) {

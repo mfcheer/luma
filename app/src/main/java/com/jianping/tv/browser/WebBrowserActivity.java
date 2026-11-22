@@ -218,6 +218,28 @@ public final class WebBrowserActivity extends Activity {
           }
 
           @Override
+          public void onReceivedTitle(WebView view, String title) {
+            super.onReceivedTitle(view, title);
+            if (title != null && !title.trim().isEmpty() && shortcutId != null && !shortcutId.isEmpty()) {
+              String cleanTitle = title.trim();
+              if (!cleanTitle.equalsIgnoreCase("about:blank")
+                  && !cleanTitle.startsWith("http://")
+                  && !cleanTitle.startsWith("https://")
+                  && !cleanTitle.startsWith("data:")) {
+                try {
+                  WebShortcutStore store = new WebShortcutStore(getApplicationContext());
+                  WebShortcut current = store.get(shortcutId);
+                  if (current != null && (WebShortcut.isUrlName(current.name, current.url) || current.name.isEmpty())) {
+                    current.name = cleanTitle;
+                    store.save(current);
+                  }
+                } catch (Throwable ignored) {
+                }
+              }
+            }
+          }
+
+          @Override
           public void onProgressChanged(WebView view, int newProgress) {
             if (newProgress < 100) {
               progressBar.setVisibility(View.VISIBLE);

@@ -276,6 +276,20 @@ public class WebShortcutTest {
     // Router
     assertEquals(WebPresetLogo.Preset.ROUTER, WebPresetLogo.match("http://192.168.1.1", "路由器后台"));
     assertEquals(WebPresetLogo.Preset.ROUTER, WebPresetLogo.match("http://192.168.31.1", "网关"));
+
+    // Programming Status Board
+    assertEquals(
+        WebPresetLogo.Preset.STATUS_BOARD,
+        WebPresetLogo.match("http://192.168.31.187:8791/board", ""));
+    assertEquals(
+        WebPresetLogo.Preset.STATUS_BOARD,
+        WebPresetLogo.match("http://192.168.31.187:8791/board", "192.168.31.187:8791/board"));
+    assertEquals(
+        WebPresetLogo.Preset.STATUS_BOARD,
+        WebPresetLogo.match("http://localhost:8791/", "编程状态屏"));
+    assertEquals(
+        WebPresetLogo.Preset.STATUS_BOARD,
+        WebPresetLogo.match("https://dashboard.local/board", "词元之外"));
   }
 
   @Test
@@ -331,5 +345,61 @@ public class WebShortcutTest {
     } finally {
       WebIconManager.removeListener(listener);
     }
+  }
+
+  @Test
+  public void urlNameDetection() {
+    assertTrue(WebShortcut.isUrlName(null, "http://192.168.31.187:8791/board"));
+    assertTrue(WebShortcut.isUrlName("", "http://192.168.31.187:8791/board"));
+    assertTrue(WebShortcut.isUrlName("   ", "http://192.168.31.187:8791/board"));
+    assertTrue(
+        WebShortcut.isUrlName(
+            "http://192.168.31.187:8791/board", "http://192.168.31.187:8791/board"));
+    assertTrue(
+        WebShortcut.isUrlName(
+            "192.168.31.187:8791/board", "http://192.168.31.187:8791/board"));
+    assertTrue(
+        WebShortcut.isUrlName(
+            "192.168.31.187:8791", "http://192.168.31.187:8791/board"));
+    assertTrue(
+        WebShortcut.isUrlName(
+            "https://mfcheer.github.io", "https://mfcheer.github.io"));
+
+    assertFalse(
+        WebShortcut.isUrlName("词元之外 · 编程状态屏", "http://192.168.31.187:8791/board"));
+    assertFalse(WebShortcut.isUrlName("个人主页", "https://mfcheer.github.io"));
+  }
+
+  @Test
+  public void htmlTitleExtractionAndEntityCleaning() {
+    String html =
+        "<!doctype html><html><head><title>词元之外 &middot; 编程状态屏 &amp; TV</title></head></html>";
+    String title = WebIconManager.extractTitleFromHtml(html);
+    assertEquals("词元之外 &middot; 编程状态屏 & TV", title);
+
+    assertEquals("Hello & World <Test>", WebIconManager.cleanHtmlTitle("Hello &amp; World &lt;Test&gt;"));
+    assertNull(WebIconManager.cleanHtmlTitle(""));
+    assertNull(WebIconManager.cleanHtmlTitle(null));
+  }
+
+  @Test
+  public void statusBoardArtworkGeneratesCrispVectorOnPureWhite() {
+    WebShortcut boardShortcut =
+        new WebShortcut(
+            "board_1",
+            "词元之外 · 编程状态屏",
+            "http://192.168.31.187:8791/board",
+            1L,
+            false,
+            0);
+    BitmapDrawable card =
+        (BitmapDrawable)
+            WebArtwork.cardArtwork(context, context.getResources(), boardShortcut, UiPalette.LIGHT);
+    assertNotNull(card);
+    assertNotNull(card.getBitmap());
+    assertEquals(384, card.getBitmap().getWidth());
+    assertEquals(250, card.getBitmap().getHeight());
+
+    assertNotNull(WebArtwork.previewArtwork(context, context.getResources(), boardShortcut, UiPalette.LIGHT));
   }
 }

@@ -550,7 +550,9 @@ public final class MainActivity extends Activity {
 
   private void fetchMissingWebIcons() {
     for (WebShortcut s : shortcutStore.loadAll()) {
-      if (WebPresetLogo.match(s.url, s.name) == null && !WebIconManager.hasIcon(this, s.id)) {
+      boolean missingIcon = (WebPresetLogo.match(s.url, s.name) == null && !WebIconManager.hasIcon(this, s.id));
+      boolean missingTitle = WebShortcut.isUrlName(s.name, s.url);
+      if (missingIcon || missingTitle) {
         WebIconManager.fetchFaviconAsync(this, s, null);
       }
     }
@@ -924,7 +926,7 @@ public final class MainActivity extends Activity {
               selectedId = WebShortcutStore.toAppEntry(added).id;
               render();
               toast("已添加网页快捷卡片");
-              if (!WebIconManager.hasIcon(this, added.id)) {
+              if (!WebIconManager.hasIcon(this, added.id) || WebShortcut.isUrlName(added.name, added.url)) {
                 WebIconManager.fetchFaviconAsync(this, added, null);
               }
             });

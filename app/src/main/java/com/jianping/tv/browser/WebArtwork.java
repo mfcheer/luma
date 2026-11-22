@@ -70,12 +70,12 @@ public final class WebArtwork {
     Bitmap customIcon = WebIconManager.getIcon(context, shortcut.id);
     WebPresetLogo.Preset preset = WebPresetLogo.match(shortcut.url, shortcut.name);
 
-    if (customIcon != null && !customIcon.isRecycled()) {
-      // 1. Custom downloaded or captured Favicon / Touch Icon
-      drawCustomIcon(canvas, customIcon, cx, cy);
-    } else if (preset != null) {
-      // 2. Built-in high-definition vector logo
+    if (preset != null) {
+      // 1. Built-in high-definition vector logo
       drawPresetLogo(canvas, preset, cx, cy, palette);
+    } else if (customIcon != null && !customIcon.isRecycled()) {
+      // 2. Custom downloaded or captured Favicon / Touch Icon with smart defringe / 融底
+      drawCustomIcon(canvas, customIcon, cx, cy);
     } else {
       // 3. Clean initial glyph fallback
       drawGlyph(canvas, shortcut, cx, cy);
@@ -89,9 +89,13 @@ public final class WebArtwork {
     float w = icon.getWidth();
     float h = icon.getHeight();
     if (w <= 0 || h <= 0) return;
-    float scale = Math.min(targetSize / w, targetSize / h);
-    float drawW = w * scale;
-    float drawH = h * scale;
+
+    Bitmap blended = defringeNearWhiteIfNeeded(icon);
+    Bitmap drawTarget = (blended != null) ? blended : icon;
+
+    float scale = Math.min(targetSize / drawTarget.getWidth(), targetSize / drawTarget.getHeight());
+    float drawW = drawTarget.getWidth() * scale;
+    float drawH = drawTarget.getHeight() * scale;
     RectF dst =
         new RectF(
             cx - drawW / 2f,
@@ -105,8 +109,85 @@ public final class WebArtwork {
     Path clip = new Path();
     clip.addRoundRect(dst, radius, radius, Path.Direction.CW);
     canvas.clipPath(clip);
-    canvas.drawBitmap(icon, null, dst, filterPaint);
+    canvas.drawBitmap(drawTarget, null, dst, filterPaint);
     canvas.restore();
+
+    if (blended != null && blended != icon) {
+      blended.recycle();
+    }
+  }
+
+  private static Bitmap defringeNearWhiteIfNeeded(Bitmap src) {
+    if (src == null || src.isRecycled()) return null;
+    int w = src.getWidth();
+    int h = src.getHeight();
+    if (w < 8 || h < 8) return null;
+
+    int[] pixels = new int[w * h];
+    src.getPixels(pixels, 0, w, 0, 0, w, h);
+
+    int sampleCount = 0;
+    int nearWhiteCount = 0;
+    int stepX = Math.max(1, w / 10);
+    int stepY = Math.max(1, h / 10);
+
+    for (int x = 0; x < w; x += stepX) {
+      int top = pixels[x];
+      int bottom = pixels[(h - 1) * w + x];
+      if (((top >> 24) & 0xFF) > 30) {
+        sampleCount++;
+        if (isNearWhite(top)) nearWhiteCount++;
+      }
+      if (((bottom >> 24) & 0xFF) > 30) {
+        sampleCount++;
+        if (isNearWhite(bottom)) nearWhiteCount++;
+      }
+    }
+    for (int y = 0; y < h; y += stepY) {
+      int left = pixels[y * w];
+      int right = pixels[y * w + (w - 1)];
+      if (((left >> 24) & 0xFF) > 30) {
+        sampleCount++;
+        if (isNearWhite(left)) nearWhiteCount++;
+      }
+      if (((right >> 24) & 0xFF) > 30) {
+        sampleCount++;
+        if (isNearWhite(right)) nearWhiteCount++;
+      }
+    }
+
+    if (sampleCount > 0 && ((float) nearWhiteCount / sampleCount) >= 0.4f) {
+      boolean modified = false;
+      for (int i = 0; i < pixels.length; i++) {
+        int c = pixels[i];
+        int a = (c >> 24) & 0xFF;
+        if (a == 0) continue;
+        int r = (c >> 16) & 0xFF;
+        int g = (c >> 8) & 0xFF;
+        int b = c & 0xFF;
+        int minC = Math.min(r, Math.min(g, b));
+        int maxDiff = Math.max(Math.abs(r - g), Math.max(Math.abs(g - b), Math.abs(b - r)));
+        if (minC >= 225 && maxDiff <= 18) {
+          float t = (minC - 225) / 30.0f;
+          int newA = Math.max(0, Math.round(a * (1.0f - t * 1.15f)));
+          pixels[i] = (newA << 24) | (r << 16) | (g << 8) | b;
+          modified = true;
+        }
+      }
+      if (modified) {
+        return Bitmap.createBitmap(pixels, w, h, Bitmap.Config.ARGB_8888);
+      }
+    }
+    return null;
+  }
+
+  private static boolean isNearWhite(int color) {
+    int r = (color >> 16) & 0xFF;
+    int g = (color >> 8) & 0xFF;
+    int b = color & 0xFF;
+    int minC = Math.min(r, Math.min(g, b));
+    int maxDiff = Math.max(Math.abs(r - g), Math.max(Math.abs(g - b), Math.abs(b - r)));
+    return minC >= 225 && maxDiff <= 18;
   }
 
   private static void drawPresetLogo(
@@ -138,6 +219,9 @@ public final class WebArtwork {
       case SYNOLOGY:
       case QNAP:
       case ROUTER:
+        return 1.45f;
+      case STATUS_BOARD:
+        return 1.6f;
       default:
         return 1.45f;
     }

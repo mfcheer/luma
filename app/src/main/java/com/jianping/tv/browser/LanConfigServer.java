@@ -134,8 +134,33 @@ public final class LanConfigServer {
                 }
 
                 if ("GET".equalsIgnoreCase(method)) {
-                  byte[] html = buildHtmlPage().getBytes(StandardCharsets.UTF_8);
-                  sendResponse(out, 200, "OK", "text/html; charset=UTF-8", html);
+                  if (path.startsWith("/api/title")) {
+                    String target = "";
+                    int q = path.indexOf("url=");
+                    if (q > 0) {
+                      try {
+                        target = URLDecoder.decode(path.substring(q + 4), "UTF-8");
+                      } catch (Exception ignored) {
+                        target = path.substring(q + 4);
+                      }
+                      int am = target.indexOf('&');
+                      if (am > 0) target = target.substring(0, am);
+                    }
+                    String title = "";
+                    if (!target.isEmpty()) {
+                      title = WebIconManager.fetchTitleSynchronous(WebShortcut.normalizeUrl(target));
+                    }
+                    JSONObject res = new JSONObject();
+                    try {
+                      res.put("title", title != null ? title : "");
+                    } catch (Exception ignored) {
+                    }
+                    byte[] json = res.toString().getBytes(StandardCharsets.UTF_8);
+                    sendResponse(out, 200, "OK", "application/json; charset=UTF-8", json);
+                  } else {
+                    byte[] html = buildHtmlPage().getBytes(StandardCharsets.UTF_8);
+                    sendResponse(out, 200, "OK", "text/html; charset=UTF-8", html);
+                  }
                 } else if ("POST".equalsIgnoreCase(method) && path.startsWith("/api/add")) {
                   ByteArrayOutputStream bodyBuffer = new ByteArrayOutputStream();
                   int alreadyRead = raw.length - headerEnd;
@@ -207,6 +232,9 @@ public final class LanConfigServer {
     } catch (Exception ignored) {
     }
 
+    if (name.equalsIgnoreCase(url) || WebShortcut.isUrlName(name, url)) {
+      name = "";
+    }
     final String finalName = name;
     final String finalUrl = url;
 
@@ -505,6 +533,24 @@ public final class LanConfigServer {
         + "      document.getElementById('url').value = u;\n"
         + "      document.getElementById('url').focus();\n"
         + "    }\n"
+        + "    window.addEventListener('DOMContentLoaded', () => {\n"
+        + "      const uEl = document.getElementById('url');\n"
+        + "      const nEl = document.getElementById('name');\n"
+        + "      if (uEl && nEl) {\n"
+        + "        uEl.addEventListener('blur', async () => {\n"
+        + "          const u = uEl.value.trim();\n"
+        + "          if (u && !nEl.value.trim()) {\n"
+        + "            try {\n"
+        + "              const r = await fetch('/api/title?url=' + encodeURIComponent(u));\n"
+        + "              const d = await r.json();\n"
+        + "              if (d && d.title && !nEl.value.trim()) {\n"
+        + "                nEl.value = d.title;\n"
+        + "              }\n"
+        + "            } catch (_) {}\n"
+        + "          }\n"
+        + "        });\n"
+        + "      }\n"
+        + "    });\n"
         + "    async function sendToTv() {\n"
         + "      const name = document.getElementById('name').value.trim();\n"
         + "      const url = document.getElementById('url').value.trim();\n"
@@ -522,7 +568,7 @@ public final class LanConfigServer {
         + "        const resp = await fetch('/api/add', {\n"
         + "          method: 'POST',\n"
         + "          headers: { 'Content-Type': 'application/json' },\n"
-        + "          body: JSON.stringify({ name: name || url, url: url })\n"
+        + "          body: JSON.stringify({ name: name, url: url })\n"
         + "        });\n"
         + "        const data = await resp.json();\n"
         + "        if (data.success) {\n"

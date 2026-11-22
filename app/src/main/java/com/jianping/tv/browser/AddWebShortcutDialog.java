@@ -143,6 +143,29 @@ public final class AddWebShortcutDialog extends Dialog {
     urlLabelLp.topMargin = px(8);
     inputCol.addView(sectionLabel("网页网址"), urlLabelLp);
     inputUrl = createEditText("例如：http://192.168.1.100:5244");
+    inputUrl.setOnFocusChangeListener(
+        (v, hasFocus) -> {
+          if (!hasFocus) {
+            String u = inputUrl.getText().toString().trim();
+            String n = inputName.getText().toString().trim();
+            if (!u.isEmpty() && n.isEmpty()) {
+              new Thread(
+                      () -> {
+                        String t =
+                            WebIconManager.fetchTitleSynchronous(WebShortcut.normalizeUrl(u));
+                        if (t != null && !t.isEmpty()) {
+                          activity.runOnUiThread(
+                              () -> {
+                                if (inputName.getText().toString().trim().isEmpty()) {
+                                  inputName.setText(t);
+                                }
+                              });
+                        }
+                      })
+                  .start();
+            }
+          }
+        });
     inputCol.addView(inputUrl, new LinearLayout.LayoutParams(-1, px(38)));
 
     // Preset chips
@@ -347,7 +370,11 @@ public final class AddWebShortcutDialog extends Dialog {
   }
 
   private void addShortcutAndDismiss(String name, String url) {
-    String finalName = name.isEmpty() ? WebShortcut.normalizeUrl(url) : name;
+    String trimmedName = name != null ? name.trim() : "";
+    String finalName =
+        (trimmedName.isEmpty() || WebShortcut.isUrlName(trimmedName, url))
+            ? WebShortcut.normalizeUrl(url)
+            : trimmedName;
     String id = "web_" + System.currentTimeMillis();
     WebShortcut shortcut =
         new WebShortcut(

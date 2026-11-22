@@ -20,7 +20,8 @@ public final class WebPresetLogo {
     GOOGLE("Google", 0xFF4285F4),
     ZHIHU("知乎", 0xFF0066FF),
     DOUBAN("豆瓣", 0xFF007722),
-    BING("Bing", 0xFF008373);
+    BING("Bing", 0xFF008373),
+    STATUS_BOARD("编程状态屏", 0xFF6366F1);
 
     public final String label;
     public final int accent;
@@ -111,6 +112,15 @@ public final class WebPresetLogo {
     if (host.contains("bing.com") || n.contains("必应") || n.contains("bing")) {
       return Preset.BING;
     }
+    // Programming Status Board / 编程状态屏 (:8791, board, 词元之外)
+    if (u.contains(":8791")
+        || u.contains("/board")
+        || host.contains("board")
+        || n.contains("状态屏")
+        || n.contains("词元之外")
+        || n.contains("board")) {
+      return Preset.STATUS_BOARD;
+    }
 
     return null;
   }
@@ -153,6 +163,9 @@ public final class WebPresetLogo {
         break;
       case BING:
         drawBing(canvas, cx, cy);
+        break;
+      case STATUS_BOARD:
+        drawStatusBoard(canvas, cx, cy);
         break;
     }
   }
@@ -466,6 +479,88 @@ public final class WebPresetLogo {
     text.setColor(Color.WHITE);
     Paint.FontMetrics fm = text.getFontMetrics();
     canvas.drawText("b", cx, cy - (fm.ascent + fm.descent) / 2f, text);
+  }
+
+
+  private static void drawStatusBoard(Canvas canvas, float cx, float cy) {
+    // 4 AI tracks: Coral Red, Amber Gold, Royal Blue, Mint Green
+    Paint red = new Paint(Paint.ANTI_ALIAS_FLAG);
+    red.setColor(0xFFF43F5E);
+    red.setStyle(Paint.Style.STROKE);
+    red.setStrokeWidth(9f);
+    red.setStrokeCap(Paint.Cap.ROUND);
+
+    Paint amber = new Paint(Paint.ANTI_ALIAS_FLAG);
+    amber.setColor(0xFFF59E0B);
+    amber.setStyle(Paint.Style.STROKE);
+    amber.setStrokeWidth(9f);
+    amber.setStrokeCap(Paint.Cap.ROUND);
+
+    Paint blue = new Paint(Paint.ANTI_ALIAS_FLAG);
+    blue.setColor(0xFF3B82F6);
+    blue.setStyle(Paint.Style.STROKE);
+    blue.setStrokeWidth(9f);
+    blue.setStrokeCap(Paint.Cap.ROUND);
+
+    Paint green = new Paint(Paint.ANTI_ALIAS_FLAG);
+    green.setColor(0xFF10B981);
+    green.setStyle(Paint.Style.STROKE);
+    green.setStrokeWidth(9f);
+    green.setStrokeCap(Paint.Cap.ROUND);
+
+    // Left Infinity Loop (cx - 18, cy - 2)
+    // Arc 1: Top-left curve (Red) from center crossing (cx, cy - 2) to (cx - 36, cy - 2)
+    Path arcTopLeft = new Path();
+    arcTopLeft.moveTo(cx, cy - 2);
+    arcTopLeft.cubicTo(cx - 10, cy - 22, cx - 28, cy - 22, cx - 36, cy - 2);
+    canvas.drawPath(arcTopLeft, red);
+
+    // Arc 2: Bottom-left curve (Amber) from (cx - 36, cy - 2) to center crossing (cx, cy - 2)
+    Path arcBottomLeft = new Path();
+    arcBottomLeft.moveTo(cx - 36, cy - 2);
+    arcBottomLeft.cubicTo(cx - 28, cy + 18, cx - 10, cy + 18, cx, cy - 2);
+    canvas.drawPath(arcBottomLeft, amber);
+
+    // Right Infinity Loop (cx + 18, cy - 2)
+    // Arc 3: Top-right curve (Blue) from center crossing (cx, cy - 2) to (cx + 36, cy - 2)
+    Path arcTopRight = new Path();
+    arcTopRight.moveTo(cx, cy - 2);
+    arcTopRight.cubicTo(cx + 10, cy - 22, cx + 28, cy - 22, cx + 36, cy - 2);
+    canvas.drawPath(arcTopRight, blue);
+
+    // Arc 4: Bottom-right curve (Green) from (cx + 36, cy - 2) to center crossing (cx, cy - 2)
+    Path arcBottomRight = new Path();
+    arcBottomRight.moveTo(cx + 36, cy - 2);
+    arcBottomRight.cubicTo(cx + 28, cy + 18, cx + 10, cy + 18, cx, cy - 2);
+    canvas.drawPath(arcBottomRight, green);
+
+    // Telemetry status line and 4 active agent indicators below
+    Paint trackPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    trackPaint.setColor(0xFFE2E8F0);
+    trackPaint.setStyle(Paint.Style.FILL);
+    canvas.drawRoundRect(new RectF(cx - 32, cy + 24, cx + 32, cy + 27.5f), 2f, 2f, trackPaint);
+
+    Paint fillRed = new Paint(Paint.ANTI_ALIAS_FLAG);
+    fillRed.setColor(0xFFF43F5E);
+    fillRed.setStyle(Paint.Style.FILL);
+
+    Paint fillAmber = new Paint(Paint.ANTI_ALIAS_FLAG);
+    fillAmber.setColor(0xFFF59E0B);
+    fillAmber.setStyle(Paint.Style.FILL);
+
+    Paint fillBlue = new Paint(Paint.ANTI_ALIAS_FLAG);
+    fillBlue.setColor(0xFF3B82F6);
+    fillBlue.setStyle(Paint.Style.FILL);
+
+    Paint fillGreen = new Paint(Paint.ANTI_ALIAS_FLAG);
+    fillGreen.setColor(0xFF10B981);
+    fillGreen.setStyle(Paint.Style.FILL);
+
+    // 4 glowing agent telemetry dots
+    canvas.drawCircle(cx - 22, cy + 25.75f, 3.5f, fillRed);
+    canvas.drawCircle(cx - 7.5f, cy + 25.75f, 3.5f, fillAmber);
+    canvas.drawCircle(cx + 7.5f, cy + 25.75f, 3.5f, fillGreen);
+    canvas.drawCircle(cx + 22, cy + 25.75f, 3.5f, fillBlue);
   }
 
   private static String extractHostOnly(String url) {

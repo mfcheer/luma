@@ -80,6 +80,21 @@ public final class WebShortcut {
     return false;
   }
 
+  public static boolean isUrlName(String name, String url) {
+    if (name == null || name.trim().isEmpty()) return true;
+    String n = name.trim();
+    if (n.startsWith("http://") || n.startsWith("https://") || n.contains("://")) return true;
+    if (url != null) {
+      String u = url.trim();
+      if (n.equalsIgnoreCase(u) || n.equalsIgnoreCase(normalizeUrl(u))) return true;
+      String cleanU = u.replaceFirst("^[a-zA-Z]+://", "");
+      if (n.equalsIgnoreCase(cleanU)) return true;
+      int slash = cleanU.indexOf('/');
+      if (slash > 0 && n.equalsIgnoreCase(cleanU.substring(0, slash))) return true;
+    }
+    return false;
+  }
+
   public static int deriveAccent(String name) {
     int[] palette =
         new int[] {
