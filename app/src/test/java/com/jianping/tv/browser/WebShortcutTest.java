@@ -3,6 +3,7 @@ package com.jianping.tv.browser;
 import static org.junit.Assert.*;
 
 import android.content.Context;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Looper;
 import com.jianping.tv.data.AppEntry;
 import com.jianping.tv.data.AppOrder;
@@ -221,19 +222,31 @@ public class WebShortcutTest {
   }
 
   @Test
-  public void webArtworkGeneratesDrawables() {
+  public void webArtworkGeneratesDrawablesWithPureWhiteBackground() {
     WebShortcut shortcut =
         new WebShortcut("nas", "家庭NAS", "http://192.168.1.100:5000", 1L, false, 0xFF2563EB);
     UiPalette palette = UiPalette.LIGHT;
 
-    assertNotNull(WebArtwork.cardArtwork(context.getResources(), shortcut, palette));
-    assertNotNull(WebArtwork.previewArtwork(context.getResources(), shortcut, palette));
+    BitmapDrawable card =
+        (BitmapDrawable) WebArtwork.cardArtwork(context, context.getResources(), shortcut, palette);
+    assertNotNull(card);
+    assertNotNull(card.getBitmap());
+    assertEquals(384, card.getBitmap().getWidth());
+    assertEquals(250, card.getBitmap().getHeight());
+
+    assertNotNull(WebArtwork.previewArtwork(context, context.getResources(), shortcut, palette));
     assertNotNull(WebArtwork.addCardArtwork(context.getResources(), palette));
     assertNotNull(WebArtwork.addPreviewArtwork(context.getResources(), palette));
 
     UiPalette darkPalette = UiPalette.DARK;
-    assertNotNull(WebArtwork.cardArtwork(context.getResources(), shortcut, darkPalette));
-    assertNotNull(WebArtwork.previewArtwork(context.getResources(), shortcut, darkPalette));
+    BitmapDrawable darkCard =
+        (BitmapDrawable) WebArtwork.cardArtwork(context, context.getResources(), shortcut, darkPalette);
+    assertNotNull(darkCard);
+    assertNotNull(darkCard.getBitmap());
+    assertEquals(384, darkCard.getBitmap().getWidth());
+    assertEquals(250, darkCard.getBitmap().getHeight());
+
+    assertNotNull(WebArtwork.previewArtwork(context, context.getResources(), shortcut, darkPalette));
     assertNotNull(WebArtwork.addCardArtwork(context.getResources(), darkPalette));
     assertNotNull(WebArtwork.addPreviewArtwork(context.getResources(), darkPalette));
   }
@@ -305,8 +318,12 @@ public class WebShortcutTest {
 
       WebShortcut shortcut =
           new WebShortcut(id, "个人主页", "https://mfcheer.github.io", 1L, false, 0xFF10B981);
-      assertNotNull(
-          WebArtwork.cardArtwork(context, context.getResources(), shortcut, UiPalette.LIGHT));
+      BitmapDrawable card =
+          (BitmapDrawable) WebArtwork.cardArtwork(context, context.getResources(), shortcut, UiPalette.LIGHT);
+      assertNotNull(card);
+      assertNotNull(card.getBitmap());
+      assertEquals(384, card.getBitmap().getWidth());
+      assertEquals(250, card.getBitmap().getHeight());
 
       WebIconManager.deleteIcon(context, id);
       assertFalse(WebIconManager.hasIcon(context, id));

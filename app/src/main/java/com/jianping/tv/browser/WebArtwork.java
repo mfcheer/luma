@@ -7,7 +7,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import com.jianping.tv.ui.ArgbBlur;
 import com.jianping.tv.ui.UiPalette;
-import java.net.URI;
 
 /** Generates high-resolution TV artwork and blurred preview for web shortcuts and the add card. */
 public final class WebArtwork {
@@ -60,83 +59,36 @@ public final class WebArtwork {
     clip.addRoundRect(new RectF(0, 0, WIDTH, HEIGHT), RADIUS, RADIUS, Path.Direction.CW);
     canvas.clipPath(clip);
 
-    WebPresetLogo.Preset preset = WebPresetLogo.match(shortcut.url, shortcut.name);
-    int accent = preset != null ? preset.accent : shortcut.accent;
-
-    int top = palette.light ? blend(accent, 0xFFFAFBFD, 0.12f) : blend(accent, 0xFF2A3649, 0.35f);
-    int bottom =
-        palette.light ? blend(accent, 0xFFE2E8F0, 0.25f) : blend(accent, 0xFF141C26, 0.20f);
-
+    // Pure white background: clean, minimal, no extra artificial shapes or colorings
     Paint bgPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    bgPaint.setShader(
-        new LinearGradient(0, 0, 0, HEIGHT, top, bottom, Shader.TileMode.CLAMP));
+    bgPaint.setColor(0xFFFFFFFF);
     canvas.drawRect(0, 0, WIDTH, HEIGHT, bgPaint);
 
-    // Subtle decorative glow behind badge
-    Paint glow = new Paint(Paint.ANTI_ALIAS_FLAG);
-    glow.setColor(accent);
-    glow.setAlpha(palette.light ? 25 : 55);
-    canvas.drawCircle(WIDTH / 2f, 105, 70, glow);
-
     float cx = WIDTH / 2f;
-    float cy = 105f;
+    float cy = HEIGHT / 2f;
 
     Bitmap customIcon = WebIconManager.getIcon(context, shortcut.id);
+    WebPresetLogo.Preset preset = WebPresetLogo.match(shortcut.url, shortcut.name);
+
     if (customIcon != null && !customIcon.isRecycled()) {
       // 1. Custom downloaded or captured Favicon / Touch Icon
-      drawCustomIconBadge(canvas, customIcon, cx, cy, palette);
+      drawCustomIcon(canvas, customIcon, cx, cy);
     } else if (preset != null) {
       // 2. Built-in high-definition vector logo
-      WebPresetLogo.draw(canvas, preset, cx, cy, palette);
+      drawPresetLogo(canvas, preset, cx, cy, palette);
     } else {
-      // 3. Elegant initial glyph fallback
-      drawGlyphBadge(canvas, shortcut, cx, cy, accent, palette);
+      // 3. Clean initial glyph fallback
+      drawGlyph(canvas, shortcut, cx, cy);
     }
-
-    // Top-right "Web" badge (clean title case)
-    Paint webBadge = new Paint(Paint.ANTI_ALIAS_FLAG);
-    webBadge.setColor(palette.light ? 0x18000000 : 0x30FFFFFF);
-    RectF badgeRect = new RectF(WIDTH - 76, 20, WIDTH - 24, 42);
-    canvas.drawRoundRect(badgeRect, 9, 9, webBadge);
-
-    Paint webText = new Paint(Paint.ANTI_ALIAS_FLAG);
-    webText.setTextAlign(Paint.Align.CENTER);
-    webText.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
-    webText.setTextSize(11f);
-    webText.setColor(palette.light ? palette.secondary : 0xFFCBD5E1);
-    Paint.FontMetrics wfm = webText.getFontMetrics();
-    canvas.drawText(
-        "Web", badgeRect.centerX(), badgeRect.centerY() - (wfm.ascent + wfm.descent) / 2f, webText);
-
-    // Bottom domain / host summary
-    String host = extractHost(shortcut.url);
-    Paint hostPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    hostPaint.setTextAlign(Paint.Align.CENTER);
-    hostPaint.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
-    hostPaint.setTextSize(17f);
-    hostPaint.setColor(palette.light ? palette.secondary : 0xFF94A3B8);
-    canvas.drawText(host, WIDTH / 2f, 202, hostPaint);
 
     return bmp;
   }
 
-  private static void drawCustomIconBadge(
-      Canvas canvas, Bitmap icon, float cx, float cy, UiPalette palette) {
-    // Center circular / rounded rect container
-    Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    circlePaint.setColor(palette.light ? 0xFFFFFFFF : 0x2EFFFFFF);
-    canvas.drawCircle(cx, cy, 46, circlePaint);
-
-    Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    strokePaint.setStyle(Paint.Style.STROKE);
-    strokePaint.setStrokeWidth(2f);
-    strokePaint.setColor(palette.light ? 0x20000000 : 0x44FFFFFF);
-    canvas.drawCircle(cx, cy, 46, strokePaint);
-
-    // Scale and center the icon inside 56x56 area
-    float targetSize = 56f;
+  private static void drawCustomIcon(Canvas canvas, Bitmap icon, float cx, float cy) {
+    float targetSize = 130f;
     float w = icon.getWidth();
     float h = icon.getHeight();
+    if (w <= 0 || h <= 0) return;
     float scale = Math.min(targetSize / w, targetSize / h);
     float drawW = w * scale;
     float drawH = h * scale;
@@ -148,32 +100,57 @@ public final class WebArtwork {
             cy + drawH / 2f);
 
     Paint filterPaint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    float radius = Math.min(drawW, drawH) * 0.18f;
     canvas.save();
     Path clip = new Path();
-    clip.addRoundRect(dst, 10f, 10f, Path.Direction.CW);
+    clip.addRoundRect(dst, radius, radius, Path.Direction.CW);
     canvas.clipPath(clip);
     canvas.drawBitmap(icon, null, dst, filterPaint);
     canvas.restore();
   }
 
-  private static void drawGlyphBadge(
-      Canvas canvas, WebShortcut shortcut, float cx, float cy, int accent, UiPalette palette) {
-    Paint circlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    circlePaint.setColor(palette.light ? 0xFFFFFFFF : 0x2EFFFFFF);
-    canvas.drawCircle(cx, cy, 46, circlePaint);
+  private static void drawPresetLogo(
+      Canvas canvas, WebPresetLogo.Preset preset, float cx, float cy, UiPalette palette) {
+    canvas.save();
+    float scale = getPresetScale(preset);
+    canvas.scale(scale, scale, cx, cy);
+    WebPresetLogo.draw(canvas, preset, cx, cy, palette);
+    canvas.restore();
+  }
 
-    Paint strokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    strokePaint.setStyle(Paint.Style.STROKE);
-    strokePaint.setStrokeWidth(2f);
-    strokePaint.setColor(palette.light ? 0x20000000 : 0x44FFFFFF);
-    canvas.drawCircle(cx, cy, 46, strokePaint);
+  private static float getPresetScale(WebPresetLogo.Preset preset) {
+    if (preset == null) return 1.4f;
+    switch (preset) {
+      case BAIDU:
+        return 2.2f;
+      case GITHUB:
+        return 1.7f;
+      case BILIBILI:
+        return 1.8f;
+      case YOUTUBE:
+        return 1.6f;
+      case GOOGLE:
+        return 2.1f;
+      case ALIST:
+      case ZHIHU:
+      case DOUBAN:
+      case BING:
+      case SYNOLOGY:
+      case QNAP:
+      case ROUTER:
+      default:
+        return 1.45f;
+    }
+  }
 
+  private static void drawGlyph(
+      Canvas canvas, WebShortcut shortcut, float cx, float cy) {
     String glyph = getGlyph(shortcut.name);
     Paint textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     textPaint.setTextAlign(Paint.Align.CENTER);
     textPaint.setTypeface(Typeface.create("sans-serif-medium", Typeface.BOLD));
-    textPaint.setTextSize(48f);
-    textPaint.setColor(palette.light ? accent : 0xFFFFFFFF);
+    textPaint.setTextSize(72f);
+    textPaint.setColor(0xFF1E293B);
     Paint.FontMetrics fm = textPaint.getFontMetrics();
     float textY = cy - (fm.ascent + fm.descent) / 2f;
     canvas.drawText(glyph, cx, textY, textPaint);
@@ -238,30 +215,5 @@ public final class WebArtwork {
     if (name == null || name.isEmpty()) return "W";
     int cp = name.codePointAt(0);
     return new String(Character.toChars(cp)).toUpperCase();
-  }
-
-  private static String extractHost(String url) {
-    if (url == null || url.isEmpty()) return "";
-    try {
-      URI uri = new URI(url);
-      String host = uri.getHost();
-      if (host != null && !host.isEmpty()) {
-        int port = uri.getPort();
-        return port > 0 ? host + ":" + port : host;
-      }
-    } catch (Exception ignored) {
-    }
-    String stripped = url.replaceFirst("^https?://", "");
-    int slash = stripped.indexOf('/');
-    if (slash >= 0) stripped = stripped.substring(0, slash);
-    return stripped;
-  }
-
-  private static int blend(int fg, int bg, float ratio) {
-    float inv = 1f - ratio;
-    int r = Math.round(Color.red(fg) * ratio + Color.red(bg) * inv);
-    int g = Math.round(Color.green(fg) * ratio + Color.green(bg) * inv);
-    int b = Math.round(Color.blue(fg) * ratio + Color.blue(bg) * inv);
-    return Color.rgb(r, g, b);
   }
 }

@@ -10,7 +10,7 @@ public final class WebPresetLogo {
 
   public enum Preset {
     BAIDU("百度", 0xFF2932E1),
-    GITHUB("GitHub", 0xFF24292E),
+    GITHUB("GitHub", 0xFF181717),
     BILIBILI("哔哩哔哩", 0xFFFB7299),
     YOUTUBE("YouTube", 0xFFFF0000),
     ALIST("Alist", 0xFF0070F3),
@@ -158,17 +158,6 @@ public final class WebPresetLogo {
   }
 
   private static void drawBaidu(Canvas canvas, float cx, float cy) {
-    // Pure white circle badge
-    Paint circle = new Paint(Paint.ANTI_ALIAS_FLAG);
-    circle.setColor(0xFFFFFFFF);
-    canvas.drawCircle(cx, cy, 46, circle);
-
-    Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-    stroke.setStyle(Paint.Style.STROKE);
-    stroke.setStrokeWidth(2f);
-    stroke.setColor(0x20000000);
-    canvas.drawCircle(cx, cy, 46, stroke);
-
     // Baidu Paw: Palm in Baidu Blue 0xFF2932E1, Signature Red Toe 0xFFE10602
     Paint blue = new Paint(Paint.ANTI_ALIAS_FLAG);
     blue.setColor(0xFF2932E1);
@@ -219,24 +208,13 @@ public final class WebPresetLogo {
   }
 
   private static void drawGithub(Canvas canvas, float cx, float cy) {
-    // Dark GitHub disc
-    Paint circle = new Paint(Paint.ANTI_ALIAS_FLAG);
-    circle.setColor(0xFF161B22);
-    canvas.drawCircle(cx, cy, 46, circle);
-
-    Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-    stroke.setStyle(Paint.Style.STROKE);
-    stroke.setStrokeWidth(2f);
-    stroke.setColor(0x33FFFFFF);
-    canvas.drawCircle(cx, cy, 46, stroke);
-
-    // Octocat silhouette in white
-    Paint white = new Paint(Paint.ANTI_ALIAS_FLAG);
-    white.setColor(Color.WHITE);
-    white.setStyle(Paint.Style.FILL);
+    // Official GitHub dark silhouette
+    Paint dark = new Paint(Paint.ANTI_ALIAS_FLAG);
+    dark.setColor(0xFF181717);
+    dark.setStyle(Paint.Style.FILL);
 
     // Head
-    canvas.drawCircle(cx, cy - 4, 23, white);
+    canvas.drawCircle(cx, cy - 4, 23, dark);
 
     // Left ear
     Path leftEar = new Path();
@@ -244,7 +222,7 @@ public final class WebPresetLogo {
     leftEar.lineTo(cx - 24, cy - 32);
     leftEar.lineTo(cx - 7, cy - 25);
     leftEar.close();
-    canvas.drawPath(leftEar, white);
+    canvas.drawPath(leftEar, dark);
 
     // Right ear
     Path rightEar = new Path();
@@ -252,7 +230,7 @@ public final class WebPresetLogo {
     rightEar.lineTo(cx + 24, cy - 32);
     rightEar.lineTo(cx + 16, cy - 15);
     rightEar.close();
-    canvas.drawPath(rightEar, white);
+    canvas.drawPath(rightEar, dark);
 
     // Body
     Path body = new Path();
@@ -261,21 +239,10 @@ public final class WebPresetLogo {
     body.lineTo(cx + 15, cy + 32);
     body.cubicTo(cx + 18, cy + 30, cx + 22, cy + 22, cx + 18, cy + 12);
     body.close();
-    canvas.drawPath(body, white);
+    canvas.drawPath(body, dark);
   }
 
   private static void drawBilibili(Canvas canvas, float cx, float cy) {
-    // White circular badge
-    Paint circle = new Paint(Paint.ANTI_ALIAS_FLAG);
-    circle.setColor(Color.WHITE);
-    canvas.drawCircle(cx, cy, 46, circle);
-
-    Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-    stroke.setStyle(Paint.Style.STROKE);
-    stroke.setStrokeWidth(2f);
-    stroke.setColor(0x20000000);
-    canvas.drawCircle(cx, cy, 46, stroke);
-
     Paint pink = new Paint(Paint.ANTI_ALIAS_FLAG);
     pink.setColor(0xFFFB7299);
     pink.setStyle(Paint.Style.FILL);
@@ -338,153 +305,104 @@ public final class WebPresetLogo {
   }
 
   private static void drawAlist(Canvas canvas, float cx, float cy) {
-    // Alist Blue circle
+    // Alist Blue rounded app squircle
     Paint blue = new Paint(Paint.ANTI_ALIAS_FLAG);
     blue.setColor(0xFF0070F3);
-    canvas.drawCircle(cx, cy, 46, blue);
-
-    Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-    stroke.setStyle(Paint.Style.STROKE);
-    stroke.setStrokeWidth(2f);
-    stroke.setColor(0x44FFFFFF);
-    canvas.drawCircle(cx, cy, 46, stroke);
+    RectF squircle = new RectF(cx - 36, cy - 36, cx + 36, cy + 36);
+    canvas.drawRoundRect(squircle, 14, 14, blue);
 
     // Cloud / Storage symbol in white
     Paint white = new Paint(Paint.ANTI_ALIAS_FLAG);
     white.setColor(Color.WHITE);
 
-    // Storage server box / cloud
-    RectF box = new RectF(cx - 24, cy + 2, cx + 24, cy + 22);
-    canvas.drawRoundRect(box, 4, 4, white);
+    // Storage server box
+    RectF box = new RectF(cx - 18, cy + 3, cx + 18, cy + 19);
+    canvas.drawRoundRect(box, 3, 3, white);
 
     Paint dark = new Paint(Paint.ANTI_ALIAS_FLAG);
     dark.setColor(0xFF0070F3);
-    canvas.drawCircle(cx - 14, cy + 12, 2.5f, dark);
-    canvas.drawLine(cx - 5, cy + 12, cx + 18, cy + 12, dark);
+    canvas.drawCircle(cx - 11, cy + 11, 2f, dark);
+    canvas.drawLine(cx - 4, cy + 11, cx + 13, cy + 11, dark);
 
     // Cloud curves
-    canvas.drawCircle(cx, cy - 10, 16, white);
-    canvas.drawCircle(cx - 14, cy - 4, 11, white);
-    canvas.drawCircle(cx + 14, cy - 4, 11, white);
-    canvas.drawRect(cx - 14, cy - 4, cx + 14, cy + 5, white);
+    canvas.drawCircle(cx, cy - 8, 12, white);
+    canvas.drawCircle(cx - 11, cy - 3, 8.5f, white);
+    canvas.drawCircle(cx + 11, cy - 3, 8.5f, white);
+    canvas.drawRect(cx - 11, cy - 3, cx + 11, cy + 4, white);
   }
 
   private static void drawSynology(Canvas canvas, float cx, float cy) {
-    // Navy Slate circle
-    Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG);
-    bg.setColor(0xFF1E293B);
-    canvas.drawCircle(cx, cy, 46, bg);
-
-    Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-    stroke.setStyle(Paint.Style.STROKE);
-    stroke.setStrokeWidth(2f);
-    stroke.setColor(0x44FFFFFF);
-    canvas.drawCircle(cx, cy, 46, stroke);
-
     // NAS Chassis
     Paint chassis = new Paint(Paint.ANTI_ALIAS_FLAG);
-    chassis.setColor(0xFF334155);
-    canvas.drawRoundRect(new RectF(cx - 26, cy - 28, cx + 26, cy + 28), 6, 6, chassis);
+    chassis.setColor(0xFF1E293B);
+    canvas.drawRoundRect(new RectF(cx - 30, cy - 32, cx + 30, cy + 32), 6, 6, chassis);
 
     // Drive bays
     Paint bay = new Paint(Paint.ANTI_ALIAS_FLAG);
     bay.setColor(0xFF0F172A);
-    canvas.drawRoundRect(new RectF(cx - 20, cy - 21, cx + 20, cy - 3), 3, 3, bay);
-    canvas.drawRoundRect(new RectF(cx - 20, cy + 3, cx + 20, cy + 21), 3, 3, bay);
+    canvas.drawRoundRect(new RectF(cx - 23, cy - 24, cx + 23, cy - 4), 3, 3, bay);
+    canvas.drawRoundRect(new RectF(cx - 23, cy + 4, cx + 23, cy + 24), 3, 3, bay);
 
     // Status LEDs
     Paint greenLed = new Paint(Paint.ANTI_ALIAS_FLAG);
     greenLed.setColor(0xFF22C55E);
-    canvas.drawCircle(cx + 13, cy - 12, 2.5f, greenLed);
-    canvas.drawCircle(cx + 13, cy + 12, 2.5f, greenLed);
+    canvas.drawCircle(cx + 15, cy - 14, 2.5f, greenLed);
+    canvas.drawCircle(cx + 15, cy + 14, 2.5f, greenLed);
 
     Paint blueLed = new Paint(Paint.ANTI_ALIAS_FLAG);
     blueLed.setColor(0xFF38BDF8);
-    canvas.drawCircle(cx - 14, cy - 24, 2f, blueLed);
+    canvas.drawCircle(cx - 17, cy - 28, 2f, blueLed);
   }
 
   private static void drawQnap(Canvas canvas, float cx, float cy) {
-    // QNAP Blue circle
-    Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG);
-    bg.setColor(0xFF0284C7);
-    canvas.drawCircle(cx, cy, 46, bg);
-
-    Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-    stroke.setStyle(Paint.Style.STROKE);
-    stroke.setStrokeWidth(2f);
-    stroke.setColor(0x44FFFFFF);
-    canvas.drawCircle(cx, cy, 46, stroke);
-
-    // 4-bay NAS tower
     Paint chassis = new Paint(Paint.ANTI_ALIAS_FLAG);
-    chassis.setColor(0xFF0F172A);
-    canvas.drawRoundRect(new RectF(cx - 28, cy - 26, cx + 28, cy + 26), 5, 5, chassis);
+    chassis.setColor(0xFF0284C7);
+    canvas.drawRoundRect(new RectF(cx - 32, cy - 30, cx + 32, cy + 30), 6, 6, chassis);
 
     Paint tray = new Paint(Paint.ANTI_ALIAS_FLAG);
-    tray.setColor(0xFF1E293B);
+    tray.setColor(0xFF0F172A);
     for (int i = 0; i < 4; i++) {
-      float left = cx - 23 + i * 12;
-      canvas.drawRoundRect(new RectF(left, cy - 18, left + 8, cy + 20), 2, 2, tray);
+      float left = cx - 26 + i * 14;
+      canvas.drawRoundRect(new RectF(left, cy - 20, left + 9, cy + 23), 2, 2, tray);
     }
 
     Paint led = new Paint(Paint.ANTI_ALIAS_FLAG);
     led.setColor(0xFF22C55E);
-    canvas.drawCircle(cx + 20, cy - 20, 2f, led);
+    canvas.drawCircle(cx + 23, cy - 24, 2f, led);
   }
 
   private static void drawRouter(Canvas canvas, float cx, float cy) {
-    // Teal circle
-    Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG);
-    bg.setColor(0xFF0D9488);
-    canvas.drawCircle(cx, cy, 46, bg);
-
-    Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-    stroke.setStyle(Paint.Style.STROKE);
-    stroke.setStrokeWidth(2f);
-    stroke.setColor(0x44FFFFFF);
-    canvas.drawCircle(cx, cy, 46, stroke);
-
     // Dual antennas
     Paint ant = new Paint(Paint.ANTI_ALIAS_FLAG);
-    ant.setColor(0xFFF0FDFA);
-    ant.setStrokeWidth(3.5f);
+    ant.setColor(0xFF0D9488);
+    ant.setStrokeWidth(4f);
     ant.setStrokeCap(Paint.Cap.ROUND);
-    canvas.drawLine(cx - 16, cy - 4, cx - 22, cy - 26, ant);
-    canvas.drawLine(cx + 16, cy - 4, cx + 22, cy - 26, ant);
+    canvas.drawLine(cx - 18, cy - 4, cx - 25, cy - 28, ant);
+    canvas.drawLine(cx + 18, cy - 4, cx + 25, cy - 28, ant);
 
     // Router box
     Paint box = new Paint(Paint.ANTI_ALIAS_FLAG);
-    box.setColor(0xFF134E4A);
-    canvas.drawRoundRect(new RectF(cx - 30, cy - 5, cx + 30, cy + 20), 5, 5, box);
+    box.setColor(0xFF0D9488);
+    canvas.drawRoundRect(new RectF(cx - 34, cy - 5, cx + 34, cy + 22), 6, 6, box);
 
     // Wi-Fi signal arcs
     Paint wifi = new Paint(Paint.ANTI_ALIAS_FLAG);
     wifi.setStyle(Paint.Style.STROKE);
     wifi.setStrokeWidth(2.5f);
     wifi.setStrokeCap(Paint.Cap.ROUND);
-    wifi.setColor(0xFF5EEAD4);
-    canvas.drawArc(new RectF(cx - 10, cy - 20, cx + 10, cy), 200, 140, false, wifi);
-    canvas.drawArc(new RectF(cx - 18, cy - 28, cx + 18, cy + 8), 205, 130, false, wifi);
+    wifi.setColor(0xFF0D9488);
+    canvas.drawArc(new RectF(cx - 11, cy - 22, cx + 11, cy), 200, 140, false, wifi);
+    canvas.drawArc(new RectF(cx - 20, cy - 31, cx + 20, cy + 9), 205, 130, false, wifi);
 
     // LED indicators
     Paint led = new Paint(Paint.ANTI_ALIAS_FLAG);
-    led.setColor(0xFF34D399);
+    led.setColor(0xFF5EEAD4);
     for (int i = 0; i < 4; i++) {
-      canvas.drawCircle(cx - 12 + i * 8, cy + 8, 2f, led);
+      canvas.drawCircle(cx - 14 + i * 9, cy + 9, 2.5f, led);
     }
   }
 
   private static void drawGoogle(Canvas canvas, float cx, float cy) {
-    Paint circle = new Paint(Paint.ANTI_ALIAS_FLAG);
-    circle.setColor(Color.WHITE);
-    canvas.drawCircle(cx, cy, 46, circle);
-
-    Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-    stroke.setStyle(Paint.Style.STROKE);
-    stroke.setStrokeWidth(2f);
-    stroke.setColor(0x20000000);
-    canvas.drawCircle(cx, cy, 46, stroke);
-
     RectF oval = new RectF(cx - 24, cy - 24, cx + 24, cy + 24);
     Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
     p.setStyle(Paint.Style.STROKE);
@@ -506,15 +424,10 @@ public final class WebPresetLogo {
   }
 
   private static void drawZhihu(Canvas canvas, float cx, float cy) {
-    Paint circle = new Paint(Paint.ANTI_ALIAS_FLAG);
-    circle.setColor(0xFF0066FF);
-    canvas.drawCircle(cx, cy, 46, circle);
-
-    Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-    stroke.setStyle(Paint.Style.STROKE);
-    stroke.setStrokeWidth(2f);
-    stroke.setColor(0x44FFFFFF);
-    canvas.drawCircle(cx, cy, 46, stroke);
+    Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG);
+    bg.setColor(0xFF0066FF);
+    RectF squircle = new RectF(cx - 36, cy - 36, cx + 36, cy + 36);
+    canvas.drawRoundRect(squircle, 14, 14, bg);
 
     Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);
     text.setTextAlign(Paint.Align.CENTER);
@@ -526,15 +439,10 @@ public final class WebPresetLogo {
   }
 
   private static void drawDouban(Canvas canvas, float cx, float cy) {
-    Paint circle = new Paint(Paint.ANTI_ALIAS_FLAG);
-    circle.setColor(0xFF007722);
-    canvas.drawCircle(cx, cy, 46, circle);
-
-    Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-    stroke.setStyle(Paint.Style.STROKE);
-    stroke.setStrokeWidth(2f);
-    stroke.setColor(0x44FFFFFF);
-    canvas.drawCircle(cx, cy, 46, stroke);
+    Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG);
+    bg.setColor(0xFF007722);
+    RectF squircle = new RectF(cx - 36, cy - 36, cx + 36, cy + 36);
+    canvas.drawRoundRect(squircle, 14, 14, bg);
 
     Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);
     text.setTextAlign(Paint.Align.CENTER);
@@ -546,15 +454,10 @@ public final class WebPresetLogo {
   }
 
   private static void drawBing(Canvas canvas, float cx, float cy) {
-    Paint circle = new Paint(Paint.ANTI_ALIAS_FLAG);
-    circle.setColor(0xFF008373);
-    canvas.drawCircle(cx, cy, 46, circle);
-
-    Paint stroke = new Paint(Paint.ANTI_ALIAS_FLAG);
-    stroke.setStyle(Paint.Style.STROKE);
-    stroke.setStrokeWidth(2f);
-    stroke.setColor(0x44FFFFFF);
-    canvas.drawCircle(cx, cy, 46, stroke);
+    Paint bg = new Paint(Paint.ANTI_ALIAS_FLAG);
+    bg.setColor(0xFF008373);
+    RectF squircle = new RectF(cx - 36, cy - 36, cx + 36, cy + 36);
+    canvas.drawRoundRect(squircle, 14, 14, bg);
 
     Paint text = new Paint(Paint.ANTI_ALIAS_FLAG);
     text.setTextAlign(Paint.Align.CENTER);
