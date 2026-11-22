@@ -9,7 +9,8 @@ import com.jianping.tv.ui.UiPalette;
 
 /**
  * Generates TV card artwork and ambient preview for Air Install (隔空安装).
- * Enforces pure white card background with standard rounded corners and crisp centered vector art.
+ * Enforces pure white card background with Apple AirDrop-inspired concentric waves
+ * and precision aerodynamic transmission vector art.
  */
 public final class AirInstallArtwork {
   private static final int WIDTH = 384;
@@ -52,57 +53,100 @@ public final class AirInstallArtwork {
   }
 
   private static void drawAirInstallVector(Canvas canvas, float cx, float cy) {
-    Paint strokeDark = new Paint(Paint.ANTI_ALIAS_FLAG);
-    strokeDark.setStyle(Paint.Style.STROKE);
-    strokeDark.setStrokeWidth(5.5f);
-    strokeDark.setStrokeCap(Paint.Cap.ROUND);
-    strokeDark.setStrokeJoin(Paint.Join.ROUND);
-    strokeDark.setColor(0xFF1E293B); // Slate-800
+    // Wave origin center slightly lower to balance overall visual gravity
+    float waveCenterY = cy + 12f;
 
-    Paint fillCyan = new Paint(Paint.ANTI_ALIAS_FLAG);
-    fillCyan.setStyle(Paint.Style.FILL);
-    fillCyan.setColor(0xFF0EA5E9); // Sky-500 cyan accent
+    // 1. Subtle Apple ambient aura glow
+    Paint glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    glowPaint.setShader(
+        new RadialGradient(
+            cx,
+            waveCenterY - 10f,
+            95f,
+            new int[] {0x160EA5E9, 0x0838BDF8, 0x00FFFFFF},
+            new float[] {0f, 0.6f, 1f},
+            Shader.TileMode.CLAMP));
+    canvas.drawCircle(cx, waveCenterY - 10f, 95f, glowPaint);
 
-    Paint strokeCyan = new Paint(Paint.ANTI_ALIAS_FLAG);
-    strokeCyan.setStyle(Paint.Style.STROKE);
-    strokeCyan.setStrokeWidth(5f);
-    strokeCyan.setStrokeCap(Paint.Cap.ROUND);
-    strokeCyan.setColor(0xFF0EA5E9);
+    // 2. Concentric Radiating Wave Arcs (Apple AirDrop style)
+    // 3 rings: Outer (30%), Middle (60%), Inner (100%)
+    float strokeW = 5.2f;
+    float startAngle = 145f;
+    float sweepAngle = 250f;
 
-    // Outer wireless broadcast rings / concentric radar wave arcs
-    // Left and right radiating arcs
-    RectF wave1 = new RectF(cx - 72, cy - 72, cx + 72, cy + 72);
-    canvas.drawArc(wave1, 215, 50, false, strokeCyan);
-    canvas.drawArc(wave1, 275, 50, false, strokeCyan);
+    // Outer wave
+    float r3 = 72f;
+    Paint pWave3 = new Paint(Paint.ANTI_ALIAS_FLAG);
+    pWave3.setStyle(Paint.Style.STROKE);
+    pWave3.setStrokeWidth(strokeW);
+    pWave3.setStrokeCap(Paint.Cap.ROUND);
+    pWave3.setShader(
+        new LinearGradient(
+            cx - r3, waveCenterY - r3, cx + r3, waveCenterY + r3 * 0.6f,
+            0x4D0284C7, 0x4D38BDF8, Shader.TileMode.CLAMP));
+    RectF rect3 = new RectF(cx - r3, waveCenterY - r3, cx + r3, waveCenterY + r3);
+    canvas.drawArc(rect3, startAngle, sweepAngle, false, pWave3);
 
-    RectF wave2 = new RectF(cx - 52, cy - 52, cx + 52, cy + 52);
-    canvas.drawArc(wave2, 210, 60, false, strokeCyan);
-    canvas.drawArc(wave2, 270, 60, false, strokeCyan);
+    // Middle wave
+    float r2 = 50f;
+    Paint pWave2 = new Paint(Paint.ANTI_ALIAS_FLAG);
+    pWave2.setStyle(Paint.Style.STROKE);
+    pWave2.setStrokeWidth(strokeW);
+    pWave2.setStrokeCap(Paint.Cap.ROUND);
+    pWave2.setShader(
+        new LinearGradient(
+            cx - r2, waveCenterY - r2, cx + r2, waveCenterY + r2 * 0.6f,
+            0x990284C7, 0x9938BDF8, Shader.TileMode.CLAMP));
+    RectF rect2 = new RectF(cx - r2, waveCenterY - r2, cx + r2, waveCenterY + r2);
+    canvas.drawArc(rect2, startAngle, sweepAngle, false, pWave2);
 
-    // Central device outline (Minimalist geometric screen / package)
-    float phoneW = 56f;
-    float phoneH = 82f;
-    RectF phoneRect = new RectF(cx - phoneW / 2f, cy - phoneH / 2f + 10f, cx + phoneW / 2f, cy + phoneH / 2f + 10f);
-    canvas.drawRoundRect(phoneRect, 14f, 14f, strokeDark);
+    // Inner wave
+    float r1 = 28f;
+    Paint pWave1 = new Paint(Paint.ANTI_ALIAS_FLAG);
+    pWave1.setStyle(Paint.Style.STROKE);
+    pWave1.setStrokeWidth(strokeW);
+    pWave1.setStrokeCap(Paint.Cap.ROUND);
+    pWave1.setShader(
+        new LinearGradient(
+            cx - r1, waveCenterY - r1, cx + r1, waveCenterY + r1 * 0.6f,
+            0xFF0284C7, 0xFF38BDF8, Shader.TileMode.CLAMP));
+    RectF rect1 = new RectF(cx - r1, waveCenterY - r1, cx + r1, waveCenterY + r1);
+    canvas.drawArc(rect1, startAngle, sweepAngle, false, pWave1);
 
-    // Top speaker / notch pill
-    strokeDark.setStrokeWidth(3.5f);
-    canvas.drawLine(cx - 8f, phoneRect.top + 10f, cx + 8f, phoneRect.top + 10f, strokeDark);
+    // 3. Central Apple Energy Beacon & Aero Dart
+    // Emitter beacon at the base opening
+    Paint beaconDot = new Paint(Paint.ANTI_ALIAS_FLAG);
+    beaconDot.setStyle(Paint.Style.FILL);
+    beaconDot.setColor(0xFF0EA5E9);
+    canvas.drawCircle(cx, waveCenterY + 16f, 4.5f, beaconDot);
 
-    // Center download / receive arrow
-    strokeDark.setStrokeWidth(4.5f);
-    float arrowTop = phoneRect.top + 28f;
-    float arrowBottom = phoneRect.bottom - 22f;
-    canvas.drawLine(cx, arrowTop, cx, arrowBottom, strokeDark);
-    canvas.drawLine(cx - 10f, arrowBottom - 10f, cx, arrowBottom, strokeDark);
-    canvas.drawLine(cx + 10f, arrowBottom - 10f, cx, arrowBottom, strokeDark);
+    Paint beaconHalo = new Paint(Paint.ANTI_ALIAS_FLAG);
+    beaconHalo.setStyle(Paint.Style.STROKE);
+    beaconHalo.setStrokeWidth(1.8f);
+    beaconHalo.setColor(0x550EA5E9);
+    canvas.drawCircle(cx, waveCenterY + 16f, 8.5f, beaconHalo);
 
-    // Base tray / receiving tray
-    strokeDark.setStrokeWidth(4f);
-    canvas.drawLine(cx - 14f, phoneRect.bottom - 12f, cx + 14f, phoneRect.bottom - 12f, strokeDark);
+    // Aerodynamic transmission dart pointing upwards into the sound waves
+    Path dart = new Path();
+    float tipY = waveCenterY - 18f;
+    float wingY = waveCenterY + 4f;
+    float notchY = waveCenterY - 2f;
+    float wingX = 13f;
 
-    // Glowing cyan origin beacon dot at top
-    canvas.drawCircle(cx, cy - 64f, 4.5f, fillCyan);
+    dart.moveTo(cx, tipY);
+    dart.lineTo(cx + wingX, wingY);
+    dart.lineTo(cx, notchY);
+    dart.lineTo(cx - wingX, wingY);
+    dart.close();
+
+    Paint dartPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    dartPaint.setStyle(Paint.Style.FILL);
+    dartPaint.setPathEffect(new CornerPathEffect(2.5f));
+    dartPaint.setShader(
+        new LinearGradient(
+            cx, tipY, cx, wingY,
+            0xFF38BDF8, 0xFF0284C7, Shader.TileMode.CLAMP));
+    canvas.drawPath(dart, dartPaint);
   }
 
   private static Bitmap blur(Bitmap source) {

@@ -211,7 +211,7 @@ public final class AirInstallDialog extends Dialog {
     rightCol.addView(btnRow, brLp);
 
     waitingCloseBtn = createButton("关闭", false, this::dismiss);
-    btnRow.addView(waitingCloseBtn, new LinearLayout.LayoutParams(px(96), px(38)));
+    btnRow.addView(waitingCloseBtn, new LinearLayout.LayoutParams(px(104), px(42)));
 
     body.addView(rightCol, new LinearLayout.LayoutParams(px(440), -2));
   }
@@ -305,7 +305,7 @@ public final class AirInstallDialog extends Dialog {
               if (server != null) server.cleanOldTempFiles();
               switchPhase(Phase.WAITING);
             });
-    btnRow.addView(cancelTransferBtn, new LinearLayout.LayoutParams(px(96), px(38)));
+    btnRow.addView(cancelTransferBtn, new LinearLayout.LayoutParams(px(104), px(42)));
   }
 
   private void buildReadyView() {
@@ -375,9 +375,9 @@ public final class AirInstallDialog extends Dialog {
     installBtn = createButton("立即安装", true, this::triggerInstall);
     installBtn.setId(View.generateViewId());
 
-    btnRow.addView(readyCloseBtn, new LinearLayout.LayoutParams(px(104), px(38)));
-    LinearLayout.LayoutParams ibLp = new LinearLayout.LayoutParams(px(114), px(38));
-    ibLp.leftMargin = px(12);
+    btnRow.addView(readyCloseBtn, new LinearLayout.LayoutParams(px(120), px(42)));
+    LinearLayout.LayoutParams ibLp = new LinearLayout.LayoutParams(px(120), px(42));
+    ibLp.leftMargin = px(14);
     btnRow.addView(installBtn, ibLp);
   }
 
@@ -540,37 +540,51 @@ public final class AirInstallDialog extends Dialog {
     Button btn = new Button(activity);
     btn.setText(text);
     btn.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, px(13));
+    btn.setTypeface(Typeface.create("sans-serif-medium", Typeface.BOLD));
     btn.setFocusable(true);
     btn.setClickable(true);
     btn.setAllCaps(false);
 
-    int normalBg = primary ? 0xFF0284C7 : (palette.light ? 0xFFE2E8F0 : 0xFF263345);
-    int normalText = primary ? Color.WHITE : palette.text;
-    btn.setBackground(roundedBackground(normalBg, 10));
-    btn.setTextColor(normalText);
+    updateButtonAppearance(btn, primary, false);
 
     btn.setOnFocusChangeListener(
         (v, hasFocus) -> {
-          if (primary) {
-            btn.setBackground(roundedBackground(hasFocus ? 0xFF0EA5E9 : 0xFF0284C7, 10));
-            btn.setScaleX(hasFocus ? 1.05f : 1f);
-            btn.setScaleY(hasFocus ? 1.05f : 1f);
-          } else {
-            btn.setBackground(
-                roundedBackground(
-                    hasFocus ? 0xFF475569 : (palette.light ? 0xFFE2E8F0 : 0xFF263345), 10));
-            btn.setTextColor(hasFocus ? Color.WHITE : palette.text);
-          }
+          updateButtonAppearance(btn, primary, hasFocus);
+          btn.setScaleX(hasFocus ? 1.05f : 1f);
+          btn.setScaleY(hasFocus ? 1.05f : 1f);
         });
     btn.setOnClickListener(v -> action.run());
     return btn;
   }
 
-  private GradientDrawable roundedBackground(int color, float radius) {
+  private void updateButtonAppearance(Button btn, boolean primary, boolean hasFocus) {
     GradientDrawable d = new GradientDrawable();
-    d.setColor(color);
-    d.setCornerRadius(px(radius));
-    return d;
+    d.setCornerRadius(px(21)); // Pill shape (42dp height / 2)
+    int strokeWidth = Math.max(1, px(1.5f));
+
+    if (primary) {
+      d.setOrientation(GradientDrawable.Orientation.TL_BR);
+      if (hasFocus) {
+        d.setColors(new int[] {0xFF0EA5E9, 0xFF38BDF8});
+        d.setStroke(strokeWidth, 0x80FFFFFF);
+      } else {
+        d.setColors(new int[] {0xFF0284C7, 0xFF0EA5E9});
+        d.setStroke(strokeWidth, 0x33FFFFFF);
+      }
+      btn.setTextColor(Color.WHITE);
+    } else {
+      // Secondary: Apple tvOS translucent frosted glass
+      if (hasFocus) {
+        d.setColor(palette.light ? 0x2E000000 : 0x38FFFFFF);
+        d.setStroke(strokeWidth, palette.light ? 0x4A000000 : 0x80FFFFFF);
+        btn.setTextColor(palette.light ? 0xFF0F172A : Color.WHITE);
+      } else {
+        d.setColor(palette.light ? 0x12000000 : 0x18FFFFFF);
+        d.setStroke(strokeWidth, palette.light ? 0x22000000 : 0x33FFFFFF);
+        btn.setTextColor(palette.light ? 0xFF334155 : 0xEEFFFFFF);
+      }
+    }
+    btn.setBackground(d);
   }
 
   private Bitmap generateQrBitmap(String content, int size) {
