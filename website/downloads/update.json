@@ -1,9 +1,9 @@
 {
-  "versionCode": 30,
-  "versionName": "0.9.12",
-  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.12.apk",
-  "sha256": "5a739453fa834de2caa446b991503e32d5fc06b4e822de7f6e0e06a08b9cdca2",
-  "size": 966451,
-  "releaseNotes": "1. 网页快捷方式采用纯白极简卡片视觉，彻底去除人工渐变与多余角标，纯粹呈现原始高清图标\n2. 采用独立浏览进程运行网页，遥控器一键退出并释放全部内存，永不影响桌面流畅度\n3. 内置主流站点高清质感矢量 Logo，支持个人主页与通用站点 Favicon 自动抓取与持久化缓存\n4. 智能外网适配（默认 HTTPS 协议补全）与老旧电视浏览器内核渲染兼容",
+  "versionCode": 31,
+  "versionName": "0.9.13",
+  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.13.apk",
+  "sha256": "1d5a725f7fbe355f2537b3ae7f92bfb210d3270956cc9edf2b3a430d84a7d8ba",
+  "size": 970991,
+  "releaseNotes": "1. 网页标题自动提取与校准：支持扫码预填、后台 HTML 标题同步解析与 WebView 渲染实时回写，彻底告别 URL 占位\n2. 状态屏专属透明高清矢量 Logo：内置四色莫比乌斯环与状态遥测点，视觉纯净通透\n3. 纯白极简卡片与智能融底算法：去除多余渐变与角标，外部浅灰底板图标自动平滑融底，消除边框冲突\n4. 独立浏览进程安全隔离，遥控器一键退出并释放全部内存，永不影响桌面流畅度",
   "minSdk": 23
 }
