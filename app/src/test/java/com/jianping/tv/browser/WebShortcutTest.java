@@ -39,11 +39,26 @@ public class WebShortcutTest {
 
   @Test
   public void urlNormalization() {
+    // LAN / local hosts default to http://
     assertEquals("http://192.168.1.1", WebShortcut.normalizeUrl("192.168.1.1"));
     assertEquals("http://192.168.1.100:5244", WebShortcut.normalizeUrl("http://192.168.1.100:5244"));
+    assertEquals("http://router.lan", WebShortcut.normalizeUrl("router.lan"));
+    assertEquals("http://nas.local:5000", WebShortcut.normalizeUrl("nas.local:5000"));
+    assertEquals("http://10.0.1.2:8080", WebShortcut.normalizeUrl("10.0.1.2:8080"));
+    assertEquals("http://172.20.1.1", WebShortcut.normalizeUrl("172.20.1.1"));
+    assertEquals("http://localhost:3000", WebShortcut.normalizeUrl("localhost:3000"));
+
+    // Public domains default to https://
+    assertEquals("https://mfcheer.github.io", WebShortcut.normalizeUrl("mfcheer.github.io"));
+    assertEquals("https://github.com", WebShortcut.normalizeUrl("github.com"));
+    assertEquals("https://www.baidu.com", WebShortcut.normalizeUrl("www.baidu.com"));
+
+    // Explicit scheme preserved
     assertEquals("https://www.baidu.com", WebShortcut.normalizeUrl("https://www.baidu.com"));
     assertEquals("https://bilibili.com/tv", WebShortcut.normalizeUrl("  https://bilibili.com/tv  "));
-    assertEquals("http://router.lan", WebShortcut.normalizeUrl("router.lan"));
+    assertEquals("http://example.com", WebShortcut.normalizeUrl("http://example.com"));
+
+    // Empty / blank
     assertEquals("about:blank", WebShortcut.normalizeUrl(""));
     assertEquals("about:blank", WebShortcut.normalizeUrl(null));
   }

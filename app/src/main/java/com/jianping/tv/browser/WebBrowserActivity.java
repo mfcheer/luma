@@ -22,6 +22,8 @@ public final class WebBrowserActivity extends Activity {
   private View customView;
   private WebChromeClient.CustomViewCallback customViewCallback;
   private PopupWindow menuPopup;
+  private View errorOverlay;
+  private boolean pageHasError;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +96,16 @@ public final class WebBrowserActivity extends Activity {
     }
     CookieManager.getInstance().setAcceptCookie(true);
 
+    // Optimize User-Agent: strip TV-specific tokens that cause desktop/web apps (e.g. GitHub) to reject or redirect
+    String defaultUa = s.getUserAgentString();
+    if (defaultUa != null && !defaultUa.isEmpty()) {
+      String cleaned = defaultUa.replaceAll("(?i);?\\s*(Android TV|GoogleTV|Large Screen)", "");
+      s.setUserAgentString(cleaned);
+    } else {
+      s.setUserAgentString(
+          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36");
+    }
+
     wv.setFocusable(true);
     wv.setFocusableInTouchMode(true);
     wv.requestFocus();
@@ -106,6 +118,22 @@ public final class WebBrowserActivity extends Activity {
           }
 
           @Override
+          public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+            super.onPageStarted(view, url, favicon);
+            pageHasError = false;
+            hideError();
+          }
+
+          @Override
+          public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
+            progressBar.setVisibility(View.GONE);
+            if (!pageHasError) {
+              hideError();
+            }
+          }
+
+          @Override
           public void onReceivedSslError(
               WebView view, SslErrorHandler handler, SslError error) {
             // Allow self-signed certs for local NAS/router consoles
@@ -113,9 +141,46 @@ public final class WebBrowserActivity extends Activity {
           }
 
           @Override
-          public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-            progressBar.setVisibility(View.GONE);
+          public void onReceivedError(
+              WebView view, WebResourceRequest request, WebResourceError error) {
+            super.onReceivedError(view, request, error);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+              if (request != null && request.isForMainFrame()) {
+                pageHasError = true;
+                String desc =
+                    (error != null && error.getDescription() != null)
+                        ? error.getDescription().toString()
+                        : "网络连接失败";
+                showError(desc, request.getUrl() != null ? request.getUrl().toString() : "");
+              }
+            }
+          }
+
+          @Override
+          public void onReceivedError(
+              WebView view, int errorCode, String description, String failingUrl) {
+            super.onReceivedError(view, errorCode, description, failingUrl);
+            pageHasError = true;
+            showError(description != null ? description : "网络连接失败", failingUrl);
+          }
+
+          @Override
+          public void onReceivedHttpError(
+              WebView view, WebResourceRequest request, WebResourceResponse errorResponse) {
+            super.onReceivedHttpError(view, request, errorResponse);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+              if (request != null && request.isForMainFrame()) {
+                int code = errorResponse != null ? errorResponse.getStatusCode() : 0;
+                if (code >= 400) {
+                  pageHasError = true;
+                  String reason =
+                      (errorResponse != null && errorResponse.getReasonPhrase() != null)
+                          ? errorResponse.getReasonPhrase()
+                          : "HTTP " + code;
+                  showError("服务器响应错误 (" + reason + ")", request.getUrl() != null ? request.getUrl().toString() : "");
+                }
+              }
+            }
           }
         });
 
@@ -159,6 +224,82 @@ public final class WebBrowserActivity extends Activity {
         });
   }
 
+  private void showError(String message, String url) {
+    if (errorOverlay == null) {
+      LinearLayout errorLayout = new LinearLayout(this);
+      errorLayout.setOrientation(LinearLayout.VERTICAL);
+      errorLayout.setGravity(Gravity.CENTER);
+      errorLayout.setBackgroundColor(0xFF0F172A);
+      errorLayout.setPadding(dp(32), dp(24), dp(32), dp(24));
+
+      TextView titleView = new TextView(this);
+      titleView.setText("无法访问此网页");
+      titleView.setTextColor(Color.WHITE);
+      titleView.setTextSize(20);
+      titleView.setGravity(Gravity.CENTER);
+      errorLayout.addView(titleView);
+
+      TextView descView = new TextView(this);
+      descView.setId(android.R.id.text1);
+      descView.setTextColor(0xFF94A3B8);
+      descView.setTextSize(13);
+      descView.setGravity(Gravity.CENTER);
+      LinearLayout.LayoutParams descLp = new LinearLayout.LayoutParams(dp(480), -2);
+      descLp.topMargin = dp(10);
+      descLp.bottomMargin = dp(24);
+      errorLayout.addView(descView, descLp);
+
+      LinearLayout btnRow = new LinearLayout(this);
+      btnRow.setOrientation(LinearLayout.HORIZONTAL);
+      btnRow.setGravity(Gravity.CENTER);
+
+      Button retryBtn =
+          createMenuButton(
+              "重新加载",
+              () -> {
+                hideError();
+                if (webView != null) webView.reload();
+              });
+      LinearLayout.LayoutParams retryLp = new LinearLayout.LayoutParams(dp(140), dp(40));
+      retryLp.rightMargin = dp(16);
+      btnRow.addView(retryBtn, retryLp);
+
+      Button exitBtn = createMenuButton("返回桌面", this::exitBrowser);
+      btnRow.addView(exitBtn, new LinearLayout.LayoutParams(dp(140), dp(40)));
+
+      errorLayout.addView(btnRow);
+      errorOverlay = errorLayout;
+      container.addView(errorOverlay, new FrameLayout.LayoutParams(-1, -1));
+    }
+
+    TextView desc = errorOverlay.findViewById(android.R.id.text1);
+    if (desc != null) {
+      StringBuilder sb = new StringBuilder();
+      if (message != null && !message.isEmpty()) {
+        sb.append(message).append("\n");
+      }
+      if (url != null && !url.isEmpty()) {
+        sb.append(url);
+      }
+      desc.setText(sb.toString());
+    }
+    errorOverlay.setVisibility(View.VISIBLE);
+    errorOverlay.bringToFront();
+    try {
+      ViewGroup btnRow = (ViewGroup) ((ViewGroup) errorOverlay).getChildAt(2);
+      if (btnRow != null && btnRow.getChildCount() > 0) {
+        btnRow.getChildAt(0).requestFocus();
+      }
+    } catch (Exception ignored) {
+    }
+  }
+
+  private void hideError() {
+    if (errorOverlay != null) {
+      errorOverlay.setVisibility(View.GONE);
+    }
+  }
+
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     if (keyCode == KeyEvent.KEYCODE_BACK) {
@@ -197,6 +338,10 @@ public final class WebBrowserActivity extends Activity {
   private void handleBack() {
     if (menuPopup != null && menuPopup.isShowing()) {
       menuPopup.dismiss();
+      return;
+    }
+    if (errorOverlay != null && errorOverlay.getVisibility() == View.VISIBLE) {
+      exitBrowser();
       return;
     }
     if (customView != null) {

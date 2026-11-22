@@ -1,5 +1,6 @@
 package com.jianping.tv.browser;
 
+import java.util.Locale;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,9 +31,53 @@ public final class WebShortcut {
         && !trimmed.startsWith("https://")
         && !trimmed.startsWith("file://")
         && !trimmed.startsWith("about:")) {
-      return "http://" + trimmed;
+      if (isLanOrLocal(trimmed)) {
+        return "http://" + trimmed;
+      } else {
+        return "https://" + trimmed;
+      }
     }
     return trimmed;
+  }
+
+  public static boolean isLanOrLocal(String input) {
+    if (input == null || input.isEmpty()) return false;
+    String host = input.trim();
+    int slashIndex = host.indexOf('/');
+    if (slashIndex >= 0) {
+      host = host.substring(0, slashIndex);
+    }
+    int colonIndex = host.indexOf(':');
+    if (colonIndex >= 0) {
+      host = host.substring(0, colonIndex);
+    }
+    host = host.trim().toLowerCase(Locale.ROOT);
+
+    if (host.equals("localhost") || host.equals("127.0.0.1")) {
+      return true;
+    }
+    if (host.startsWith("192.168.") || host.startsWith("10.") || host.startsWith("127.")) {
+      return true;
+    }
+    if (host.endsWith(".local")
+        || host.endsWith(".lan")
+        || host.endsWith(".home")
+        || host.endsWith(".internal")) {
+      return true;
+    }
+    if (host.startsWith("172.")) {
+      String[] parts = host.split("\\.");
+      if (parts.length >= 2) {
+        try {
+          int second = Integer.parseInt(parts[1]);
+          if (second >= 16 && second <= 31) {
+            return true;
+          }
+        } catch (NumberFormatException ignored) {
+        }
+      }
+    }
+    return false;
   }
 
   public static int deriveAccent(String name) {
