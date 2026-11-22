@@ -134,6 +134,18 @@ public final class WebBrowserActivity extends Activity {
             if (!pageHasError) {
               hideError();
             }
+            view.evaluateJavascript(
+                "(function() {"
+                    + "  setTimeout(function() {"
+                    + "    var overlay = document.getElementById('homeLauncherOverlay');"
+                    + "    if (overlay) {"
+                    + "      overlay.style.transition = 'opacity 0.4s ease';"
+                    + "      overlay.style.opacity = '0';"
+                    + "      setTimeout(function() { if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 400);"
+                    + "    }"
+                    + "  }, 600);"
+                    + "})();",
+                null);
           }
 
           @Override
