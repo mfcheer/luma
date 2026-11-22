@@ -13,6 +13,7 @@ import android.provider.Settings;
 import android.view.*;
 import android.widget.*;
 import com.jianping.tv.R;
+import com.jianping.tv.airinstall.*;
 import com.jianping.tv.browser.*;
 import com.jianping.tv.data.*;
 import com.jianping.tv.platform.AppInstaller;
@@ -34,6 +35,7 @@ public final class MainActivity extends Activity {
   private AppNames names;
   private AppRenameDialog renameDialog;
   private AppUpdateDialog updateDialog;
+  private AirInstallDialog airInstallDialog;
   private WebShortcutStore shortcutStore;
   private AddWebShortcutDialog addWebDialog;
   private WebShortcutEditDialog editWebDialog;
@@ -107,9 +109,7 @@ public final class MainActivity extends Activity {
             runOnUiThread(
                 () -> {
                   if (homeWall != null && !loading && "home".equals(page)) {
-                    List<AppEntry> wallList = new ArrayList<>(orderedApps());
-                    if (draftOrder == null) wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
-                    homeWall.setEntries(wallList, selectedId, false);
+                    homeWall.setEntries(desktopApps(), selectedId, false);
                   }
                 });
     WebIconManager.addListener(iconListener);
@@ -160,6 +160,8 @@ public final class MainActivity extends Activity {
     recordEntry(intent);
     boolean needsRender = !page.equals("home") || actionLayer != null || draftOrder != null;
     if (renameDialog != null) renameDialog.cancel();
+    if (updateDialog != null) updateDialog.cancel();
+    if (airInstallDialog != null) airInstallDialog.cancel();
     if (addWebDialog != null) addWebDialog.cancel();
     if (editWebDialog != null) editWebDialog.cancel();
     draftOrder = null;
@@ -211,9 +213,7 @@ public final class MainActivity extends Activity {
     homeOffset = 0;
     page = "home";
     if (homeWall != null && !loading) {
-      List<AppEntry> wallList = new ArrayList<>(orderedApps());
-      if (draftOrder == null) wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
-      homeWall.setEntries(wallList, target, false);
+      homeWall.setEntries(desktopApps(), target, false);
       homeWall.focusKey(target, true);
       pendingSearchTarget = "";
     } else if (!loading) render();
@@ -235,9 +235,7 @@ public final class MainActivity extends Activity {
     WebIconManager.syncFromDisk(this);
     fetchMissingWebIcons();
     if (homeWall != null && !loading && "home".equals(page)) {
-      List<AppEntry> wallList = new ArrayList<>(orderedApps());
-      if (draftOrder == null) wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
-      homeWall.setEntries(wallList, selectedId, false);
+      homeWall.setEntries(desktopApps(), selectedId, false);
     }
     updateNetworkView();
     getWindow()
@@ -271,6 +269,11 @@ public final class MainActivity extends Activity {
       updateDialog.setOnDismissListener(null);
       updateDialog.dismiss();
       updateDialog = null;
+    }
+    if (airInstallDialog != null) {
+      airInstallDialog.setOnDismissListener(null);
+      airInstallDialog.dismiss();
+      airInstallDialog = null;
     }
     if (addWebDialog != null) {
       addWebDialog.setOnDismissListener(null);
@@ -396,6 +399,8 @@ public final class MainActivity extends Activity {
     if (draftOrder != null
         || actionLayer != null
         || renameDialog != null
+        || updateDialog != null
+        || airInstallDialog != null
         || addWebDialog != null
         || editWebDialog != null) pendingRender = true;
     else render();
@@ -516,6 +521,9 @@ public final class MainActivity extends Activity {
   }
 
   private int appAccent(AppEntry app) {
+    if (AirInstallEntry.isAirInstallEntry(app)) {
+      return 0xFF0EA5E9;
+    }
     if (WebShortcutStore.isAddWebEntry(app)) {
       return 0xFF3B82F6;
     }
@@ -528,6 +536,11 @@ public final class MainActivity extends Activity {
   }
 
   private Drawable artwork(AppEntry app, boolean soft) {
+    if (AirInstallEntry.isAirInstallEntry(app)) {
+      return soft
+          ? AirInstallArtwork.previewArtwork(getResources(), palette)
+          : AirInstallArtwork.cardArtwork(getResources(), palette);
+    }
     if (WebShortcutStore.isAddWebEntry(app)) {
       return soft
           ? WebArtwork.addPreviewArtwork(getResources(), palette)
@@ -712,9 +725,21 @@ public final class MainActivity extends Activity {
     return result;
   }
 
+  private List<AppEntry> desktopApps() {
+    List<AppEntry> wallList = new ArrayList<>(orderedApps());
+    if (draftOrder == null) {
+      if (prefs.showAirInstallCard()) wallList.add(AirInstallEntry.ENTRY);
+      wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
+    }
+    return wallList;
+  }
+
   private GridWallView.Listener wallListener() {
     return new GridWallView.Listener() {
       public String label(AppEntry app) {
+        if (AirInstallEntry.isAirInstallEntry(app)) {
+          return "隔空安装";
+        }
         if (WebShortcutStore.isAddWebEntry(app)) {
           return "添加网页";
         }
@@ -748,6 +773,7 @@ public final class MainActivity extends Activity {
 
       public void activate(AppEntry app) {
         if (draftOrder != null) finishMove(true);
+        else if (AirInstallEntry.isAirInstallEntry(app)) showAirInstallDialog();
         else if (WebShortcutStore.isAddWebEntry(app)) showAddWebShortcutDialog();
         else if (WebShortcutStore.isWebShortcut(app)) {
           WebShortcut s = shortcutStore.get(WebShortcutStore.extractId(app.id));
@@ -757,6 +783,7 @@ public final class MainActivity extends Activity {
 
       public void hold(AppEntry app, View source) {
         if (draftOrder == null) {
+          if (AirInstallEntry.isAirInstallEntry(app)) return;
           if (WebShortcutStore.isAddWebEntry(app)) return;
           if (WebShortcutStore.isWebShortcut(app)) {
             manageWebShortcut(app, source);
@@ -781,11 +808,7 @@ public final class MainActivity extends Activity {
     homeWall.showNames(prefs.showAppNames());
     put(homeWall, 42, 82, 876, 424);
     String previous = selectedId;
-    List<AppEntry> wallList = new ArrayList<>(orderedApps());
-    if (draftOrder == null) {
-      wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
-    }
-    homeWall.setEntries(wallList, selectedId, false);
+    homeWall.setEntries(desktopApps(), selectedId, false);
     if (!pendingSearchTarget.isEmpty() && !apps.isEmpty()) {
       homeWall.focusKey(pendingSearchTarget, true);
       pendingSearchTarget = "";
@@ -938,6 +961,22 @@ public final class MainActivity extends Activity {
     addWebDialog.show();
   }
 
+  private void showAirInstallDialog() {
+    if (isFinishing() || isDestroyed()) return;
+    if (airInstallDialog != null && airInstallDialog.isShowing()) return;
+    if (airInstallDialog != null) {
+      airInstallDialog.dismiss();
+      airInstallDialog = null;
+    }
+    airInstallDialog = new AirInstallDialog(this, palette, scale);
+    airInstallDialog.setOnDismissListener(
+        d -> {
+          if (airInstallDialog == d) airInstallDialog = null;
+          if (pendingRender) render();
+        });
+    airInstallDialog.show();
+  }
+
   private void manage(AppEntry app, View source) {
     if (actionLayer != null) return;
     menuReturn = source;
@@ -1054,9 +1093,7 @@ public final class MainActivity extends Activity {
         first ? AppOrder.moveToFront(order, app.id) : AppOrder.moveToEnd(order, app.id));
     selectedId = app.id;
     homeOffset = 0;
-    List<AppEntry> wallList = new ArrayList<>(orderedApps());
-    if (draftOrder == null) wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
-    homeWall.setEntries(wallList, selectedId, false);
+    homeWall.setEntries(desktopApps(), selectedId, false);
     toast(first ? "已移到最前" : "已移到最后");
   }
 
@@ -1117,6 +1154,7 @@ public final class MainActivity extends Activity {
     homeWall.movingKey(null);
     moveHint.setText("");
     List<AppEntry> wallList = new ArrayList<>(orderedApps());
+    if (prefs.showAirInstallCard()) wallList.add(AirInstallEntry.ENTRY);
     wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
     if (pendingRender) render();
     else homeWall.setEntries(wallList, selectedId, true);
@@ -1183,6 +1221,20 @@ public final class MainActivity extends Activity {
                     ? (ready ? "已开启：开机和待机唤醒后返回 Still" : "开机启动已开启，唤醒监听未能启动，请查看设备信息")
                     : "此系统暂仅尝试开机进入，待机唤醒尚未适配");
           else toast("已关闭自动进入 Still");
+        });
+    SettingsRowView airInstall =
+        settingsRow(
+            desktop,
+            rows,
+            "首页显示隔空安装",
+            R.drawable.settings_air_install,
+            "",
+            true);
+    airInstall.checked(prefs.showAirInstallCard());
+    airInstall.setOnClickListener(
+        v -> {
+          prefs.showAirInstallCard(!prefs.showAirInstallCard());
+          airInstall.checked(prefs.showAirInstallCard());
         });
     SettingsRowView names =
         settingsRow(desktop, rows, "始终显示应用名称", R.drawable.settings_description, "", true);

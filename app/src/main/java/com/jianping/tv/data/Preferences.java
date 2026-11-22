@@ -56,6 +56,14 @@ public final class Preferences {
     prefs.edit().putBoolean("showAppNames", visible).apply();
   }
 
+  public boolean showAirInstallCard() {
+    return prefs.getBoolean("showAirInstallCard", true);
+  }
+
+  public void showAirInstallCard(boolean show) {
+    prefs.edit().putBoolean("showAirInstallCard", show).apply();
+  }
+
   public String otherHome() {
     return prefs.getString("otherHome", "");
   }
