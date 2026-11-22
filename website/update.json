@@ -1,9 +1,9 @@
 {
-  "versionCode": 31,
-  "versionName": "0.9.13",
-  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.13.apk",
-  "sha256": "1d5a725f7fbe355f2537b3ae7f92bfb210d3270956cc9edf2b3a430d84a7d8ba",
-  "size": 970991,
-  "releaseNotes": "1. 网页标题自动提取与校准：支持扫码预填、后台 HTML 标题同步解析与 WebView 渲染实时回写，彻底告别 URL 占位\n2. 状态屏专属透明高清矢量 Logo：内置四色莫比乌斯环与状态遥测点，视觉纯净通透\n3. 纯白极简卡片与智能融底算法：去除多余渐变与角标，外部浅灰底板图标自动平滑融底，消除边框冲突\n4. 独立浏览进程安全隔离，遥控器一键退出并释放全部内存，永不影响桌面流畅度",
+  "versionCode": 32,
+  "versionName": "0.9.14",
+  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.14.apk",
+  "sha256": "df78a6c0d6887ba2433ca8ecd7e43f3a9e5590fe8d17a1bb1eb8da037a61c266",
+  "size": 1023954,
+  "releaseNotes": "1. 局域网极速快传与隔空安装助手（Air Install）：支持手机扫码或电脑免拷 U 盘极速向电视推送安装包\n2. 零驻留与流式直存：HTTP 服务随用随启、关闭即毁，8KB 分块缓冲区直存磁盘防 OOM\n3. 大屏三段式状态机：扫码等待、实时传输与就绪安装无缝衔接，自动提取应用高清图标与版本信息\n4. Apple tvOS 质感规范：复用 iOS AirDrop 官方矢量图标，重构全圆角胶囊双按钮体系与半透明微光边框",
   "minSdk": 23
 }
