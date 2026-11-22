@@ -160,29 +160,38 @@ public final class WebBrowserActivity extends Activity {
   }
 
   @Override
-  public boolean dispatchKeyEvent(KeyEvent event) {
-    int code = event.getKeyCode();
-    if (code == KeyEvent.KEYCODE_BACK) {
-      if (event.getAction() == KeyEvent.ACTION_DOWN) {
-        if (event.isLongPress()) {
-          exitBrowser();
-          return true;
-        }
-        event.startTracking();
-        return true;
-      } else if (event.getAction() == KeyEvent.ACTION_UP) {
-        if (event.isTracking() && !event.isCanceled()) {
-          handleBack();
-          return true;
-        }
-      }
-    } else if (code == KeyEvent.KEYCODE_MENU) {
-      if (event.getAction() == KeyEvent.ACTION_UP) {
-        showMenu();
-        return true;
-      }
+  public boolean onKeyDown(int keyCode, KeyEvent event) {
+    if (keyCode == KeyEvent.KEYCODE_BACK) {
+      event.startTracking();
+      return true;
     }
-    return super.dispatchKeyEvent(event);
+    return super.onKeyDown(keyCode, event);
+  }
+
+  @Override
+  public boolean onKeyLongPress(int keyCode, KeyEvent event) {
+    if (keyCode == KeyEvent.KEYCODE_BACK) {
+      exitBrowser();
+      return true;
+    }
+    return super.onKeyLongPress(keyCode, event);
+  }
+
+  @Override
+  public boolean onKeyUp(int keyCode, KeyEvent event) {
+    if (keyCode == KeyEvent.KEYCODE_BACK) {
+      handleBack();
+      return true;
+    } else if (keyCode == KeyEvent.KEYCODE_MENU) {
+      showMenu();
+      return true;
+    }
+    return super.onKeyUp(keyCode, event);
+  }
+
+  @Override
+  public void onBackPressed() {
+    handleBack();
   }
 
   private void handleBack() {

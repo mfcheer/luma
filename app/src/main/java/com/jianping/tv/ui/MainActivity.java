@@ -634,13 +634,13 @@ public final class MainActivity extends Activity {
           });
       network.setNextFocusRightId(search.getId());
       network.setNextFocusLeftId(network.getId());
-      network.setNextFocusDownId(apps.isEmpty() ? network.getId() : homeWall.firstId());
+      network.setNextFocusDownId(homeWall == null ? network.getId() : homeWall.firstId());
       search.setNextFocusRightId(settings.getId());
       search.setNextFocusLeftId(network.getId());
-      search.setNextFocusDownId(apps.isEmpty() ? search.getId() : homeWall.firstId());
+      search.setNextFocusDownId(homeWall == null ? search.getId() : homeWall.firstId());
       settings.setNextFocusLeftId(search.getId());
       settings.setNextFocusRightId(settings.getId());
-      settings.setNextFocusDownId(apps.isEmpty() ? search.getId() : homeWall.firstId());
+      settings.setNextFocusDownId(homeWall == null ? settings.getId() : homeWall.firstId());
     } else {
       View network = networkAction(() -> NetworkMonitor.openSettings(this));
       network.setId(View.generateViewId());
@@ -771,7 +771,7 @@ public final class MainActivity extends Activity {
       // An empty loading wall must not overwrite the saved scroll position on cache restore.
       homeWall = null;
     }
-    settings.setNextFocusDownId(wallList.isEmpty() ? settings.getId() : homeWall.firstId());
+    settings.setNextFocusDownId(homeWall == null ? settings.getId() : homeWall.firstId());
     settings.setNextFocusLeftId(settings.getId());
     settings.setNextFocusRightId(settings.getId());
   }
