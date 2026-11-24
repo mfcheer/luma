@@ -17,6 +17,7 @@ public final class AmbientBackgroundView extends View {
   private ValueAnimator colorTransition, positionTransition;
   private Bitmap lightMask;
   private boolean focusPending;
+  private boolean drawBackground;
   private final Runnable settleFocus =
       () -> {
         focusPending = false;
@@ -29,6 +30,11 @@ public final class AmbientBackgroundView extends View {
     this.palette = palette;
     setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
     applyTint();
+  }
+
+  public void drawBackground(boolean draw) {
+    this.drawBackground = draw;
+    invalidate();
   }
 
   public void illuminate(int color, boolean animated) {
@@ -147,8 +153,10 @@ public final class AmbientBackgroundView extends View {
   @Override
   protected void onDraw(Canvas c) {
     super.onDraw(c);
-    c.drawColor(palette.background);
-    if (palette.light) c.drawRect(0, 0, getWidth(), getHeight(), surfacePaint);
+    if (drawBackground) {
+      c.drawColor(palette.background);
+      if (palette.light) c.drawRect(0, 0, getWidth(), getHeight(), surfacePaint);
+    }
     float x = centerX * getWidth(), y = centerY * getHeight();
     lightBounds.set(
         x - getWidth() * .32f,

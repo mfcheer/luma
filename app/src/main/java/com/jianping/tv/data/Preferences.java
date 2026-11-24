@@ -33,11 +33,26 @@ public final class Preferences {
   }
 
   public boolean lightTheme() {
+    String wp = wallpaper();
+    if ("pure_dark".equals(wp) || "catalina".equals(wp) || "mojave".equals(wp)) {
+      return false;
+    }
+    if ("pure_light".equals(wp) || "sonoma".equals(wp) || "big_sur".equals(wp)) {
+      return true;
+    }
     return !"dark".equals(prefs.getString("appearance", "light"));
   }
 
   public void lightTheme(boolean light) {
     prefs.edit().putString("appearance", light ? "light" : "dark").apply();
+  }
+
+  public String wallpaper() {
+    return prefs.getString("wallpaper", "sonoma");
+  }
+
+  public void wallpaper(String key) {
+    prefs.edit().putString("wallpaper", key).apply();
   }
 
   public boolean bootEnabled() {
@@ -60,8 +75,8 @@ public final class Preferences {
     return prefs.getBoolean("showAirInstallCard", true);
   }
 
-  public void showAirInstallCard(boolean show) {
-    prefs.edit().putBoolean("showAirInstallCard", show).apply();
+  public void showAirInstallCard(boolean visible) {
+    prefs.edit().putBoolean("showAirInstallCard", visible).apply();
   }
 
   public String otherHome() {
@@ -80,3 +95,4 @@ public final class Preferences {
     return prefs.getString(key, "尚无记录");
   }
 }
+

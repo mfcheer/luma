@@ -39,11 +39,14 @@ public final class GridWallView extends ScrollView {
     void hold(AppEntry app, View source);
 
     boolean key(int code, KeyEvent event);
+
+    default void onScroll(int scrollY) {}
   }
 
   private final float unit;
   private final UiPalette palette;
   private final int rowHeight;
+  private final int headerSpace;
   private final Listener listener;
   private final FrameLayout content;
   private final Map<String, AppCardView> cards = new HashMap<>();
@@ -64,10 +67,16 @@ public final class GridWallView extends ScrollView {
   }
 
   public GridWallView(Context c, float unit, int rowPitch, UiPalette palette, Listener listener) {
+    this(c, unit, rowPitch, 0, palette, listener);
+  }
+
+  public GridWallView(
+      Context c, float unit, int rowPitch, int headerSpace, UiPalette palette, Listener listener) {
     super(c);
     this.unit = unit;
     this.palette = palette;
     this.rowHeight = px(rowPitch);
+    this.headerSpace = headerSpace;
     this.listener = listener;
     setPadding(px(6), px(16), px(6), px(12));
     // Focused cards use the top padding as lift headroom; clip only at the viewport itself.
@@ -103,69 +112,71 @@ public final class GridWallView extends ScrollView {
     content.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
     try {
       Map<String, AppEntry> previous = new HashMap<>(entries);
-    entries.clear();
-    List<String> next = new ArrayList<>();
-    for (AppEntry app : apps) {
-      entries.put(app.id, app);
-      next.add(app.id);
-    }
-    for (String key : new ArrayList<>(cards.keySet())) {
-      AppEntry before = previous.get(key), after = entries.get(key);
-      boolean changed =
-          before != null
-              && after != null
-              && (!before.label.equals(after.label)
-                  || !before.fingerprint.equals(after.fingerprint));
-      if (after == null || changed) content.removeView(cards.remove(key));
-    }
-    order = next;
-    int rows = Math.max(1, (order.size() + COLUMNS - 1) / COLUMNS);
-    content.setLayoutParams(new ScrollView.LayoutParams(-1, rows * rowHeight));
-    for (String key : order) {
-      if (cards.containsKey(key)) continue;
-      AppEntry app = entries.get(key);
-      AppCardView card =
-          new AppCardView(
-              getContext(),
-              unit,
-              listener.label(app),
-              listener.artwork(app),
-              listener.preview(app),
-              listener.accent(app),
-              palette);
-      card.showName(showNames);
-      card.focusBaselineLift(baselineLift);
-      card.setId(View.generateViewId());
-      card.action(() -> listener.activate(entries.get(key)));
-      card.setOnLongClickListener(
-          v -> {
-            AppEntry entry = entries.get(key);
-            if (entry == null) return false;
-            listener.hold(entry, v);
-            return true;
-          });
-      card.setOnKeyListener((v, code, event) -> listener.key(code, event));
-      View.OnFocusChangeListener visual = card.getOnFocusChangeListener();
-      card.setOnFocusChangeListener(
-          (v, focus) -> {
-            if (focus) {
-              long now = android.os.SystemClock.uptimeMillis();
-              card.rapidFocus(lastFocusAt != 0 && now - lastFocusAt < 200);
-              lastFocusAt = now;
-            }
-            visual.onFocusChange(v, focus);
-            if (focus) {
-              current = key;
-              notifyFocus(key);
-            }
-          });
-      cards.put(key, card);
-      content.addView(card);
-    }
-    refreshLabels();
-    layoutCards(animate);
-    movingKey(movingKey);
-    navigation();
+      entries.clear();
+      List<String> next = new ArrayList<>();
+      for (AppEntry app : apps) {
+        entries.put(app.id, app);
+        next.add(app.id);
+      }
+      for (String key : new ArrayList<>(cards.keySet())) {
+        AppEntry before = previous.get(key), after = entries.get(key);
+        boolean changed =
+            before != null
+                && after != null
+                && (!before.label.equals(after.label)
+                    || !before.fingerprint.equals(after.fingerprint));
+        if (after == null || changed) content.removeView(cards.remove(key));
+      }
+      order = next;
+      int rows = Math.max(1, (order.size() + COLUMNS - 1) / COLUMNS);
+      int extraSpace = (headerSpace > 0 && rows > 1) ? px(120) : 0;
+      content.setLayoutParams(
+          new ScrollView.LayoutParams(-1, headerSpace + rows * rowHeight + extraSpace));
+      for (String key : order) {
+        if (cards.containsKey(key)) continue;
+        AppEntry app = entries.get(key);
+        AppCardView card =
+            new AppCardView(
+                getContext(),
+                unit,
+                listener.label(app),
+                listener.artwork(app),
+                listener.preview(app),
+                listener.accent(app),
+                palette);
+        card.showName(showNames);
+        card.focusBaselineLift(baselineLift);
+        card.setId(View.generateViewId());
+        card.action(() -> listener.activate(entries.get(key)));
+        card.setOnLongClickListener(
+            v -> {
+              AppEntry entry = entries.get(key);
+              if (entry == null) return false;
+              listener.hold(entry, v);
+              return true;
+            });
+        card.setOnKeyListener((v, code, event) -> listener.key(code, event));
+        View.OnFocusChangeListener visual = card.getOnFocusChangeListener();
+        card.setOnFocusChangeListener(
+            (v, focus) -> {
+              if (focus) {
+                long now = android.os.SystemClock.uptimeMillis();
+                card.rapidFocus(lastFocusAt != 0 && now - lastFocusAt < 200);
+                lastFocusAt = now;
+              }
+              visual.onFocusChange(v, focus);
+              if (focus) {
+                current = key;
+                notifyFocus(key);
+              }
+            });
+        cards.put(key, card);
+        content.addView(card);
+      }
+      refreshLabels();
+      layoutCards(animate);
+      movingKey(movingKey);
+      navigation();
     } finally {
       content.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
     }
@@ -229,7 +240,7 @@ public final class GridWallView extends ScrollView {
       AppCardView card = cards.get(key);
       int left = i % COLUMNS * usable / COLUMNS,
           right = (i % COLUMNS + 1) * usable / COLUMNS,
-          top = i / COLUMNS * rowHeight;
+          top = headerSpace + i / COLUMNS * rowHeight;
       float oldX = card.getX(), oldY = card.getY();
       boolean laidOut = card.isLaidOut();
       card.animate().cancel();
@@ -267,13 +278,13 @@ public final class GridWallView extends ScrollView {
     // row the first card starts below the headroom and must stay fully opaque.
     // The outgoing artwork (including shadow) is gone before the next row arrives,
     // so this reaches zero without changing opacity across a row boundary.
-    int phase = Math.max(0, top) % rowHeight;
+    int phase = Math.max(0, top - headerSpace) % rowHeight;
     float clipped = Math.max(0, phase - getPaddingTop() - px(8));
     float remaining = Math.max(0, getPaddingTop() + px(102) - phase);
     float topFade = Math.min(px(48), remaining) * Math.min(1, clipped / px(24));
     float bottomFade =
         Math.min(px(48), Math.max(0, content.getHeight() + getPaddingTop() - bottom));
-    if (!edgesEnabled) topFade = bottomFade = 0;
+    if (!edgesEnabled || top < headerSpace - px(8)) topFade = 0;
     AppCardView focused = cards.get(current);
     if (focused != null && (focused.focusHighlighted() || !movingKey.isEmpty())) {
       // Protect the complete lifted card and its label, including at restored offsets.
@@ -358,7 +369,8 @@ public final class GridWallView extends ScrollView {
           int index = order.indexOf(target);
           if (index < 0) return;
           int row = index / COLUMNS;
-          int y = scrollForRow(row, Math.max(0, row - 1) * rowHeight);
+          int preferred = row == 0 ? 0 : headerSpace + Math.max(0, row - 1) * rowHeight;
+          int y = scrollForRow(row, preferred);
           if (immediate) scrollTo(0, y);
           else smoothScrollTo(0, y);
         });
@@ -366,20 +378,20 @@ public final class GridWallView extends ScrollView {
 
   @Override
   protected int computeScrollDeltaToGetChildRectOnScreen(Rect rect) {
-    int row = Math.max(0, rect.top / rowHeight);
+    int row = Math.max(0, (rect.top - headerSpace) / rowHeight);
     return scrollForRow(row, getScrollY()) - getScrollY();
   }
 
   private int scrollForRow(int row, int preferred) {
+    if (row == 0) return 0;
     int target = preferred;
-    if (row * rowHeight < target) target = row * rowHeight;
-    // The search wall has larger cards in a shorter viewport: two complete row
-    // pitches do not always fit. Scroll the extra few pixels needed for the name
-    // instead of snapping to a row offset that still leaves its caption clipped.
+    if (headerSpace + row * rowHeight < target) target = headerSpace + row * rowHeight;
     int visibleHeight = getHeight() - getPaddingBottom();
-    int visualBottom = getPaddingTop() + row * rowHeight + px(124);
+    int visualBottom = getPaddingTop() + headerSpace + row * rowHeight + px(124);
     if (visibleHeight > 0 && visualBottom > target + visibleHeight)
-      target = Math.max(Math.max(0, row - 1) * rowHeight, visualBottom - visibleHeight);
+      target =
+          Math.max(
+              headerSpace + Math.max(0, row - 1) * rowHeight, visualBottom - visibleHeight);
     int available = getHeight() - getPaddingTop() - getPaddingBottom();
     int max = Math.max(0, content.getHeight() - available);
     return Math.max(0, Math.min(target, max));
@@ -390,6 +402,7 @@ public final class GridWallView extends ScrollView {
     super.onScrollChanged(l, t, oldl, oldt);
     updatePreviews();
     notifyAnchor(false);
+    listener.onScroll(t);
   }
 
   private void updatePreviews() {

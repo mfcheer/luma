@@ -65,6 +65,19 @@ public final class MainActivity extends Activity {
   private String selectedSetting = "打开电视原生桌面", selectedId = "", page = "home";
   private String pendingSearchTarget = "";
   private AmbientBackgroundView ambient;
+  private ImageView wallpaperView, wallpaperBlurView;
+  private View scrimView, bottomGradient;
+  private static final String[] THEME_KEYS = {
+    "sonoma", "big_sur", "catalina", "mojave", "pure_dark", "pure_light"
+  };
+  private static final String[] THEME_NAMES = {
+    "Sonoma（晨曦）",
+    "Big Sur（海岸）",
+    "Catalina（夜湾）",
+    "Mojave（沙丘）",
+    "经典深色",
+    "经典浅色"
+  };
   private float scale = 1;
   private boolean loading = true, pendingRender, catalogError;
   private List<String> draftOrder;
@@ -296,6 +309,14 @@ public final class MainActivity extends Activity {
       networkMonitor = null;
     }
     handler.removeCallbacksAndMessages(null);
+    if (wallpaperView != null) {
+      wallpaperView.setImageDrawable(null);
+      wallpaperView = null;
+    }
+    if (wallpaperBlurView != null) {
+      wallpaperBlurView.setImageDrawable(null);
+      wallpaperBlurView = null;
+    }
     WebIconManager.removeListener(iconListener);
     unregisterReceiver(packageChanges);
     worker.shutdownNow();
@@ -588,6 +609,112 @@ public final class MainActivity extends Activity {
     if (!date.contentEquals(calendarDate.getText())) calendarDate.setText(date);
   }
 
+  private boolean isPureTheme(String key) {
+    return "pure_dark".equals(key) || "pure_light".equals(key) || "none".equals(key);
+  }
+
+  private boolean isLightTheme(String key) {
+    return "sonoma".equals(key) || "big_sur".equals(key) || "pure_light".equals(key);
+  }
+
+  private String themeDisplayName(String key) {
+    for (int i = 0; i < THEME_KEYS.length; i++) {
+      if (THEME_KEYS[i].equals(key)) return THEME_NAMES[i];
+    }
+    return prefs.lightTheme() ? THEME_NAMES[0] : THEME_NAMES[2];
+  }
+
+  private int themeIndex(String key) {
+    for (int i = 0; i < THEME_KEYS.length; i++) {
+      if (THEME_KEYS[i].equals(key)) return i;
+    }
+    return prefs.lightTheme() ? 0 : 2;
+  }
+
+  private void cycleTheme(boolean forward) {
+    String current = prefs.wallpaper();
+    int idx = themeIndex(current);
+    int next =
+        forward
+            ? (idx + 1) % THEME_KEYS.length
+            : (idx - 1 + THEME_KEYS.length) % THEME_KEYS.length;
+    String newKey = THEME_KEYS[next];
+    boolean light = isLightTheme(newKey);
+    prefs.wallpaper(newKey);
+    prefs.lightTheme(light);
+    palette = UiPalette.from(light);
+    setTheme(light ? R.style.AppThemeLight : R.style.AppTheme);
+    selectedSetting = "外观与壁纸";
+    render();
+    toast("已切换为 " + THEME_NAMES[next]);
+  }
+
+  private void applyWallpaper(String key) {
+    boolean pure = isPureTheme(key);
+    if (pure) {
+      if (wallpaperView != null) wallpaperView.setVisibility(View.GONE);
+      if (wallpaperBlurView != null) wallpaperBlurView.setVisibility(View.GONE);
+      if (bottomGradient != null) bottomGradient.setVisibility(View.GONE);
+      if (scrimView != null) scrimView.setVisibility(View.GONE);
+      if (ambient != null) ambient.drawBackground(true);
+      return;
+    }
+    int resId;
+    int blurResId;
+    switch (key) {
+      case "big_sur":
+        resId = R.drawable.wallpaper_big_sur;
+        blurResId = R.drawable.wallpaper_big_sur_blur;
+        break;
+      case "catalina":
+        resId = R.drawable.wallpaper_catalina;
+        blurResId = R.drawable.wallpaper_catalina_blur;
+        break;
+      case "mojave":
+        resId = R.drawable.wallpaper_mojave;
+        blurResId = R.drawable.wallpaper_mojave_blur;
+        break;
+      case "sonoma":
+      default:
+        resId = R.drawable.wallpaper_sonoma;
+        blurResId = R.drawable.wallpaper_sonoma_blur;
+        break;
+    }
+    if (wallpaperView != null) {
+      wallpaperView.setVisibility(View.VISIBLE);
+      wallpaperView.setImageResource(resId);
+    }
+    if (wallpaperBlurView != null) {
+      wallpaperBlurView.setVisibility(View.VISIBLE);
+      wallpaperBlurView.setImageResource(blurResId);
+    }
+    if (bottomGradient != null) {
+      bottomGradient.setVisibility(page.equals("settings") ? View.GONE : View.VISIBLE);
+    }
+    if (scrimView != null) {
+      scrimView.setVisibility(View.VISIBLE);
+    }
+    if (ambient != null) {
+      ambient.drawBackground(false);
+    }
+  }
+
+  private void updateWallpaperScroll(int scrollY) {
+    if (wallpaperView == null || wallpaperBlurView == null) return;
+    if (isPureTheme(prefs.wallpaper())) return;
+    int headerSpace = px(268);
+    float progress =
+        headerSpace > 0 ? Math.min(1f, Math.max(0f, (float) scrollY / headerSpace)) : 0f;
+    int maxShift = px(60);
+    float shift = -progress * maxShift;
+    wallpaperView.setTranslationY(shift);
+    wallpaperBlurView.setTranslationY(shift);
+    wallpaperBlurView.setAlpha(progress);
+    if (scrimView != null) {
+      scrimView.setAlpha(0.20f * progress);
+    }
+  }
+
   private void render() {
     if (homeWall != null && homeWall.isAttachedToWindow()) homeOffset = homeWall.getScrollY();
     homeWall = null;
@@ -602,17 +729,55 @@ public final class MainActivity extends Activity {
     root.addView(desktop, new FrameLayout.LayoutParams(-1, -1));
     actionLayer = null;
     pendingRender = false;
+
+    boolean pure = isPureTheme(prefs.wallpaper());
+    wallpaperView = new ImageView(this);
+    wallpaperView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+    wallpaperBlurView = new ImageView(this);
+    wallpaperBlurView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+    int extraHeight = px(100);
+    FrameLayout.LayoutParams wpParams =
+        new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, px(540) + extraHeight);
+    desktop.addView(wallpaperView, wpParams);
+    desktop.addView(wallpaperBlurView, wpParams);
+
+    bottomGradient = new View(this);
+    GradientDrawable bottomGrad =
+        new GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            new int[] {0x00000000, 0x00000000, 0x4D000000});
+    bottomGradient.setBackground(bottomGrad);
+    bottomGradient.setVisibility(page.equals("settings") || pure ? View.GONE : View.VISIBLE);
+    desktop.addView(bottomGradient, new FrameLayout.LayoutParams(-1, -1));
+
+    scrimView = new View(this);
+    scrimView.setBackgroundColor(0xFF000000);
+    scrimView.setAlpha(page.equals("settings") ? 0.35f : 0f);
+    desktop.addView(scrimView, new FrameLayout.LayoutParams(-1, -1));
+
+    applyWallpaper(prefs.wallpaper());
+
+    if (page.equals("settings") && !pure) {
+      wallpaperBlurView.setAlpha(1f);
+      wallpaperBlurView.setTranslationY(-px(60));
+      wallpaperView.setTranslationY(-px(60));
+    }
+
     ambient = new AmbientBackgroundView(this, palette);
+    ambient.drawBackground(pure);
     desktop.addView(ambient, new FrameLayout.LayoutParams(-1, -1));
-    clock = text("", 18, palette.secondary);
+    clock = text("", 18, pure ? palette.secondary : 0xFFFFFFFF);
     clock.setTypeface(Typeface.create("sans-serif", Typeface.NORMAL));
     clock.setLetterSpacing(.015f);
     clock.setFontFeatureSettings("'tnum' 1");
     clock.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
+    if (!pure) clock.setShadowLayer(px(4), 0, px(1), 0x99000000);
     put(clock, page.equals("home") ? 598 : 648, 20, 176, 25);
-    calendarDate = text("", 12, palette.muted);
+    calendarDate = text("", 12, pure ? palette.muted : 0xEEFFFFFF);
     calendarDate.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
     calendarDate.setFontFeatureSettings("'tnum' 1");
+    if (!pure) calendarDate.setShadowLayer(px(3), 0, px(1), 0x99000000);
     put(calendarDate, page.equals("home") ? 598 : 648, 46, 176, 18);
     updateClock();
     View settings =
@@ -803,16 +968,23 @@ public final class MainActivity extends Activity {
         if (draftOrder == null || event.getAction() != KeyEvent.ACTION_DOWN) return false;
         return moveKey(code);
       }
+
+      public void onScroll(int scrollY) {
+        updateWallpaperScroll(scrollY);
+      }
     };
   }
 
   private void home(View settings) {
-    moveHint = text("", 14, palette.secondary);
+    boolean pure = isPureTheme(prefs.wallpaper());
+    moveHint = text("", 14, pure ? palette.secondary : 0xFFFFFFFF);
+    if (!pure) moveHint.setShadowLayer(px(3), 0, px(1), 0x99000000);
     put(moveHint, 180, 36, 400, 30);
-    homeWall = new GridWallView(this, scale, 156, palette, wallListener());
+    int headerSpace = pure ? 0 : px(268);
+    homeWall = new GridWallView(this, scale, 156, headerSpace, palette, wallListener());
     homeWall.focusBaselineLift(px(2.5f));
     homeWall.showNames(prefs.showAppNames());
-    put(homeWall, 42, 82, 876, 424);
+    put(homeWall, 42, 82, 876, pure ? 424 : 458);
     String previous = selectedId;
     homeWall.setEntries(desktopApps(), selectedId, false, false);
     if (!pendingSearchTarget.isEmpty() && !apps.isEmpty()) {
@@ -833,6 +1005,7 @@ public final class MainActivity extends Activity {
       homeWall = null;
     }
     settings.setNextFocusDownId(homeWall == null ? settings.getId() : homeWall.firstId());
+    updateWallpaperScroll(homeOffset);
   }
 
   private void launch(AppEntry app) {
@@ -1251,17 +1424,33 @@ public final class MainActivity extends Activity {
         });
     SettingsRowView appearance =
         settingsRow(
-            desktop, rows, "外观主题", R.drawable.settings_theme, palette.light ? "浅色" : "深色", true);
-    appearance.checked(palette.light);
-    appearance.setContentDescription("外观主题，当前" + (palette.light ? "浅色" : "深色") + "，按确定切换");
-    appearance.setOnClickListener(
-        v -> {
-          boolean light = !prefs.lightTheme();
-          prefs.lightTheme(light);
-          palette = UiPalette.from(light);
-          setTheme(light ? R.style.AppThemeLight : R.style.AppTheme);
-          selectedSetting = "外观主题";
-          render();
+            desktop,
+            rows,
+            "外观与壁纸",
+            R.drawable.settings_theme,
+            themeDisplayName(prefs.wallpaper()),
+            false);
+    appearance.setContentDescription(
+        "外观与壁纸，当前" + themeDisplayName(prefs.wallpaper()) + "，按确定或左右键切换");
+    View.OnFocusChangeListener appearanceFocus = appearance.getOnFocusChangeListener();
+    appearance.setOnFocusChangeListener(
+        (v, focused) -> {
+          appearanceFocus.onFocusChange(v, focused);
+          desktopHint.setText(focused ? "按确定或左右方向键切换外观与壁纸" : "");
+        });
+    appearance.setOnClickListener(v -> cycleTheme(true));
+    appearance.setOnKeyListener(
+        (v, code, event) -> {
+          if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            if (code == KeyEvent.KEYCODE_DPAD_RIGHT) {
+              cycleTheme(true);
+              return true;
+            } else if (code == KeyEvent.KEYCODE_DPAD_LEFT) {
+              cycleTheme(false);
+              return true;
+            }
+          }
+          return false;
         });
     LinearLayout application = settingsGroup(list, "应用", true);
     SettingsRowView system =
