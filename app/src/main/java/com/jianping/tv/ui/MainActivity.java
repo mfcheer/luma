@@ -711,7 +711,7 @@ public final class MainActivity extends Activity {
     wallpaperBlurView.setTranslationY(shift);
     wallpaperBlurView.setAlpha(progress);
     if (scrimView != null) {
-      scrimView.setAlpha(0.20f * progress);
+      scrimView.setAlpha(0.38f * progress);
     }
   }
 
@@ -746,14 +746,14 @@ public final class MainActivity extends Activity {
     GradientDrawable bottomGrad =
         new GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
-            new int[] {0x00000000, 0x00000000, 0x4D000000});
+            new int[] {0x00000000, 0x00000000, 0x1A000000, 0x66000000, 0xB8000000});
     bottomGradient.setBackground(bottomGrad);
     bottomGradient.setVisibility(page.equals("settings") || pure ? View.GONE : View.VISIBLE);
     desktop.addView(bottomGradient, new FrameLayout.LayoutParams(-1, -1));
 
     scrimView = new View(this);
     scrimView.setBackgroundColor(0xFF000000);
-    scrimView.setAlpha(page.equals("settings") ? 0.35f : 0f);
+    scrimView.setAlpha(page.equals("settings") ? 0.38f : 0f);
     desktop.addView(scrimView, new FrameLayout.LayoutParams(-1, -1));
 
     applyWallpaper(prefs.wallpaper());
