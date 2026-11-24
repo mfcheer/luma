@@ -1,9 +1,9 @@
 {
-  "versionCode": 34,
-  "versionName": "0.9.16",
-  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.16.apk",
-  "sha256": "c91f59daf2f1093d538de54c6a278028f76688d20b42f95d6134dcc589b79632",
-  "size": 3240763,
-  "releaseNotes": "1. 扩充 3 套顶级摄影级自然风光大片（巴塔哥尼亚雪峰、加州红杉晨曦、优胜美地苍谷），支持外观与壁纸无缝左右轮播\n2. 全天候高对比度文字自适应：重构多段非线性底部暗罩，应用卡片白字与立体阴影在任何复杂风景下均清晰锐利\n3. 顶部操作栏图标加装微透圆角暗盾，强光背景下不被融淡，获焦高光毛玻璃扩散稳定",
+  "versionCode": 35,
+  "versionName": "0.9.17",
+  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.17.apk",
+  "sha256": "65dd396021dfdf380ce9b6aeafc14da7050f3d19f5236b5a8244f1fa758150c7",
+  "size": 3241547,
+  "releaseNotes": "1. 隔空安装助手体验重构：彻底修复弹窗关闭按钮右侧截断与获焦生硬亮边，升级为温润珠白高对比质感\n2. 首屏加载防抖重构：应用目录与内置卡片合并一次性渲染，彻底消除启动与切回桌面时的末行跳动与视口颠簸\n3. 核心功能常驻：设置面板精简，隔空安装作为系统级特性默认常驻首页应用墙",
   "minSdk": 23
 }
