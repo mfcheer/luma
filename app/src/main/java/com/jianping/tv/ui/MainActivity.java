@@ -148,6 +148,9 @@ public final class MainActivity extends Activity {
     repository = new AppRepository(this);
     catalog = new AppCatalogCache(this);
     snapshot = catalog.memory();
+    if (snapshot == null) {
+      snapshot = catalog.read();
+    }
     if (snapshot != null) {
       apps = snapshot.apps;
       loading = false;
@@ -158,6 +161,10 @@ public final class MainActivity extends Activity {
       homeOffset = state.getInt("homeOffset", 0);
       pendingSearchTarget = state.getString("searchTarget", "");
       pendingUninstall = state.getString("uninstall", "");
+    }
+    if (selectedId.isEmpty() && !apps.isEmpty()) {
+      List<String> order = AppOrder.reconcile(prefs.appOrder(), installedIds());
+      if (!order.isEmpty()) selectedId = order.get(0);
     }
     recordEntry(getIntent());
     AutoEntry.sync(this);
@@ -435,11 +442,18 @@ public final class MainActivity extends Activity {
     apps = next.apps;
     loading = false;
     catalogError = false;
+    List<String> order = AppOrder.reconcile(prefs.appOrder(), installedIds());
     if (fresh) {
-      List<String> order = AppOrder.reconcile(prefs.appOrder(), installedIds());
       selectedId = AppOrder.focusAfterRemoval(previousOrder, order, selectedId);
       if (!order.contains(pendingSearchTarget)) pendingSearchTarget = "";
       if (!prefs.hasAppOrder() || !order.equals(prefs.appOrder())) prefs.saveAppOrder(order);
+    } else {
+      if (selectedId.isEmpty() || !order.contains(selectedId)) {
+        selectedId = AppOrder.focusAfterRemoval(previousOrder, order, selectedId);
+      }
+    }
+    if ((selectedId.isEmpty() || !order.contains(selectedId)) && !order.isEmpty()) {
+      selectedId = order.get(0);
     }
     if (!changed) return;
     if (draftOrder != null
@@ -937,6 +951,9 @@ public final class MainActivity extends Activity {
   }
 
   private List<AppEntry> desktopApps() {
+    if (loading && apps.isEmpty()) {
+      return Collections.emptyList();
+    }
     List<AppEntry> wallList = new ArrayList<>(orderedApps());
     if (draftOrder == null) {
       if (prefs.showAirInstallCard()) wallList.add(AirInstallEntry.ENTRY);
@@ -1020,6 +1037,18 @@ public final class MainActivity extends Activity {
     moveHint = text("", 14, pure ? palette.secondary : 0xFFFFFFFF);
     if (!pure) moveHint.setShadowLayer(px(4), 0, px(1.5f), 0xB3000000);
     put(moveHint, 180, 36, 400, 30);
+    if (loading && apps.isEmpty()) {
+      TextView empty =
+          text(
+              catalogError ? "读取失败，请在设置中重试" : "正在读取应用…",
+              19,
+              palette.secondary);
+      put(empty, 200, 225, 560, 45);
+      settings.setNextFocusDownId(settings.getId());
+      homeWall = null;
+      updateWallpaperScroll(0);
+      return;
+    }
     int headerSpace = pure ? 0 : px(268);
     homeWall = new GridWallView(this, scale, 156, headerSpace, palette, wallListener());
     homeWall.focusBaselineLift(px(2.5f));
@@ -1030,15 +1059,12 @@ public final class MainActivity extends Activity {
     if (!pendingSearchTarget.isEmpty() && !apps.isEmpty()) {
       homeWall.focusKey(pendingSearchTarget, true);
       pendingSearchTarget = "";
-    } else if (previous.equals(selectedId)) homeWall.restoreFocus(selectedId, homeOffset);
+    } else if (previous.equals(selectedId) && !selectedId.isEmpty()) homeWall.restoreFocus(selectedId, homeOffset);
     else homeWall.focusKey(selectedId, true);
     homeWall.upperFocus(settings.getId());
     if (apps.isEmpty() && shortcutStore.loadAll().isEmpty()) {
       TextView empty =
-          text(
-              loading ? "正在读取应用…" : (catalogError ? "读取失败，请在设置中重试" : "暂无可启动的应用"),
-              19,
-              palette.secondary);
+          text(catalogError ? "读取失败，请在设置中重试" : "暂无可启动的应用", 19, palette.secondary);
       put(empty, 200, 225, 560, 45);
       settings.requestFocus();
       // An empty loading wall must not overwrite the saved scroll position on cache restore.
