@@ -101,6 +101,9 @@ public final class AppCardView extends LinearLayout {
     name.setSingleLine(true);
     name.setEllipsize(TextUtils.TruncateAt.END);
     name.setTextColor(palette.cardName);
+    if (!palette.light) {
+      name.setShadowLayer(px(4), 0, px(1.5f), 0xB3000000);
+    }
     name.setAlpha(0);
     name.setVisibility(INVISIBLE);
     LayoutParams np = new LayoutParams(-1, px(26));
@@ -298,10 +301,17 @@ public final class AppCardView extends LinearLayout {
     // Let the caption accompany the lift without opening a large gap under the card.
     name.setTranslationY(unit * -4 * light);
     int from = palette.cardName, to = palette.cardNameFocused;
+    int a = Math.round(Color.alpha(from) + (Color.alpha(to) - Color.alpha(from)) * light);
     int r = Math.round(Color.red(from) + (Color.red(to) - Color.red(from)) * light);
     int g = Math.round(Color.green(from) + (Color.green(to) - Color.green(from)) * light);
     int b = Math.round(Color.blue(from) + (Color.blue(to) - Color.blue(from)) * light);
-    name.setTextColor(Color.rgb(r, g, b));
+    name.setTextColor(Color.argb(a, r, g, b));
+    if (!palette.light) {
+      float radius = px(4) + (px(6) - px(4)) * light;
+      float dy = px(1.5f) + (px(2.5f) - px(1.5f)) * light;
+      int shadowAlpha = Math.round(0xB3 + (0xCC - 0xB3) * light);
+      name.setShadowLayer(radius, 0, dy, (shadowAlpha << 24));
+    }
     highlight.moving(moveAmount);
     highlight.setAlpha(Math.round(255 * light));
     invalidate();

@@ -68,13 +68,24 @@ public final class MainActivity extends Activity {
   private ImageView wallpaperView, wallpaperBlurView;
   private View scrimView, bottomGradient;
   private static final String[] THEME_KEYS = {
-    "sonoma", "big_sur", "catalina", "mojave", "pure_dark", "pure_light"
+    "sonoma",
+    "big_sur",
+    "catalina",
+    "mojave",
+    "sequoia",
+    "patagonia",
+    "yosemite",
+    "pure_dark",
+    "pure_light"
   };
   private static final String[] THEME_NAMES = {
     "Sonoma（晨曦）",
     "Big Sur（海岸）",
     "Catalina（夜湾）",
     "Mojave（沙丘）",
+    "Sequoia（红杉）",
+    "Patagonia（雪峰）",
+    "Yosemite（苍谷）",
     "经典深色",
     "经典浅色"
   };
@@ -477,14 +488,17 @@ public final class MainActivity extends Activity {
     button.addView(glyph, new FrameLayout.LayoutParams(glyphSize, glyphSize, Gravity.CENTER));
     button.setFocusable(true);
     button.setClickable(true);
+    button.setBackground(rounded(palette.light ? Color.TRANSPARENT : 0x2E000000, 18));
     updateNetworkView(button, glyph);
     button.setOnFocusChangeListener(
         (v, focus) -> {
-          button.setBackground(rounded(focus ? palette.headerFocus : Color.TRANSPARENT, 18));
-          glyph.setColorFilter(
-              focus
-                  ? palette.headerFocusIcon
-                  : (networkState.connected ? palette.icon : palette.muted));
+          button.setBackground(
+              rounded(focus ? palette.headerFocus : (palette.light ? Color.TRANSPARENT : 0x2E000000), 18));
+          int unfocusedColor =
+              palette.light
+                  ? (networkState.connected ? palette.icon : palette.muted)
+                  : (networkState.connected ? 0xEEFFFFFF : 0x99FFFFFF);
+          glyph.setColorFilter(focus ? palette.headerFocusIcon : unfocusedColor);
           glyph.setAlpha((!focus && !networkState.connected) ? 0.6f : 1f);
           button
               .animate()
@@ -508,10 +522,13 @@ public final class MainActivity extends Activity {
     glyph.setImageResource(networkState.iconRes);
     button.setContentDescription(networkState.label);
     boolean focused = button.hasFocus();
-    glyph.setColorFilter(
-        focused
-            ? palette.headerFocusIcon
-            : (networkState.connected ? palette.icon : palette.muted));
+    button.setBackground(
+        rounded(focused ? palette.headerFocus : (palette.light ? Color.TRANSPARENT : 0x2E000000), 18));
+    int unfocusedColor =
+        palette.light
+            ? (networkState.connected ? palette.icon : palette.muted)
+            : (networkState.connected ? 0xEEFFFFFF : 0x99FFFFFF);
+    glyph.setColorFilter(focused ? palette.headerFocusIcon : unfocusedColor);
     glyph.setAlpha((!focused && !networkState.connected) ? 0.6f : 1f);
   }
 
@@ -524,7 +541,8 @@ public final class MainActivity extends Activity {
     FrameLayout button = new FrameLayout(this);
     ImageView glyph = new ImageView(this);
     glyph.setImageResource(icon);
-    glyph.setColorFilter(palette.icon);
+    button.setBackground(rounded(palette.light ? Color.TRANSPARENT : 0x2E000000, 18));
+    glyph.setColorFilter(palette.light ? palette.icon : 0xEEFFFFFF);
     int glyphSize = px(icon == R.drawable.nav_back ? 24 : 20);
     // Align the magnifier's circular body optically with the centre of the gear.
     if (icon == R.drawable.nav_search) glyph.setTranslationY(px(2));
@@ -534,8 +552,10 @@ public final class MainActivity extends Activity {
     button.setContentDescription(label);
     button.setOnFocusChangeListener(
         (v, focus) -> {
-          button.setBackground(rounded(focus ? palette.headerFocus : Color.TRANSPARENT, 18));
-          glyph.setColorFilter(focus ? palette.headerFocusIcon : palette.icon);
+          button.setBackground(
+              rounded(focus ? palette.headerFocus : (palette.light ? Color.TRANSPARENT : 0x2E000000), 18));
+          glyph.setColorFilter(
+              focus ? palette.headerFocusIcon : (palette.light ? palette.icon : 0xEEFFFFFF));
           button
               .animate()
               .scaleX(focus ? 1.12f : 1)
@@ -614,21 +634,21 @@ public final class MainActivity extends Activity {
   }
 
   private boolean isLightTheme(String key) {
-    return "sonoma".equals(key) || "big_sur".equals(key) || "pure_light".equals(key);
+    return "pure_light".equals(key);
   }
 
   private String themeDisplayName(String key) {
     for (int i = 0; i < THEME_KEYS.length; i++) {
       if (THEME_KEYS[i].equals(key)) return THEME_NAMES[i];
     }
-    return prefs.lightTheme() ? THEME_NAMES[0] : THEME_NAMES[2];
+    return THEME_NAMES[0];
   }
 
   private int themeIndex(String key) {
     for (int i = 0; i < THEME_KEYS.length; i++) {
       if (THEME_KEYS[i].equals(key)) return i;
     }
-    return prefs.lightTheme() ? 0 : 2;
+    return 0;
   }
 
   private void cycleTheme(boolean forward) {
@@ -673,6 +693,18 @@ public final class MainActivity extends Activity {
       case "mojave":
         resId = R.drawable.wallpaper_mojave;
         blurResId = R.drawable.wallpaper_mojave_blur;
+        break;
+      case "sequoia":
+        resId = R.drawable.wallpaper_sequoia;
+        blurResId = R.drawable.wallpaper_sequoia_blur;
+        break;
+      case "patagonia":
+        resId = R.drawable.wallpaper_patagonia;
+        blurResId = R.drawable.wallpaper_patagonia_blur;
+        break;
+      case "yosemite":
+        resId = R.drawable.wallpaper_yosemite;
+        blurResId = R.drawable.wallpaper_yosemite_blur;
         break;
       case "sonoma":
       default:
@@ -772,12 +804,12 @@ public final class MainActivity extends Activity {
     clock.setLetterSpacing(.015f);
     clock.setFontFeatureSettings("'tnum' 1");
     clock.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
-    if (!pure) clock.setShadowLayer(px(4), 0, px(1), 0x99000000);
+    if (!pure) clock.setShadowLayer(px(6), 0, px(2), 0xD9000000);
     put(clock, page.equals("home") ? 598 : 648, 20, 176, 25);
-    calendarDate = text("", 12, pure ? palette.muted : 0xEEFFFFFF);
+    calendarDate = text("", 12, pure ? palette.muted : 0xF2FFFFFF);
     calendarDate.setGravity(Gravity.END | Gravity.CENTER_VERTICAL);
     calendarDate.setFontFeatureSettings("'tnum' 1");
-    if (!pure) calendarDate.setShadowLayer(px(3), 0, px(1), 0x99000000);
+    if (!pure) calendarDate.setShadowLayer(px(4), 0, px(1.5f), 0xCC000000);
     put(calendarDate, page.equals("home") ? 598 : 648, 46, 176, 18);
     updateClock();
     View settings =
@@ -978,7 +1010,7 @@ public final class MainActivity extends Activity {
   private void home(View settings) {
     boolean pure = isPureTheme(prefs.wallpaper());
     moveHint = text("", 14, pure ? palette.secondary : 0xFFFFFFFF);
-    if (!pure) moveHint.setShadowLayer(px(3), 0, px(1), 0x99000000);
+    if (!pure) moveHint.setShadowLayer(px(4), 0, px(1.5f), 0xB3000000);
     put(moveHint, 180, 36, 400, 30);
     int headerSpace = pure ? 0 : px(268);
     homeWall = new GridWallView(this, scale, 156, headerSpace, palette, wallListener());

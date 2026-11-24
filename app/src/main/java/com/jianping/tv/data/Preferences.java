@@ -34,13 +34,20 @@ public final class Preferences {
 
   public boolean lightTheme() {
     String wp = wallpaper();
-    if ("pure_dark".equals(wp) || "catalina".equals(wp) || "mojave".equals(wp)) {
-      return false;
-    }
-    if ("pure_light".equals(wp) || "sonoma".equals(wp) || "big_sur".equals(wp)) {
+    if ("pure_light".equals(wp)) {
       return true;
     }
-    return !"dark".equals(prefs.getString("appearance", "light"));
+    if ("pure_dark".equals(wp)
+        || "sonoma".equals(wp)
+        || "big_sur".equals(wp)
+        || "catalina".equals(wp)
+        || "mojave".equals(wp)
+        || "sequoia".equals(wp)
+        || "patagonia".equals(wp)
+        || "yosemite".equals(wp)) {
+      return false;
+    }
+    return "light".equals(prefs.getString("appearance", "dark"));
   }
 
   public void lightTheme(boolean light) {
@@ -95,4 +102,3 @@ public final class Preferences {
     return prefs.getString(key, "尚无记录");
   }
 }
-

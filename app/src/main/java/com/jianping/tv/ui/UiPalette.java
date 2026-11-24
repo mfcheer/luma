@@ -37,7 +37,7 @@ public final class UiPalette {
     menuFocusBottom = light ? 0xFFD5E0EE : 0xFFDDE5EF;
     scrim = light ? 0x2B667180 : 0xAD040810;
     cardFallback = light ? 0xFFE9ECEF : 0xFF263244;
-    cardName = light ? 0xFF5F6D7D : 0xFFB9C3D2;
+    cardName = light ? 0xFF5F6D7D : 0xEEFFFFFF;
     cardNameFocused = light ? 0xFF303D4E : 0xFFFFFFFF;
     movingText = light ? 0xFF4E6076 : 0xFFEDF3FC;
   }
