@@ -8,7 +8,7 @@ controls.forEach((button) => {
     const request = ++latestRequest;
     const dark = button.dataset.theme === "dark";
     const next = new Image();
-    next.src = dark ? "./assets/home-dark.webp?v=097dev-1213f1831b8e" : "./assets/home-light.webp?v=097dev-a7e7e99fef36";
+    next.src = dark ? "./assets/home-dark.webp?v=0916dev-a4b8e8d6c8c4" : "./assets/home-light.webp?v=0916dev-1c47c57e4f76";
     preview.setAttribute("aria-busy", "true");
     try {
       await next.decode();

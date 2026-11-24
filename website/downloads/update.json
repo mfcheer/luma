@@ -1,9 +1,9 @@
 {
-  "versionCode": 33,
-  "versionName": "0.9.15",
-  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.15.apk",
-  "sha256": "47ef21ab54037c76a2ef233912499384b47668410d8efaeb9040d305fd13c63f",
-  "size": 1024237,
-  "releaseNotes": "1. 修复应用冷启动及从第三方应用返回时列表异常跳转至末行再弹回首行的焦点与滚动跳动问题\n2. 优化首页应用墙渲染稳定性：相同列表避免重复布局，装载卡片期间阻断子视图抢焦\n3. 规范遥控器导航流转：加固顶部操作栏焦点链路，视口尺寸未就绪前保护滚动边界",
+  "versionCode": 34,
+  "versionName": "0.9.16",
+  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.16.apk",
+  "sha256": "c91f59daf2f1093d538de54c6a278028f76688d20b42f95d6134dcc589b79632",
+  "size": 3240763,
+  "releaseNotes": "1. 扩充 3 套顶级摄影级自然风光大片（巴塔哥尼亚雪峰、加州红杉晨曦、优胜美地苍谷），支持外观与壁纸无缝左右轮播\n2. 全天候高对比度文字自适应：重构多段非线性底部暗罩，应用卡片白字与立体阴影在任何复杂风景下均清晰锐利\n3. 顶部操作栏图标加装微透圆角暗盾，强光背景下不被融淡，获焦高光毛玻璃扩散稳定",
   "minSdk": 23
 }

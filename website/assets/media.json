@@ -8,19 +8,19 @@
   ],
   "applicationCount": 42,
   "screenshots": {
-    "version": "0.9.7",
-    "captureDate": "2026-11-03",
+    "version": "0.9.16",
+    "captureDate": "2026-11-24",
     "source": "Direct ADB screencap on the real television; WebP encoding only",
     "files": {
-      "home-light.webp": "a7e7e99fef362e44c99b72b54716e1508781ac531fccb8ec07c8c3cb48e8c6dd",
-      "home-dark.webp": "1213f1831b8e967f336c205534678cbd6fcb69d4c0ff268819001804c2b618f8",
-      "scrolled-light.webp": "36189ff26e10941b1fbff52fb3e3c4054a3992382fbf381d4b917b03c1c94da7",
-      "scrolled-dark.webp": "bf0beb61de92a82f6710a4456d22823ebc2f65e15ad95f00baefe42465cb4b0a",
-      "settings-light.webp": "08921948047103e0e5ec5e75b1ccbbe0d27fe4a8ae547899571ea92d2f20cdc2",
-      "settings-dark.webp": "0898273c2d958b7de9e01d96bc4a9379826a7dcdb89b2f5ae01933d6711d65b7",
-      "menu-light.webp": "dff9b7e0f53d7304b6cc7c6b531c0736688f07ef99f49cf99acaeac227f49b99",
-      "search-light.webp": "bc5cc855e38b037cfb4b35800cafe5e69266e956ae0bfd725cfddb93ea4048a2",
-      "video-poster.webp": "a7e7e99fef362e44c99b72b54716e1508781ac531fccb8ec07c8c3cb48e8c6dd"
+      "home-light.webp": "1c47c57e4f76cff63b12be31eb9adda515d00292614989c672d8b84ed004f8a7",
+      "home-dark.webp": "a4b8e8d6c8c47ca0c004118c4b5449c5419899b090602eca664dece04c46b938",
+      "scrolled-light.webp": "e03f5a9dec8d96c966817ec2ba5d9a2f7a7c53016705a8e306b32349c57da881",
+      "scrolled-dark.webp": "1dc1f518a0014a65dc82b33802c32b65ca76da2e9529b434822d9ffb1d213a33",
+      "settings-light.webp": "075ba040c9c4b418adecdf7e360c31eaa3395b208c86210564af2389504eac40",
+      "settings-dark.webp": "6339cc8ec788d6a8ebfc26e853e9157d17fb39265caa62250d675c16983861bf",
+      "menu-light.webp": "c85030220bc557d232531fb4a0b9d2d6d4c5722c3a6f8529e0378beb9c4f2e69",
+      "search-light.webp": "5d0e3bcac431681efdd168e5ddf5dbe68e2fc9307237ba8466063e95e8edb2a8",
+      "video-poster.webp": "1c47c57e4f76cff63b12be31eb9adda515d00292614989c672d8b84ed004f8a7"
     }
   },
   "legacyScreenshots": {
@@ -33,10 +33,10 @@
   },
   "animatedPreview": {
     "file": "still-tv-preview.gif",
-    "version": "0.9.7",
-    "captureDate": "2026-11-03",
-    "source": "Native light-theme clip (up to 30 seconds); 10 fps, 768px wide, original speed",
-    "sha256": "96809b362ffbcc08a7336540c529d2daf02dd1991229630e2910a9c8bbaea14c"
+    "version": "0.9.16",
+    "captureDate": "2026-11-24",
+    "source": "Native Patagonia landscape clip; 10 fps, 768px wide, original speed",
+    "sha256": "ed20d4e1310b8e723ffead3de23aeb5bf5dc04f8b029a50750ca2993b200a36e"
   },
   "video": {
     "programs": [],
@@ -48,16 +48,16 @@
       }
     ],
     "format": {
-      "duration": "57.824000",
-      "size": "1342700"
+      "duration": "50.635000",
+      "size": "1042867"
     },
     "file": "still-tv-demo.mp4",
-    "version": "0.9.7",
-    "captureDate": "2026-11-03",
-    "source": "Direct ADB screenrecord on the real television",
-    "sha256": "a471a36401c7ad897eafa75fa6e5298df2e6b3fee0885971ed96b908aff39860"
+    "version": "0.9.16",
+    "captureDate": "2026-11-24",
+    "source": "Direct ADB screenrecord on the real television showing natural landscapes and adaptive lighting",
+    "sha256": "8389760e0c1cc6f750f07733d9b471fb348b02836a092d279f424abef613e38b"
   },
-  "videoEdit": "Three native clips (light navigation, search menu, dark navigation) joined at original playback speed; no frame interpolation; audio omitted",
+  "videoEdit": "Single continuous native TV screenrecord showing home card browsing, smooth smoked glass scroll, search, wallpaper switching in settings, and context menu; original playback speed; no frame interpolation; audio omitted",
   "comparison": {
     "captureDate": "2026-10-23",
     "device": "Xiaomi TV 5 Pro 55 / MiTV-ANSP0",
@@ -70,15 +70,15 @@
       1920,
       1080
     ],
-    "stillVersion": "0.9.7",
+    "stillVersion": "0.9.16",
     "stillUncropped": true,
     "source": "Existing user-approved full native screenshot retained; updated full Still screenshot from same real TV; WebP encoding only",
     "files": {
       "comparison-xiaomi.webp": "21dabbacf039e5c3ce521c36aa7d0a6f8891b5c8efabbcd3761d170825027e87",
-      "home-light.webp": "a7e7e99fef362e44c99b72b54716e1508781ac531fccb8ec07c8c3cb48e8c6dd"
+      "home-light.webp": "1c47c57e4f76cff63b12be31eb9adda515d00292614989c672d8b84ed004f8a7"
     },
     "stillSourceFile": "home-light.webp",
-    "stillSource": "Full Still 0.9.7 screenshot captured on the same TV on 2026-11-03",
+    "stillSource": "Full Still 0.9.16 screenshot captured on the same TV on 2026-11-24",
     "nativeUncropped": true,
     "presentation": "One staggered composition at all viewport sizes: native upper-left, Still lower-right"
   }
