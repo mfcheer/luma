@@ -956,7 +956,7 @@ public final class MainActivity extends Activity {
     }
     List<AppEntry> wallList = new ArrayList<>(orderedApps());
     if (draftOrder == null) {
-      if (prefs.showAirInstallCard()) wallList.add(AirInstallEntry.ENTRY);
+      wallList.add(AirInstallEntry.ENTRY);
       wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
     }
     return wallList;
@@ -1398,7 +1398,7 @@ public final class MainActivity extends Activity {
     homeWall.movingKey(null);
     moveHint.setText("");
     List<AppEntry> wallList = new ArrayList<>(orderedApps());
-    if (prefs.showAirInstallCard()) wallList.add(AirInstallEntry.ENTRY);
+    wallList.add(AirInstallEntry.ENTRY);
     wallList.add(WebShortcutStore.ADD_WEB_ENTRY);
     if (pendingRender) render();
     else homeWall.setEntries(wallList, selectedId, true);
@@ -1465,20 +1465,6 @@ public final class MainActivity extends Activity {
                     ? (ready ? "已开启：开机和待机唤醒后返回 Still" : "开机启动已开启，唤醒监听未能启动，请查看设备信息")
                     : "此系统暂仅尝试开机进入，待机唤醒尚未适配");
           else toast("已关闭自动进入 Still");
-        });
-    SettingsRowView airInstall =
-        settingsRow(
-            desktop,
-            rows,
-            "首页显示隔空安装",
-            R.drawable.settings_air_install,
-            "",
-            true);
-    airInstall.checked(prefs.showAirInstallCard());
-    airInstall.setOnClickListener(
-        v -> {
-          prefs.showAirInstallCard(!prefs.showAirInstallCard());
-          airInstall.checked(prefs.showAirInstallCard());
         });
     SettingsRowView names =
         settingsRow(desktop, rows, "始终显示应用名称", R.drawable.settings_description, "", true);

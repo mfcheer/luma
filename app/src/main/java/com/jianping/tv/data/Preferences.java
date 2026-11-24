@@ -78,10 +78,12 @@ public final class Preferences {
     prefs.edit().putBoolean("showAppNames", visible).apply();
   }
 
+  @Deprecated
   public boolean showAirInstallCard() {
     return prefs.getBoolean("showAirInstallCard", true);
   }
 
+  @Deprecated
   public void showAirInstallCard(boolean visible) {
     prefs.edit().putBoolean("showAirInstallCard", visible).apply();
   }
