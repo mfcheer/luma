@@ -87,12 +87,22 @@ public final class GridWallView extends ScrollView {
     addView(content, new ScrollView.LayoutParams(-1, -2));
   }
 
+  public boolean sameEntries(List<AppEntry> apps) {
+    if (apps.size() != order.size()) return false;
+    for (int i = 0; i < order.size(); i++) {
+      if (!order.get(i).equals(apps.get(i).id)) return false;
+    }
+    return true;
+  }
+
   public void setEntries(List<AppEntry> apps, String focusKey, boolean animate) {
     setEntries(apps, focusKey, animate, true);
   }
 
   public void setEntries(List<AppEntry> apps, String focusKey, boolean animate, boolean takeFocus) {
-    Map<String, AppEntry> previous = new HashMap<>(entries);
+    content.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+    try {
+      Map<String, AppEntry> previous = new HashMap<>(entries);
     entries.clear();
     List<String> next = new ArrayList<>();
     for (AppEntry app : apps) {
@@ -156,6 +166,9 @@ public final class GridWallView extends ScrollView {
     layoutCards(animate);
     movingKey(movingKey);
     navigation();
+    } finally {
+      content.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+    }
     if (takeFocus) focusKey(focusKey, !animate);
     else {
       current = cards.containsKey(focusKey) ? focusKey : (order.isEmpty() ? "" : order.get(0));
@@ -365,7 +378,7 @@ public final class GridWallView extends ScrollView {
     // instead of snapping to a row offset that still leaves its caption clipped.
     int visibleHeight = getHeight() - getPaddingBottom();
     int visualBottom = getPaddingTop() + row * rowHeight + px(124);
-    if (visualBottom > target + visibleHeight)
+    if (visibleHeight > 0 && visualBottom > target + visibleHeight)
       target = Math.max(Math.max(0, row - 1) * rowHeight, visualBottom - visibleHeight);
     int available = getHeight() - getPaddingTop() - getPaddingBottom();
     int max = Math.max(0, content.getHeight() - available);

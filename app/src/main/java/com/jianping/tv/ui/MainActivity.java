@@ -109,7 +109,11 @@ public final class MainActivity extends Activity {
             runOnUiThread(
                 () -> {
                   if (homeWall != null && !loading && "home".equals(page)) {
-                    homeWall.setEntries(desktopApps(), selectedId, false);
+                    if (!homeWall.sameEntries(desktopApps())) {
+                      homeWall.setEntries(desktopApps(), selectedId, false);
+                    } else {
+                      homeWall.refreshLabels();
+                    }
                   }
                 });
     WebIconManager.addListener(iconListener);
@@ -235,7 +239,9 @@ public final class MainActivity extends Activity {
     WebIconManager.syncFromDisk(this);
     fetchMissingWebIcons();
     if (homeWall != null && !loading && "home".equals(page)) {
-      homeWall.setEntries(desktopApps(), selectedId, false);
+      if (!homeWall.sameEntries(desktopApps())) {
+        homeWall.setEntries(desktopApps(), selectedId, false);
+      }
     }
     updateNetworkView();
     getWindow()
@@ -808,11 +814,12 @@ public final class MainActivity extends Activity {
     homeWall.showNames(prefs.showAppNames());
     put(homeWall, 42, 82, 876, 424);
     String previous = selectedId;
-    homeWall.setEntries(desktopApps(), selectedId, false);
+    homeWall.setEntries(desktopApps(), selectedId, false, false);
     if (!pendingSearchTarget.isEmpty() && !apps.isEmpty()) {
       homeWall.focusKey(pendingSearchTarget, true);
       pendingSearchTarget = "";
     } else if (previous.equals(selectedId)) homeWall.restoreFocus(selectedId, homeOffset);
+    else homeWall.focusKey(selectedId, true);
     homeWall.upperFocus(settings.getId());
     if (apps.isEmpty() && shortcutStore.loadAll().isEmpty()) {
       TextView empty =
@@ -826,8 +833,6 @@ public final class MainActivity extends Activity {
       homeWall = null;
     }
     settings.setNextFocusDownId(homeWall == null ? settings.getId() : homeWall.firstId());
-    settings.setNextFocusLeftId(settings.getId());
-    settings.setNextFocusRightId(settings.getId());
   }
 
   private void launch(AppEntry app) {

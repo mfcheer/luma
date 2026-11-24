@@ -5,13 +5,15 @@
 <h1 align="center">Still</h1>
 <p align="center">Room for what matters</p>
 <p align="center">原生 Android 电视桌面 · 遥控器优先 · 图标联动环境光</p>
-<p align="center"><a href="https://mfcheer.github.io/luma/">访问 Still 官网</a> · <a href="https://mfcheer.github.io/luma/#film">观看实机演示</a> · <a href="https://mfcheer.github.io/luma/downloads/Still-0.9.14.apk">下载预览版</a></p>
+<p align="center"><a href="https://mfcheer.github.io/luma/">访问 Still 官网</a> · <a href="https://mfcheer.github.io/luma/#film">观看实机演示</a> · <a href="https://mfcheer.github.io/luma/downloads/Still-0.9.15.apk">下载预览版</a></p>
 
 Still 是一个简洁的 Android 电视桌面应用。首页自动展示所有可启动的应用，支持手动调整顺序；选中图标时，周围的环境光会随应用主色柔和变化。没有内容推荐流、广告 SDK 或统计服务；日常运行不产生后台网络请求，仅在设置中由用户主动点击“检查更新”时联网下载安装包并请求系统安装。
 
-当前公开下载：**0.9.14 预览版**。首页和搜索默认仅在选中时显示应用名称，统一卡片浮起、柔和阴影、滚动渐隐与焦点附近的环境光；快速连续切换更利落。设置可选择始终显示名称。小米电视 5 Pro 55 英寸 / Android 9（API 28）上的新版截图与录屏见下文；开机自动进入和长期待机恢复仍需分别验证。
+当前公开下载：**0.9.15 预览版**。首页和搜索默认仅在选中时显示应用名称，统一卡片浮起、柔和阴影、滚动渐隐与焦点附近的环境光；快速连续切换更利落。设置可选择始终显示名称。小米电视 5 Pro 55 英寸 / Android 9（API 28）上的新版截图与录屏见下文；开机自动进入和长期待机恢复仍需分别验证。
 
-最新版本 **0.9.14**：新增「局域网极速快传与隔空安装助手（Air Install）」，支持同一局域网下手机扫码或电脑免拷 U 盘极速向电视推送安装 APK；用完即毁原生 HTTP 流式直存服务，杜绝 OOM；三段式大屏状态机与 Apple tvOS 质感全圆角胶囊双按钮体系；首页卡片复用 Apple iOS AirDrop 官方同心圆弧矢量图标。官网提供 0.9.14 安装包与校验清单。
+最新版本 **0.9.15**：修复应用冷启动及从第三方应用返回时，列表偶发异常跳转至末行再弹回首行的焦点晃动问题；优化首页应用墙渲染稳定性，相同列表跳过冗余重建，装载卡片期间阻断子视图抢焦；加固顶部操作栏焦点链路。官网提供 0.9.15 安装包与校验清单。
+
+**0.9.14 更新**：新增「局域网极速快传与隔空安装助手（Air Install）」，支持同一局域网下手机扫码或电脑免拷 U 盘极速向电视推送安装 APK；用完即毁原生 HTTP 流式直存服务，杜绝 OOM；三段式大屏状态机与 Apple tvOS 质感全圆角胶囊双按钮体系；首页卡片复用 Apple iOS AirDrop 官方同心圆弧矢量图标。
 
 **0.9.13 更新**：网页快捷方式支持标题自动提取与三阶段校准（失焦预填、后台 HTML 同步解析、WebView 实时回写）；新增编程状态屏专属高清透明矢量 Logo；引入外部图标智能融底消边算法，完美消除白底卡片边缘冲突。
 
@@ -33,7 +35,8 @@ Still 是一个简洁的 Android 电视桌面应用。首页自动展示所有�
 
 | 版本 | 主要变化 |
 | --- | --- |
-| **0.9.14（当前）** | 局域网隔空安装助手（Air Install）、流式直存零驻留服务、三段式大屏状态机与 Apple AirDrop 官方矢量图标。 |
+| **0.9.15（当前）** | 修复冷启动与应用返回时列表跳至末行再弹回首行的焦点晃动，相同列表避免重复布局与装载期间防抢焦，顶部栏焦点链路加固。 |
+| 0.9.14 | 局域网隔空安装助手（Air Install）、流式直存零驻留服务、三段式大屏状态机与 Apple AirDrop 官方矢量图标。 |
 | 0.9.13 | 网页标题自动提取校准（三阶段递进）、状态屏专属透明矢量 Logo 与外部图标智能融底消边。 |
 | 0.9.12 | 网页快捷方式采用纯白极简卡片视觉，纯粹呈现原始高清图标；去除冗余渐变与角标修饰。 |
 | 0.9.11 | 支持网页快捷方式、手机局域网扫码配网、独立轻量浏览进程与主流站点高清 Logo / Favicon 自动抓取。 |
@@ -93,7 +96,7 @@ Still 是一个简洁的 Android 电视桌面应用。首页自动展示所有�
 | --- | --- |
 | ![实机长按菜单](website/assets/menu-light.webp) | ![实机浅色设置](website/assets/settings-light.webp) |
 
-[下载 Still 0.9.14 预览 APK](website/downloads/Still-0.9.14.apk) · [校验和](website/downloads/SHA256SUMS.txt) · [安装说明](docs/安装与电视验证.md)
+[下载 Still 0.9.15 预览 APK](website/downloads/Still-0.9.15.apk) · [校验和](website/downloads/SHA256SUMS.txt) · [安装说明](docs/安装与电视验证.md)
 
 同签名覆盖安装可保留顺序与设置。本次预览包使用开发调试签名，仅在手动检查与下载更新时使用联网与安装权限，不包含任何广告或统计 SDK。
 
@@ -164,7 +167,7 @@ Still 本身不提供视频、直播源、音乐或其他第三方应用内容�
 
    Windows 使用 `gradlew.bat` 执行相同任务。
 
-普通构建产物位置：`app/build/outputs/apk/debug/app-debug.apk`，构建目录不提交。官网的 `website/downloads/` 单独提供已核对的 0.9.14 预览 APK 及校验和；Gradle 缓存和签名密钥不提交。
+普通构建产物位置：`app/build/outputs/apk/debug/app-debug.apk`，构建目录不提交。官网的 `website/downloads/` 单独提供已核对的 0.9.15 预览 APK 及校验和；Gradle 缓存和签名密钥不提交。
 
 ## 安装与使用
 
