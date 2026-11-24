@@ -179,6 +179,7 @@ public final class MainActivity extends Activity {
     render();
     reload(true);
     handler.post(ticker);
+    handleActionIntent(getIntent());
   }
 
   @Override
@@ -196,6 +197,13 @@ public final class MainActivity extends Activity {
     movingId = null;
     page = "home";
     if (needsRender) render();
+    handleActionIntent(intent);
+  }
+
+  private void handleActionIntent(Intent intent) {
+    if (intent != null && "com.jianping.tv.action.AIR_INSTALL".equals(intent.getAction())) {
+      handler.post(this::showAirInstallDialog);
+    }
   }
 
   private void recordEntry(Intent i) {

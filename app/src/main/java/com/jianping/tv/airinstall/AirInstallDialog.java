@@ -6,6 +6,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -14,6 +15,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.*;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
@@ -93,6 +95,8 @@ public final class AirInstallDialog extends Dialog {
     rootLayout = new LinearLayout(activity);
     rootLayout.setOrientation(LinearLayout.VERTICAL);
     rootLayout.setPadding(px(26), px(22), px(26), px(22));
+    rootLayout.setClipChildren(false);
+    rootLayout.setClipToPadding(false);
 
     GradientDrawable bg =
         new GradientDrawable(
@@ -113,6 +117,23 @@ public final class AirInstallDialog extends Dialog {
     setContentView(
         rootLayout, new ViewGroup.LayoutParams(px(720), ViewGroup.LayoutParams.WRAP_CONTENT));
 
+    Window window = getWindow();
+    if (window != null) {
+      window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+      window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+      WindowManager.LayoutParams params = window.getAttributes();
+      params.dimAmount = palette.light ? .15f : .50f;
+      params.width =
+          Math.min(px(720), activity.getResources().getDisplayMetrics().widthPixels - px(48));
+      params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+      params.gravity = Gravity.CENTER;
+      window.setAttributes(params);
+      if (window.getDecorView() instanceof ViewGroup) {
+        ((ViewGroup) window.getDecorView()).setClipChildren(false);
+        ((ViewGroup) window.getDecorView()).setClipToPadding(false);
+      }
+    }
+
     switchPhase(Phase.WAITING);
     startServer();
   }
@@ -120,6 +141,8 @@ public final class AirInstallDialog extends Dialog {
   private void buildWaitingView() {
     waitingContainer = new LinearLayout(activity);
     waitingContainer.setOrientation(LinearLayout.VERTICAL);
+    waitingContainer.setClipChildren(false);
+    waitingContainer.setClipToPadding(false);
 
     // Title & subtitle
     TextView title = new TextView(activity);
@@ -142,6 +165,8 @@ public final class AirInstallDialog extends Dialog {
     LinearLayout body = new LinearLayout(activity);
     body.setOrientation(LinearLayout.HORIZONTAL);
     body.setGravity(Gravity.CENTER_VERTICAL);
+    body.setClipChildren(false);
+    body.setClipToPadding(false);
     waitingContainer.addView(body, new LinearLayout.LayoutParams(-1, -2));
 
     // Left column: QR code box
@@ -174,6 +199,8 @@ public final class AirInstallDialog extends Dialog {
     LinearLayout rightCol = new LinearLayout(activity);
     rightCol.setOrientation(LinearLayout.VERTICAL);
     rightCol.setPadding(px(24), 0, 0, 0);
+    rightCol.setClipChildren(false);
+    rightCol.setClipToPadding(false);
 
     TextView stepTitle = new TextView(activity);
     stepTitle.setText("操作指引");
@@ -206,19 +233,24 @@ public final class AirInstallDialog extends Dialog {
     LinearLayout btnRow = new LinearLayout(activity);
     btnRow.setOrientation(LinearLayout.HORIZONTAL);
     btnRow.setGravity(Gravity.END);
+    btnRow.setClipChildren(false);
+    btnRow.setClipToPadding(false);
     LinearLayout.LayoutParams brLp = new LinearLayout.LayoutParams(-1, -2);
     brLp.topMargin = px(24);
+    brLp.rightMargin = px(8);
     rightCol.addView(btnRow, brLp);
 
     waitingCloseBtn = createButton("关闭", false, this::dismiss);
     btnRow.addView(waitingCloseBtn, new LinearLayout.LayoutParams(px(104), px(42)));
 
-    body.addView(rightCol, new LinearLayout.LayoutParams(px(440), -2));
+    body.addView(rightCol, new LinearLayout.LayoutParams(0, -2, 1f));
   }
 
   private void buildTransferView() {
     transferContainer = new LinearLayout(activity);
     transferContainer.setOrientation(LinearLayout.VERTICAL);
+    transferContainer.setClipChildren(false);
+    transferContainer.setClipToPadding(false);
 
     TextView title = new TextView(activity);
     title.setText("正在接收安装包");
@@ -293,8 +325,11 @@ public final class AirInstallDialog extends Dialog {
     LinearLayout btnRow = new LinearLayout(activity);
     btnRow.setOrientation(LinearLayout.HORIZONTAL);
     btnRow.setGravity(Gravity.END);
+    btnRow.setClipChildren(false);
+    btnRow.setClipToPadding(false);
     LinearLayout.LayoutParams brLp = new LinearLayout.LayoutParams(-1, -2);
     brLp.topMargin = px(16);
+    brLp.rightMargin = px(8);
     transferContainer.addView(btnRow, brLp);
 
     cancelTransferBtn =
@@ -311,6 +346,8 @@ public final class AirInstallDialog extends Dialog {
   private void buildReadyView() {
     readyContainer = new LinearLayout(activity);
     readyContainer.setOrientation(LinearLayout.VERTICAL);
+    readyContainer.setClipChildren(false);
+    readyContainer.setClipToPadding(false);
 
     TextView title = new TextView(activity);
     title.setText("安装包已就绪");
@@ -367,8 +404,11 @@ public final class AirInstallDialog extends Dialog {
     LinearLayout btnRow = new LinearLayout(activity);
     btnRow.setOrientation(LinearLayout.HORIZONTAL);
     btnRow.setGravity(Gravity.END);
+    btnRow.setClipChildren(false);
+    btnRow.setClipToPadding(false);
     LinearLayout.LayoutParams brLp = new LinearLayout.LayoutParams(-1, -2);
     brLp.topMargin = px(18);
+    brLp.rightMargin = px(8);
     readyContainer.addView(btnRow, brLp);
 
     readyCloseBtn = createButton("重新发送", false, () -> switchPhase(Phase.WAITING));
@@ -544,6 +584,11 @@ public final class AirInstallDialog extends Dialog {
     btn.setFocusable(true);
     btn.setClickable(true);
     btn.setAllCaps(false);
+    btn.setIncludeFontPadding(false);
+    btn.setGravity(Gravity.CENTER);
+    if (android.os.Build.VERSION.SDK_INT >= 21) {
+      btn.setStateListAnimator(null);
+    }
 
     updateButtonAppearance(btn, primary, false);
 
@@ -560,27 +605,22 @@ public final class AirInstallDialog extends Dialog {
   private void updateButtonAppearance(Button btn, boolean primary, boolean hasFocus) {
     GradientDrawable d = new GradientDrawable();
     d.setCornerRadius(px(21)); // Pill shape (42dp height / 2)
-    int strokeWidth = Math.max(1, px(1.5f));
 
     if (primary) {
       d.setOrientation(GradientDrawable.Orientation.TL_BR);
       if (hasFocus) {
         d.setColors(new int[] {0xFF0EA5E9, 0xFF38BDF8});
-        d.setStroke(strokeWidth, 0x80FFFFFF);
       } else {
         d.setColors(new int[] {0xFF0284C7, 0xFF0EA5E9});
-        d.setStroke(strokeWidth, 0x33FFFFFF);
       }
       btn.setTextColor(Color.WHITE);
     } else {
-      // Secondary: Apple tvOS translucent frosted glass
+      // Secondary: tvOS pearl focus vs quiet translucent glass
       if (hasFocus) {
-        d.setColor(palette.light ? 0x2E000000 : 0x38FFFFFF);
-        d.setStroke(strokeWidth, palette.light ? 0x4A000000 : 0x80FFFFFF);
-        btn.setTextColor(palette.light ? 0xFF0F172A : Color.WHITE);
+        d.setColor(palette.rowFocus);
+        btn.setTextColor(palette.rowFocusText);
       } else {
         d.setColor(palette.light ? 0x12000000 : 0x18FFFFFF);
-        d.setStroke(strokeWidth, palette.light ? 0x22000000 : 0x33FFFFFF);
         btn.setTextColor(palette.light ? 0xFF334155 : 0xEEFFFFFF);
       }
     }
