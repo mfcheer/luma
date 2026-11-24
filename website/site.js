@@ -14,11 +14,11 @@ controls.forEach((button) => {
       await next.decode();
       if (request !== latestRequest) return;
       preview.src = next.src;
-      preview.alt = `Still 0.9.7 开发版 ${dark ? "深色" : "浅色"}首页，小米电视实机截屏，选中应用显示名称，五列卡片与底部渐隐续行`;
+      preview.alt = `Still 0.9.16 预览版 ${dark ? "卡特琳娜夜湾" : "巴塔哥尼亚雪峰"}壁纸首页，小米电视实机截屏，选中应用显示名称，五列卡片与底部渐隐续行`;
       controls.forEach((item) =>
         item.setAttribute("aria-pressed", String(item === button)),
       );
-      previewStatus.textContent = `已切换为${dark ? "深色" : "浅色"}实机画面`;
+      previewStatus.textContent = `已切换为${dark ? "卡特琳娜夜湾" : "巴塔哥尼亚雪峰"}实机壁纸画面`;
     } catch {
       if (request === latestRequest)
         previewStatus.textContent = "暂时无法加载这张预览，请稍后重试。";
