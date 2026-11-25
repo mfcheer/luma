@@ -3,8 +3,11 @@ package com.jianping.tv.ui;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Outline;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
+import android.view.View;
+import android.view.ViewOutlineProvider;
 import android.widget.*;
 import com.jianping.tv.R;
 
@@ -15,6 +18,8 @@ public final class SettingsRowView extends LinearLayout {
   private final TextView label, value;
   private final ImageView icon, chevron;
   private final Switch toggle;
+  private final FrameLayout thumbContainer;
+  private final ImageView previewThumb;
   private final String title;
 
   private int px(float n) {
@@ -61,6 +66,28 @@ public final class SettingsRowView extends LinearLayout {
     LayoutParams lp = new LayoutParams(0, -1, 1);
     lp.leftMargin = px(20);
     addView(label, lp);
+
+    thumbContainer = new FrameLayout(c);
+    thumbContainer.setVisibility(GONE);
+    previewThumb = new ImageView(c);
+    previewThumb.setScaleType(ImageView.ScaleType.CENTER_CROP);
+    previewThumb.setOutlineProvider(
+        new ViewOutlineProvider() {
+          @Override
+          public void getOutline(View view, Outline outline) {
+            outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), px(6));
+          }
+        });
+    previewThumb.setClipToOutline(true);
+    GradientDrawable thumbStroke = new GradientDrawable();
+    thumbStroke.setCornerRadius(px(6));
+    thumbStroke.setStroke(px(1), palette.light ? 0x26000000 : 0x33FFFFFF);
+    previewThumb.setForeground(thumbStroke);
+    thumbContainer.addView(previewThumb, new FrameLayout.LayoutParams(-1, -1));
+    LayoutParams tp = new LayoutParams(px(64), px(36));
+    tp.rightMargin = px(12);
+    addView(thumbContainer, tp);
+
     value = text(c, 14, palette.secondary);
     value.setText(detail);
     addView(value, new LayoutParams(-2, -1));
@@ -88,6 +115,12 @@ public final class SettingsRowView extends LinearLayout {
           value.setTextColor(focus ? 0xFF596779 : palette.secondary);
           icon.setColorFilter(focus ? palette.rowFocusIcon : palette.icon);
           chevron.setColorFilter(focus ? 0xFF657386 : palette.secondary);
+          GradientDrawable thumbBorder = new GradientDrawable();
+          thumbBorder.setCornerRadius(px(6));
+          thumbBorder.setStroke(
+              px(focus ? 1.5f : 1),
+              focus ? 0xFFFFFFFF : (palette.light ? 0x26000000 : 0x33FFFFFF));
+          previewThumb.setForeground(thumbBorder);
           updateToggleColors(focus);
           animate()
               .scaleX(focus ? 1.015f : 1)
@@ -96,6 +129,27 @@ public final class SettingsRowView extends LinearLayout {
               .setDuration(170)
               .start();
         });
+  }
+
+  public void previewThumb(int resId) {
+    if (resId != 0) {
+      previewThumb.setImageResource(resId);
+      thumbContainer.setVisibility(VISIBLE);
+    } else {
+      thumbContainer.setVisibility(GONE);
+    }
+  }
+
+  public void preview(int resId) {
+    previewThumb(resId);
+  }
+
+  public FrameLayout thumbContainer() {
+    return thumbContainer;
+  }
+
+  public ImageView previewThumb() {
+    return previewThumb;
   }
 
   public void detail(String detail) {

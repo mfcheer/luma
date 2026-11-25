@@ -1,9 +1,9 @@
 {
-  "versionCode": 35,
-  "versionName": "0.9.17",
-  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.17.apk",
-  "sha256": "65dd396021dfdf380ce9b6aeafc14da7050f3d19f5236b5a8244f1fa758150c7",
-  "size": 3241547,
-  "releaseNotes": "1. 隔空安装助手体验重构：彻底修复弹窗关闭按钮右侧截断与获焦生硬亮边，升级为温润珠白高对比质感\n2. 首屏加载防抖重构：应用目录与内置卡片合并一次性渲染，彻底消除启动与切回桌面时的末行跳动与视口颠簸\n3. 核心功能常驻：设置面板精简，隔空安装作为系统级特性默认常驻首页应用墙",
+  "versionCode": 36,
+  "versionName": "0.9.18",
+  "downloadUrl": "https://mfcheer.github.io/luma/downloads/Still-0.9.18.apk",
+  "sha256": "bc7bacd1b3c4e0408e8383c1a1670e2afbf11bd72a7d06748ae16df6c6ef14b4",
+  "size": 3382091,
+  "releaseNotes": "1. 外观与壁纸行内微缩视窗：设置面板「外观与壁纸」项新增 16:9 圆角缩略图与高光轮廓，焦点停留时支持遥控器左右键快速切切看与轻量即时联动\n2. 沉浸式壁纸画廊：按确定键唤起横向壁纸卡片流（9 款主题完整覆盖），1.08 倍获焦放大与珍珠白高光描边，遥控切换时大屏背景实时铺开 1080P 原图试穿，所见即所得\n3. 防抖与内存防线：内置 100ms 滑动防抖，画廊卡片流采用 384×216 独立轻量缩略图杜绝多图并发 OOM，返回键无痕回滚原壁纸并精准复位焦点",
   "minSdk": 23
 }
