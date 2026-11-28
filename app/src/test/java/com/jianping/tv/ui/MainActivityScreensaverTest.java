@@ -5,6 +5,7 @@ import static org.robolectric.Shadows.shadowOf;
 import static org.robolectric.util.ReflectionHelpers.ClassParameter.from;
 
 import android.content.ComponentName;
+import android.content.Intent;
 import android.graphics.RectF;
 import android.graphics.drawable.ShapeDrawable;
 import android.os.Looper;
@@ -12,9 +13,11 @@ import android.os.PowerManager;
 import android.os.SystemClock;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import com.jianping.tv.data.AppEntry;
+import com.jianping.tv.data.Preferences;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -86,7 +89,7 @@ public class MainActivityScreensaverTest {
     assertTrue(originalBlur > 0f);
 
     activity.onWindowFocusChanged(true);
-    idle(179_999);
+    idle(59_999);
     assertNull(field("screensaverOverlay"));
     idle(1);
     assertNotNull(field("screensaverOverlay"));
@@ -122,7 +125,7 @@ public class MainActivityScreensaverTest {
       assertEquals(ImageView.ScaleType.CENTER_CROP, wallpaper.getScaleType());
       assertNull(shadowOf(activity).getNextStartedActivity());
 
-      if (key == KeyEvent.KEYCODE_DPAD_CENTER) idle(180_000);
+      if (key == KeyEvent.KEYCODE_DPAD_CENTER) idle(60_000);
     }
 
     // A separate Back press is delivered normally and takes the wall back to the first row.
@@ -137,7 +140,7 @@ public class MainActivityScreensaverTest {
   public void restartsIdlePeriodAfterSettingsAndKeepsHeaderFocusAcrossCatalogRefresh() {
     View settings = field("settingsButton");
     settings.performClick();
-    idle(180_500);
+    idle(60_500);
     assertNull(field("screensaverOverlay"));
 
     activity.onBackPressed();
@@ -145,7 +148,7 @@ public class MainActivityScreensaverTest {
     View search = field("searchButton");
     assertTrue(search.requestFocus());
     activity.onWindowFocusChanged(true);
-    idle(180_350);
+    idle(60_350);
     View overlay = field("screensaverOverlay");
     assertNotNull(overlay);
 
@@ -173,7 +176,7 @@ public class MainActivityScreensaverTest {
     idle(500);
     assertEquals(removed.id, wall.currentKey());
 
-    idle(180_350);
+    idle(60_350);
     View overlay = field("screensaverOverlay");
     assertNotNull(overlay);
     List<AppEntry> updated = new ArrayList<>(apps);
@@ -194,17 +197,83 @@ public class MainActivityScreensaverTest {
   public void holdsOffWhileKeyIsDownAndDiscardsScreensaverOnWindowFocusLoss() {
     long down = SystemClock.uptimeMillis();
     activity.dispatchKeyEvent(event(down, KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.ACTION_DOWN, 0, 7, 0));
-    idle(180_500);
+    idle(60_500);
     assertNull(field("screensaverOverlay"));
     activity.dispatchKeyEvent(event(down, KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.ACTION_UP, 0, 7, 0));
-    idle(179_999);
+    idle(59_999);
     assertNull(field("screensaverOverlay"));
     idle(1);
     assertNotNull(field("screensaverOverlay"));
+    assertTrue(isKeepingScreenOn());
 
     controller.windowFocusChanged(false);
     assertNull(field("screensaverOverlay"));
-    idle(180_500);
+    assertFalse(isKeepingScreenOn());
+    idle(60_500);
+    assertNull(field("screensaverOverlay"));
+  }
+
+  @Test
+  public void cyclesPersistedDelaysAndPreviewsEvenWhenAutomaticScreensaverIsOff() {
+    ((View) field("settingsButton")).performClick();
+    idle(350);
+    FrameLayout root = field("root");
+    ArrayList<View> matches = new ArrayList<>();
+    root.findViewsWithText(matches, "桌面屏保", View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION);
+    assertEquals(1, matches.size());
+    View row = matches.get(0);
+    assertTrue(row.requestFocus());
+    idle(350);
+    assertTrue(row.getContentDescription().toString().contains("1 分钟"));
+    press(KeyEvent.KEYCODE_DPAD_LEFT);
+    assertTrue(row.getContentDescription().toString().contains("30 秒"));
+    press(KeyEvent.KEYCODE_DPAD_LEFT);
+    assertTrue(row.getContentDescription().toString().contains("关闭"));
+    press(KeyEvent.KEYCODE_DPAD_LEFT);
+    assertTrue(row.getContentDescription().toString().contains("2 分钟"));
+    press(KeyEvent.KEYCODE_DPAD_RIGHT);
+    assertEquals(0, new Preferences(activity).screensaverDelaySeconds());
+    assertSame(row, root.findFocus());
+
+    press(KeyEvent.KEYCODE_DPAD_CENTER);
+    assertNotNull(field("screensaverOverlay"));
+    assertTrue(isKeepingScreenOn());
+    idle(350);
+    assertEquals(0f, ((View) field("wallpaperBlurView")).getAlpha(), 0f);
+    press(KeyEvent.KEYCODE_BACK);
+    idle(350);
+    assertFalse(isKeepingScreenOn());
+    assertSame(row, root.findFocus());
+    assertEquals(1f, ((View) field("wallpaperBlurView")).getAlpha(), 0f);
+    assertEquals(0.38f, ((View) field("scrimView")).getAlpha(), 0f);
+
+    activity.onBackPressed();
+    idle(120_500);
+    assertNull(field("screensaverOverlay"));
+    assertFalse(isKeepingScreenOn());
+  }
+
+  @Test
+  public void capsKeepScreenOnAndClearsItOnScreenOff() {
+    new Preferences(activity).screensaverDelaySeconds(30);
+    activity.onWindowFocusChanged(true);
+    idle(29_999);
+    assertNull(field("screensaverOverlay"));
+    idle(1);
+    assertTrue(isKeepingScreenOn());
+    idle(899_000);
+    assertTrue(isKeepingScreenOn());
+    idle(1_000);
+    assertFalse(isKeepingScreenOn());
+    assertNotNull(field("screensaverOverlay"));
+
+    press(KeyEvent.KEYCODE_DPAD_CENTER);
+    idle(30_000);
+    assertTrue(isKeepingScreenOn());
+    shadowOf(activity.getSystemService(PowerManager.class)).setIsInteractive(false);
+    activity.sendBroadcast(new Intent(Intent.ACTION_SCREEN_OFF));
+    idle(0);
+    assertFalse(isKeepingScreenOn());
     assertNull(field("screensaverOverlay"));
   }
 
@@ -243,6 +312,18 @@ public class MainActivityScreensaverTest {
 
   private void idle(long milliseconds) {
     shadowOf(Looper.getMainLooper()).idleFor(milliseconds, TimeUnit.MILLISECONDS);
+  }
+
+  private boolean isKeepingScreenOn() {
+    return (activity.getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        != 0;
+  }
+
+  private void press(int code) {
+    long down = SystemClock.uptimeMillis();
+    activity.dispatchKeyEvent(event(down, code, KeyEvent.ACTION_DOWN, 0, 7, 0));
+    activity.dispatchKeyEvent(event(down, code, KeyEvent.ACTION_UP, 0, 7, 0));
+    idle(0);
   }
 
   private static KeyEvent event(long downTime, int key, int action, int repeat, int device, int flags) {

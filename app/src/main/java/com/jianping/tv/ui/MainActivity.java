@@ -105,10 +105,13 @@ public final class MainActivity extends Activity {
   private int loadGeneration;
   private int homeOffset;
   private long pendingWakeEntry;
-  private static final long SCREENSAVER_TIMEOUT_MS = 3 * 60 * 1000L;
+  private static final long SCREENSAVER_KEEP_SCREEN_ON_MS = 15 * 60 * 1000L;
+  private static final int[] SCREENSAVER_DELAYS = {30, 60, 120, 0};
+  private static final String[] SCREENSAVER_DELAY_LABELS = {"30 秒", "1 分钟", "2 分钟", "关闭"};
   private final ScreensaverKeys screensaverKeys = new ScreensaverKeys();
   private final Matrix screensaverWallpaperMatrix = new Matrix();
   private final Runnable showScreensaver = this::showScreensaver;
+  private final Runnable releaseScreensaverKeepScreenOn = this::releaseScreensaverKeepScreenOn;
   private View screensaverOverlay, screensaverFocus;
   private String screensaverCardId;
   private ValueAnimator screensaverTransition;
@@ -512,7 +515,7 @@ public final class MainActivity extends Activity {
     }
     if (!changed) return;
     if (screensaverOverlay != null) {
-      desktopRefreshAfterScreensaver = true;
+      if ("home".equals(page)) desktopRefreshAfterScreensaver = true;
       return;
     }
     if (draftOrder != null
@@ -992,10 +995,7 @@ public final class MainActivity extends Activity {
   }
 
   private boolean canStartScreensaver() {
-    return resumed
-        && root != null
-        && hasWindowFocus()
-        && !isFinishing()
+    return canShowScreensaver()
         && "home".equals(page)
         && !loading
         && snapshot != null
@@ -1012,6 +1012,15 @@ public final class MainActivity extends Activity {
         && !screensaverKeys.hasHeldKeys();
   }
 
+  private boolean canShowScreensaver() {
+    return resumed
+        && root != null
+        && screensaverOverlay == null
+        && hasWindowFocus()
+        && !isFinishing()
+        && getSystemService(PowerManager.class).isInteractive();
+  }
+
   private static boolean isShowing(Dialog dialog) {
     return dialog != null && dialog.isShowing();
   }
@@ -1023,11 +1032,12 @@ public final class MainActivity extends Activity {
   }
 
   private void scheduleScreensaver() {
-    if (screensaverOverlay != null || !canStartScreensaver()) {
+    int seconds = prefs.screensaverDelaySeconds();
+    if (seconds == 0 || !canStartScreensaver()) {
       cancelScreensaverTimer();
     } else if (!screensaverTimerArmed) {
       screensaverTimerArmed = true;
-      handler.postDelayed(showScreensaver, SCREENSAVER_TIMEOUT_MS);
+      handler.postDelayed(showScreensaver, seconds * 1000L);
     }
   }
 
@@ -1045,9 +1055,13 @@ public final class MainActivity extends Activity {
 
   private void showScreensaver() {
     screensaverTimerArmed = false;
-    if (!canStartScreensaver() || !getSystemService(PowerManager.class).isInteractive()) return;
+    if (prefs.screensaverDelaySeconds() != 0 && canStartScreensaver()) {
+      showScreensaver(root.findFocus());
+    }
+  }
 
-    screensaverFocus = root.findFocus();
+  private void showScreensaver(View returnFocus) {
+    screensaverFocus = returnFocus;
     screensaverCardId =
         screensaverFocus instanceof AppCardView && homeWall != null
             ? homeWall.currentKey()
@@ -1065,7 +1079,13 @@ public final class MainActivity extends Activity {
     root.addView(screensaverOverlay, new FrameLayout.LayoutParams(-1, -1));
     screensaverOverlay.requestFocus();
     handler.removeCallbacks(ticker);
+    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    handler.postDelayed(releaseScreensaverKeepScreenOn, SCREENSAVER_KEEP_SCREEN_ON_MS);
     animateScreensaver(1f, 300);
+  }
+
+  private void releaseScreensaverKeepScreenOn() {
+    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
   }
 
   private void hideScreensaver(boolean animate) {
@@ -1078,6 +1098,8 @@ public final class MainActivity extends Activity {
       return;
     }
 
+    handler.removeCallbacks(releaseScreensaverKeepScreenOn);
+    releaseScreensaverKeepScreenOn();
     View overlay = screensaverOverlay;
     View focus = screensaverFocus;
     String cardId = screensaverCardId;
@@ -1191,7 +1213,9 @@ public final class MainActivity extends Activity {
     if (isPureTheme(prefs.wallpaper())) return;
     int headerSpace = px(268);
     float progress =
-        headerSpace > 0 ? Math.min(1f, Math.max(0f, (float) scrollY / headerSpace)) : 0f;
+        settingsScroll != null
+            ? 1f
+            : headerSpace > 0 ? Math.min(1f, Math.max(0f, (float) scrollY / headerSpace)) : 0f;
     int maxShift = px(60);
     progress *= 1f - screensaverProgress;
     float shift = -progress * maxShift;
@@ -1960,6 +1984,35 @@ public final class MainActivity extends Activity {
           }
           return false;
         });
+    SettingsRowView screensaver =
+        settingsRow(desktop, rows, "桌面屏保", R.drawable.settings_theme, "", false);
+    updateScreensaverSetting(screensaver, screensaverDelayIndex());
+    View.OnFocusChangeListener screensaverFocus = screensaver.getOnFocusChangeListener();
+    screensaver.setOnFocusChangeListener(
+        (v, focused) -> {
+          screensaverFocus.onFocusChange(v, focused);
+          desktopHint.setText(focused ? "左右键调整等待时间，按确定预览" : "");
+        });
+    screensaver.setOnClickListener(
+        v -> {
+          if ("settings".equals(page) && galleryLayer == null && canShowScreensaver()) {
+            showScreensaver(screensaver);
+          }
+        });
+    screensaver.setOnKeyListener(
+        (v, code, event) -> {
+          if (code != KeyEvent.KEYCODE_DPAD_LEFT && code != KeyEvent.KEYCODE_DPAD_RIGHT) {
+            return false;
+          }
+          if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+            int direction = code == KeyEvent.KEYCODE_DPAD_RIGHT ? 1 : -1;
+            int count = SCREENSAVER_DELAYS.length;
+            int index = (screensaverDelayIndex() + direction + count) % count;
+            prefs.screensaverDelaySeconds(SCREENSAVER_DELAYS[index]);
+            updateScreensaverSetting(screensaver, index);
+          }
+          return true;
+        });
     LinearLayout application = settingsGroup(list, "应用", true);
     SettingsRowView system =
         settingsRow(application, rows, "系统设置", R.drawable.settings_settings, "", false);
@@ -2009,6 +2062,20 @@ public final class MainActivity extends Activity {
       row.setNextFocusRightId(row.getId());
     }
     (rows.containsKey(selectedSetting) ? rows.get(selectedSetting) : first).requestFocus();
+  }
+
+  private int screensaverDelayIndex() {
+    int seconds = prefs.screensaverDelaySeconds();
+    for (int i = 0; i < SCREENSAVER_DELAYS.length; i++) {
+      if (SCREENSAVER_DELAYS[i] == seconds) return i;
+    }
+    return 1;
+  }
+
+  private void updateScreensaverSetting(SettingsRowView row, int index) {
+    String label = SCREENSAVER_DELAY_LABELS[index];
+    row.detail(label);
+    row.setContentDescription("桌面屏保，" + label + "，左右键调整等待时间，按确定预览");
   }
 
   private void showUpdateDialog() {

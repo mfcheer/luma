@@ -20,22 +20,22 @@ final class ScreensaverKeys {
 
   boolean handle(KeyEvent event, boolean screensaverVisible) {
     int code = event.getKeyCode();
-    if (!isWakeKey(code)) return false;
-
     long key = ((long) event.getDeviceId() << 32) | (code & 0xffffffffL);
+    boolean navigationKey = isNavigationKey(code);
+    if (!navigationKey && event.isSystem()) return false;
     if (event.getAction() == KeyEvent.ACTION_UP) {
       held.remove(key);
       return wakePresses.remove(key);
     }
     if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
 
-    held.add(key);
+    if (navigationKey || screensaverVisible) held.add(key);
     if (event.getRepeatCount() == 0) wakePresses.remove(key);
     if (screensaverVisible) wakePresses.add(key);
     return wakePresses.contains(key);
   }
 
-  private static boolean isWakeKey(int code) {
+  private static boolean isNavigationKey(int code) {
     switch (code) {
       case KeyEvent.KEYCODE_DPAD_UP:
       case KeyEvent.KEYCODE_DPAD_DOWN:

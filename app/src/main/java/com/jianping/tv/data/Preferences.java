@@ -78,6 +78,15 @@ public final class Preferences {
     prefs.edit().putBoolean("showAppNames", visible).apply();
   }
 
+  public int screensaverDelaySeconds() {
+    int seconds = prefs.getInt("screensaverDelaySeconds", 60);
+    return seconds == 0 || seconds == 30 || seconds == 120 ? seconds : 60;
+  }
+
+  public void screensaverDelaySeconds(int seconds) {
+    prefs.edit().putInt("screensaverDelaySeconds", seconds).apply();
+  }
+
   @Deprecated
   public boolean showAirInstallCard() {
     return prefs.getBoolean("showAirInstallCard", true);
