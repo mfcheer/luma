@@ -13,6 +13,7 @@ import android.graphics.drawable.Drawable;
 import android.view.*;
 import android.widget.*;
 import com.jianping.tv.data.AppEntry;
+import com.jianping.tv.data.AppOrder;
 import java.util.*;
 
 /** Five-column continuous wall, stable card identity and animated reorder. */
@@ -49,6 +50,8 @@ public final class GridWallView extends ScrollView {
   private final int headerSpace;
   private final Listener listener;
   private final FrameLayout content;
+  private Integer pendingScreensaverOffset;
+  private int pendingScreensaverRow;
   private final Map<String, AppCardView> cards = new HashMap<>();
   private final Map<String, AppEntry> entries = new HashMap<>();
   private List<String> order = new ArrayList<>();
@@ -358,7 +361,35 @@ public final class GridWallView extends ScrollView {
     post(() -> scrollTo(0, scrollForRow(Math.max(0, order.indexOf(current)) / COLUMNS, offset)));
   }
 
+  /** Restore the same view and pixel offset without posting a row-centering operation. */
+  void restoreExactFocus(String key, int offset) {
+    AppCardView card = cards.get(key);
+    if (card != null) card.requestFocusFromTouch();
+    scrollTo(0, offset);
+    if (isLayoutRequested()) {
+      pendingScreensaverOffset = offset;
+      pendingScreensaverRow = -1;
+    }
+  }
+
+  void refreshAfterScreensaver(List<AppEntry> apps, String cardId, int offset) {
+    String key = cardId == null ? current : cardId;
+    int previousIndex = order.indexOf(key);
+    List<String> previous = order;
+    setEntries(apps, key, false, false);
+    String target = AppOrder.focusAfterRemoval(previous, order, key);
+    int index = order.indexOf(target);
+    boolean originalRow = key.equals(target) && previousIndex / COLUMNS == index / COLUMNS;
+    if (cardId != null) restoreExactFocus(target, offset);
+    else scrollTo(0, offset);
+
+    // The new scroll range becomes available when the refreshed cards are laid out.
+    pendingScreensaverOffset = offset;
+    pendingScreensaverRow = cardId != null && index >= 0 && !originalRow ? index / COLUMNS : -1;
+  }
+
   public void focusKey(String key, boolean immediate) {
+    pendingScreensaverOffset = null;
     if (order.isEmpty()) return;
     String target = cards.containsKey(key) ? key : order.get(0);
     cards.get(target).requestFocus();
@@ -421,6 +452,12 @@ public final class GridWallView extends ScrollView {
   @Override
   protected void onLayout(boolean changed, int l, int t, int r, int b) {
     super.onLayout(changed, l, t, r, b);
+    if (pendingScreensaverOffset != null) {
+      int offset = pendingScreensaverOffset;
+      pendingScreensaverOffset = null;
+      int row = pendingScreensaverRow;
+      scrollTo(0, row < 0 ? offset : scrollForRow(row, offset));
+    }
     updatePreviews();
     notifyAnchor(false);
   }

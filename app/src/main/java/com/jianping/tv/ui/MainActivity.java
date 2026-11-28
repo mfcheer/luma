@@ -1,9 +1,13 @@
 package com.jianping.tv.ui;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.app.*;
 import android.app.role.RoleManager;
 import android.content.*;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -11,6 +15,7 @@ import android.net.Uri;
 import android.os.*;
 import android.provider.Settings;
 import android.view.*;
+import android.view.animation.PathInterpolator;
 import android.widget.*;
 import com.jianping.tv.R;
 import com.jianping.tv.airinstall.*;
@@ -45,7 +50,7 @@ public final class MainActivity extends Activity {
   private NetworkMonitor networkMonitor;
   private NetworkMonitor.State networkState = NetworkMonitor.State.DISCONNECTED;
   private ImageView networkGlyph;
-  private View networkButton;
+  private View networkButton, searchButton;
   private AppRepository repository;
   private AppCatalogCache catalog;
   private AppCatalogCache.Snapshot snapshot;
@@ -100,11 +105,30 @@ public final class MainActivity extends Activity {
   private int loadGeneration;
   private int homeOffset;
   private long pendingWakeEntry;
+  private static final long SCREENSAVER_TIMEOUT_MS = 3 * 60 * 1000L;
+  private final ScreensaverKeys screensaverKeys = new ScreensaverKeys();
+  private final Matrix screensaverWallpaperMatrix = new Matrix();
+  private final Runnable showScreensaver = this::showScreensaver;
+  private View screensaverOverlay, screensaverFocus;
+  private String screensaverCardId;
+  private ValueAnimator screensaverTransition;
+  private float screensaverProgress;
+  private int screensaverOffset, desktopFocusability, desktopAccessibility;
+  private boolean resumed, screensaverTimerArmed, desktopRefreshAfterScreensaver;
+  private boolean touchHeld, wakeTouch;
   private final Runnable ticker =
       new Runnable() {
         public void run() {
           updateClock();
           handler.postDelayed(this, 1000);
+        }
+      };
+  private final BroadcastReceiver screenChanges =
+      new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+          if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) stopScreensaver();
+          else if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) restartScreensaverTimer();
         }
       };
   private final BroadcastReceiver packageChanges =
@@ -130,13 +154,18 @@ public final class MainActivity extends Activity {
         () ->
             runOnUiThread(
                 () -> {
-                  if (!loading && page.equals("home")) render();
+                  if (isDestroyed() || loading || !page.equals("home")) return;
+                  if (screensaverOverlay != null) desktopRefreshAfterScreensaver = true;
+                  else render();
                 }));
     iconListener =
         shortcutId ->
             runOnUiThread(
                 () -> {
-                  if (homeWall != null && !loading && "home".equals(page)) {
+                  if (isDestroyed()) return;
+                  if (screensaverOverlay != null) {
+                    desktopRefreshAfterScreensaver = true;
+                  } else if (homeWall != null && !loading && "home".equals(page)) {
                     if (!homeWall.sameEntries(desktopApps())) {
                       homeWall.setEntries(desktopApps(), selectedId, false);
                     } else {
@@ -187,6 +216,9 @@ public final class MainActivity extends Activity {
     if (Build.VERSION.SDK_INT >= 33)
       registerReceiver(packageChanges, filter, Context.RECEIVER_EXPORTED);
     else registerReceiver(packageChanges, filter);
+    IntentFilter screenFilter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
+    screenFilter.addAction(Intent.ACTION_SCREEN_ON);
+    registerReceiver(screenChanges, screenFilter);
     render();
     reload(true);
     handler.post(ticker);
@@ -196,6 +228,7 @@ public final class MainActivity extends Activity {
   @Override
   protected void onNewIntent(Intent intent) {
     super.onNewIntent(intent);
+    stopScreensaver();
     setIntent(intent);
     recordEntry(intent);
     boolean needsRender = !page.equals("home") || actionLayer != null || draftOrder != null;
@@ -209,6 +242,7 @@ public final class MainActivity extends Activity {
     page = "home";
     if (needsRender) render();
     handleActionIntent(intent);
+    restartScreensaverTimer();
   }
 
   private void handleActionIntent(Intent intent) {
@@ -269,6 +303,7 @@ public final class MainActivity extends Activity {
   @Override
   protected void onResume() {
     super.onResume();
+    resumed = true;
     UpdateSession updates = UpdateSession.get(this);
     String updated = updates.reconcileInstalledVersion();
     if (updated != null) toast(updated);
@@ -299,16 +334,27 @@ public final class MainActivity extends Activity {
       homeWall.restoreFocus(selectedId, homeWall.getScrollY());
     if (homeSetting != null && page.equals("settings"))
       homeSetting.detail(DeviceDiagnostics.homeLabel(this));
+    restartScreensaverTimer();
   }
 
   @Override
   protected void onPause() {
+    resumed = false;
+    stopScreensaver();
     waitingForHomeSettings = false;
     super.onPause();
   }
 
   @Override
+  protected void onStop() {
+    stopScreensaver();
+    super.onStop();
+  }
+
+  @Override
   protected void onDestroy() {
+    resumed = false;
+    stopScreensaver();
     if (renameDialog != null) {
       renameDialog.setOnDismissListener(null);
       renameDialog.dismiss();
@@ -352,6 +398,7 @@ public final class MainActivity extends Activity {
       wallpaperBlurView = null;
     }
     WebIconManager.removeListener(iconListener);
+    unregisterReceiver(screenChanges);
     unregisterReceiver(packageChanges);
     worker.shutdownNow();
     super.onDestroy();
@@ -464,6 +511,10 @@ public final class MainActivity extends Activity {
       selectedId = order.get(0);
     }
     if (!changed) return;
+    if (screensaverOverlay != null) {
+      desktopRefreshAfterScreensaver = true;
+      return;
+    }
     if (draftOrder != null
         || actionLayer != null
         || renameDialog != null
@@ -716,6 +767,7 @@ public final class MainActivity extends Activity {
 
   private void openWallpaperGallery(SettingsRowView returnTarget) {
     if (galleryLayer != null) return;
+    cancelScreensaverTimer();
     final String originalKey = prefs.wallpaper();
     desktop.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
 
@@ -891,6 +943,249 @@ public final class MainActivity extends Activity {
     }
   }
 
+  @Override
+  public void onWindowFocusChanged(boolean hasFocus) {
+    super.onWindowFocusChanged(hasFocus);
+    if (hasFocus) restartScreensaverTimer();
+    else stopScreensaver();
+  }
+
+  @Override
+  public boolean dispatchKeyEvent(KeyEvent event) {
+    boolean consumed = screensaverKeys.handle(event, screensaverOverlay != null);
+    if (consumed && event.getAction() == KeyEvent.ACTION_DOWN) hideScreensaver(true);
+    boolean handled = consumed || super.dispatchKeyEvent(event);
+    restartScreensaverTimer();
+    return handled;
+  }
+
+  @Override
+  public boolean dispatchTouchEvent(MotionEvent event) {
+    switch (event.getActionMasked()) {
+      case MotionEvent.ACTION_DOWN:
+        touchHeld = true;
+        wakeTouch = screensaverOverlay != null;
+        if (wakeTouch) hideScreensaver(true);
+        break;
+      case MotionEvent.ACTION_UP:
+      case MotionEvent.ACTION_CANCEL:
+        touchHeld = false;
+        break;
+    }
+    boolean handled = wakeTouch || super.dispatchTouchEvent(event);
+    if (!touchHeld) wakeTouch = false;
+    restartScreensaverTimer();
+    return handled;
+  }
+
+  @Override
+  public boolean dispatchGenericMotionEvent(MotionEvent event) {
+    int action = event.getActionMasked();
+    if (action != MotionEvent.ACTION_HOVER_MOVE
+        && action != MotionEvent.ACTION_SCROLL
+        && action != MotionEvent.ACTION_MOVE) return super.dispatchGenericMotionEvent(event);
+    boolean waking = screensaverOverlay != null;
+    if (waking) hideScreensaver(true);
+    boolean handled = waking || super.dispatchGenericMotionEvent(event);
+    restartScreensaverTimer();
+    return handled;
+  }
+
+  private boolean canStartScreensaver() {
+    return resumed
+        && root != null
+        && hasWindowFocus()
+        && !isFinishing()
+        && "home".equals(page)
+        && !loading
+        && snapshot != null
+        && draftOrder == null
+        && movingId == null
+        && actionLayer == null
+        && galleryLayer == null
+        && !isShowing(renameDialog)
+        && !isShowing(updateDialog)
+        && !isShowing(airInstallDialog)
+        && !isShowing(addWebDialog)
+        && !isShowing(editWebDialog)
+        && !touchHeld
+        && !screensaverKeys.hasHeldKeys();
+  }
+
+  private static boolean isShowing(Dialog dialog) {
+    return dialog != null && dialog.isShowing();
+  }
+
+  private void cancelScreensaverTimer() {
+    if (!screensaverTimerArmed) return;
+    handler.removeCallbacks(showScreensaver);
+    screensaverTimerArmed = false;
+  }
+
+  private void scheduleScreensaver() {
+    if (screensaverOverlay != null || !canStartScreensaver()) {
+      cancelScreensaverTimer();
+    } else if (!screensaverTimerArmed) {
+      screensaverTimerArmed = true;
+      handler.postDelayed(showScreensaver, SCREENSAVER_TIMEOUT_MS);
+    }
+  }
+
+  private void restartScreensaverTimer() {
+    cancelScreensaverTimer();
+    scheduleScreensaver();
+  }
+
+  private void stopScreensaver() {
+    cancelScreensaverTimer();
+    screensaverKeys.clearHeldKeys();
+    touchHeld = false;
+    hideScreensaver(false);
+  }
+
+  private void showScreensaver() {
+    screensaverTimerArmed = false;
+    if (!canStartScreensaver() || !getSystemService(PowerManager.class).isInteractive()) return;
+
+    screensaverFocus = root.findFocus();
+    screensaverCardId =
+        screensaverFocus instanceof AppCardView && homeWall != null
+            ? homeWall.currentKey()
+            : null;
+    screensaverOffset = homeWall == null ? homeOffset : homeWall.getScrollY();
+    desktopFocusability = desktop.getDescendantFocusability();
+    desktopAccessibility = desktop.getImportantForAccessibility();
+    desktop.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+    desktop.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
+
+    screensaverOverlay = new View(this);
+    screensaverOverlay.setFocusableInTouchMode(true);
+    screensaverOverlay.setClickable(true);
+    screensaverOverlay.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+    root.addView(screensaverOverlay, new FrameLayout.LayoutParams(-1, -1));
+    screensaverOverlay.requestFocus();
+    handler.removeCallbacks(ticker);
+    animateScreensaver(1f, 300);
+  }
+
+  private void hideScreensaver(boolean animate) {
+    if (screensaverOverlay == null) {
+      if (!animate && screensaverTransition != null) {
+        screensaverTransition.cancel();
+        screensaverTransition = null;
+        applyScreensaverProgress(0f);
+      }
+      return;
+    }
+
+    View overlay = screensaverOverlay;
+    View focus = screensaverFocus;
+    String cardId = screensaverCardId;
+    boolean refresh = desktopRefreshAfterScreensaver;
+    screensaverOverlay = null;
+    screensaverFocus = null;
+    screensaverCardId = null;
+    desktopRefreshAfterScreensaver = false;
+    desktop.setDescendantFocusability(desktopFocusability);
+    desktop.setImportantForAccessibility(desktopAccessibility);
+    if (refresh && homeWall == null) {
+      boolean hadNetworkFocus = focus == networkButton;
+      boolean hadSearchFocus = focus == searchButton;
+      if (screensaverTransition != null) screensaverTransition.cancel();
+      screensaverProgress = 0f;
+      render();
+      (hadNetworkFocus ? networkButton : hadSearchFocus ? searchButton : settingsButton)
+          .requestFocusFromTouch();
+    } else {
+      if (homeWall != null) {
+        if (refresh) {
+          homeWall.refreshAfterScreensaver(desktopApps(), cardId, screensaverOffset);
+          int first = homeWall.firstId();
+          networkButton.setNextFocusDownId(first);
+          searchButton.setNextFocusDownId(first);
+          settingsButton.setNextFocusDownId(first);
+        } else if (cardId != null) {
+          homeWall.restoreExactFocus(cardId, screensaverOffset);
+        } else {
+          homeWall.scrollTo(0, screensaverOffset);
+        }
+      }
+      if (cardId == null && focus != null && focus.isAttachedToWindow()) {
+        focus.requestFocusFromTouch();
+      }
+      root.removeView(overlay);
+      if (animate) animateScreensaver(0f, 180);
+      else {
+        if (screensaverTransition != null) screensaverTransition.cancel();
+        screensaverTransition = null;
+        applyScreensaverProgress(0f);
+      }
+    }
+    updateClock();
+    handler.postDelayed(ticker, 1000);
+  }
+
+  private void animateScreensaver(float target, int duration) {
+    if (screensaverTransition != null) screensaverTransition.cancel();
+    screensaverTransition = ValueAnimator.ofFloat(screensaverProgress, target);
+    screensaverTransition.setDuration(duration);
+    screensaverTransition.setInterpolator(new PathInterpolator(.18f, .85f, .25f, 1f));
+    screensaverTransition.addUpdateListener(
+        animator -> applyScreensaverProgress((float) animator.getAnimatedValue()));
+    screensaverTransition.addListener(
+        new AnimatorListenerAdapter() {
+          @Override
+          public void onAnimationEnd(Animator animation) {
+            if (screensaverTransition == animation) screensaverTransition = null;
+          }
+        });
+    screensaverTransition.start();
+  }
+
+  private void applyScreensaverProgress(float progress) {
+    screensaverProgress = progress;
+    // The background occupies the children through ambient. Everything above it is home UI.
+    int start = desktop.indexOfChild(ambient) + 1;
+    for (int i = start; i < desktop.getChildCount(); i++) {
+      desktop.getChildAt(i).setAlpha(1f - progress);
+    }
+    bottomGradient.setAlpha(1f - progress);
+    if (wallpaperView.getVisibility() == View.VISIBLE) {
+      ambient.setAlpha(1f - progress);
+      frameScreensaverWallpaper(progress);
+    }
+    int offset =
+        screensaverOverlay != null || homeWall == null ? screensaverOffset : homeWall.getScrollY();
+    updateWallpaperScroll(offset);
+  }
+
+  private void frameScreensaverWallpaper(float progress) {
+    if (progress == 0f) {
+      wallpaperView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+      return;
+    }
+    Drawable image = wallpaperView.getDrawable();
+    if (image == null
+        || image.getIntrinsicWidth() <= 0
+        || image.getIntrinsicHeight() <= 0
+        || wallpaperView.getWidth() <= 0
+        || desktop.getHeight() <= 0) return;
+
+    // The normal wallpaper view is taller than the screen to leave room for parallax.
+    // Frame the same drawable against the viewport as the desktop fades away.
+    int width = wallpaperView.getWidth();
+    int wallpaperHeight = wallpaperView.getHeight();
+    float height = wallpaperHeight + (desktop.getHeight() - wallpaperHeight) * progress;
+    float zoom =
+        Math.max(width / (float) image.getIntrinsicWidth(), height / image.getIntrinsicHeight());
+    screensaverWallpaperMatrix.setScale(zoom, zoom);
+    screensaverWallpaperMatrix.postTranslate(
+        Math.round((width - image.getIntrinsicWidth() * zoom) / 2f),
+        Math.round((height - image.getIntrinsicHeight() * zoom) / 2f));
+    wallpaperView.setScaleType(ImageView.ScaleType.MATRIX);
+    wallpaperView.setImageMatrix(screensaverWallpaperMatrix);
+  }
+
   private void updateWallpaperScroll(int scrollY) {
     if (wallpaperView == null || wallpaperBlurView == null) return;
     if (isPureTheme(prefs.wallpaper())) return;
@@ -898,6 +1193,7 @@ public final class MainActivity extends Activity {
     float progress =
         headerSpace > 0 ? Math.min(1f, Math.max(0f, (float) scrollY / headerSpace)) : 0f;
     int maxShift = px(60);
+    progress *= 1f - screensaverProgress;
     float shift = -progress * maxShift;
     wallpaperView.setTranslationY(shift);
     wallpaperBlurView.setTranslationY(shift);
@@ -908,6 +1204,7 @@ public final class MainActivity extends Activity {
   }
 
   private void render() {
+    if (screensaverOverlay != null || screensaverTransition != null) hideScreensaver(false);
     if (homeWall != null && homeWall.isAttachedToWindow()) homeOffset = homeWall.getScrollY();
     homeWall = null;
     menuReturn = null;
@@ -924,6 +1221,7 @@ public final class MainActivity extends Activity {
     settingsScroll = null;
     desktopHint = null;
     settingsButton = null;
+    searchButton = null;
     pendingRender = false;
 
     boolean pure = isPureTheme(prefs.wallpaper());
@@ -1022,6 +1320,7 @@ public final class MainActivity extends Activity {
                     new Intent(this, SearchActivity.class), SearchActivity.REQUEST);
               });
       search.setId(View.generateViewId());
+      searchButton = search;
       put(search, 834, 23, 42, 42);
       home(search);
       network.setOnKeyListener(
@@ -1066,6 +1365,7 @@ public final class MainActivity extends Activity {
       settings.setNextFocusDownId(R.id.first_app);
       settingsPage();
     }
+    scheduleScreensaver();
   }
 
   private List<String> installedIds() {
@@ -1170,7 +1470,7 @@ public final class MainActivity extends Activity {
       }
 
       public void onScroll(int scrollY) {
-        updateWallpaperScroll(scrollY);
+        if (screensaverOverlay == null) updateWallpaperScroll(scrollY);
       }
     };
   }
@@ -1355,17 +1655,21 @@ public final class MainActivity extends Activity {
       airInstallDialog.dismiss();
       airInstallDialog = null;
     }
+    hideScreensaver(false);
+    cancelScreensaverTimer();
     airInstallDialog = new AirInstallDialog(this, palette, scale);
     airInstallDialog.setOnDismissListener(
         d -> {
           if (airInstallDialog == d) airInstallDialog = null;
           if (pendingRender) render();
+          restartScreensaverTimer();
         });
     airInstallDialog.show();
   }
 
   private void manage(AppEntry app, View source) {
     if (actionLayer != null) return;
+    cancelScreensaverTimer();
     menuReturn = source;
     if (source instanceof AppCardView) ((AppCardView) source).contextSelected(true);
     desktop.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
@@ -1463,6 +1767,7 @@ public final class MainActivity extends Activity {
             target.requestFocus();
           if (target instanceof AppCardView) ((AppCardView) target).contextSelected(false);
           if (action != null) action.run();
+          restartScreensaverTimer();
         });
   }
 
@@ -1491,6 +1796,7 @@ public final class MainActivity extends Activity {
       render();
       return;
     }
+    cancelScreensaverTimer();
     movingId = app.id;
     selectedId = app.id;
     moveHint.setText("方向键移动位置 · 确定保存 · 返回取消");
@@ -1546,6 +1852,7 @@ public final class MainActivity extends Activity {
     if (pendingRender) render();
     else homeWall.setEntries(wallList, selectedId, true);
     if (save) toast("顺序已保存");
+    restartScreensaverTimer();
   }
 
   private void settingsPage() {
@@ -1711,6 +2018,8 @@ public final class MainActivity extends Activity {
       updateDialog.dismiss();
       updateDialog = null;
     }
+    hideScreensaver(false);
+    cancelScreensaverTimer();
     updateDialog = new AppUpdateDialog(this, palette, scale, () -> {
       page = "home";
       render();
@@ -1718,6 +2027,7 @@ public final class MainActivity extends Activity {
     updateDialog.setOnDismissListener(
         d -> {
           if (updateDialog == d) updateDialog = null;
+          restartScreensaverTimer();
         });
     updateDialog.show();
   }
@@ -1890,6 +2200,11 @@ public final class MainActivity extends Activity {
 
   @Override
   public void onBackPressed() {
+    if (screensaverOverlay != null) {
+      hideScreensaver(true);
+      restartScreensaverTimer();
+      return;
+    }
     if (galleryLayer != null) {
       galleryLayer.cancelAndDismiss();
       return;
@@ -1899,6 +2214,9 @@ public final class MainActivity extends Activity {
     else if (!page.equals("home")) {
       page = "home";
       render();
-    } else if (homeWall != null) homeWall.returnToFirstRow();
+    } else if (homeWall != null) {
+      homeWall.returnToFirstRow();
+      restartScreensaverTimer();
+    }
   }
 }
