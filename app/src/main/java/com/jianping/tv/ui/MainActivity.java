@@ -64,9 +64,6 @@ public final class MainActivity extends Activity {
   private List<AppEntry> apps = new ArrayList<>();
   private FrameLayout root, desktop;
   private AppActionMenuView actionLayer;
-  private WallpaperGalleryView galleryLayer;
-  private ScrollView settingsScroll;
-  private TextView desktopHint;
   private View settingsButton;
   private TextView clock, calendarDate, moveHint;
   private GridWallView homeWall;
@@ -386,10 +383,6 @@ public final class MainActivity extends Activity {
     if (networkMonitor != null) {
       networkMonitor.stop();
       networkMonitor = null;
-    }
-    if (galleryLayer != null) {
-      root.removeView(galleryLayer);
-      galleryLayer = null;
     }
     handler.removeCallbacksAndMessages(null);
     if (wallpaperView != null) {
@@ -756,118 +749,16 @@ public final class MainActivity extends Activity {
       return;
     }
 
-    if (appearance != null) {
-      appearance.previewThumb(WallpaperGalleryView.themeThumbnail(newKey));
-      appearance.detail(themeDisplayName(newKey));
-      appearance.setContentDescription(
-          "外观与壁纸，当前" + themeDisplayName(newKey) + "，按确定展开画廊或左右键切换");
-    }
+    updateAppearanceSetting(appearance, newKey);
     applyWallpaper(newKey);
-    if (desktopHint != null) {
-      desktopHint.setText("已切换至 " + themeDisplayName(newKey) + "（按确定展开沉浸画廊）");
-    }
+    desktopHint.setText("已切换至 " + themeDisplayName(newKey));
   }
 
-  private void openWallpaperGallery(SettingsRowView returnTarget) {
-    if (galleryLayer != null) return;
-    cancelScreensaverTimer();
-    final String originalKey = prefs.wallpaper();
-    desktop.setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
-
-    if (settingsScroll != null) settingsScroll.setVisibility(View.INVISIBLE);
-    if (desktopHint != null) desktopHint.setVisibility(View.INVISIBLE);
-    if (clock != null) clock.setVisibility(View.INVISIBLE);
-    if (calendarDate != null) calendarDate.setVisibility(View.INVISIBLE);
-    if (settingsButton != null) settingsButton.setVisibility(View.INVISIBLE);
-
-    if (wallpaperBlurView != null) {
-      wallpaperBlurView.animate().alpha(0f).setDuration(200).start();
-    }
-    if (wallpaperView != null) {
-      wallpaperView.animate().translationY(0f).setDuration(200).start();
-    }
-    if (scrimView != null) {
-      scrimView.animate().alpha(0f).setDuration(200).start();
-    }
-
-    galleryLayer =
-        new WallpaperGalleryView(
-            this,
-            scale,
-            THEME_KEYS,
-            THEME_NAMES,
-            originalKey,
-            new WallpaperGalleryView.WallpaperGalleryListener() {
-              @Override
-              public void onWallpaperPreview(String key) {
-                applyWallpaper(key);
-                if (wallpaperBlurView != null) wallpaperBlurView.setAlpha(0f);
-                if (wallpaperView != null) wallpaperView.setTranslationY(0f);
-                if (scrimView != null) scrimView.setAlpha(0f);
-              }
-
-              @Override
-              public void onWallpaperConfirmed(String key) {
-                galleryLayer = null;
-                boolean light = isLightTheme(key);
-                prefs.wallpaper(key);
-                prefs.lightTheme(light);
-                palette = UiPalette.from(light);
-                setTheme(light ? R.style.AppThemeLight : R.style.AppTheme);
-                selectedSetting = "外观与壁纸";
-                render();
-                toast("已应用壁纸：" + themeDisplayName(key));
-              }
-
-              @Override
-              public void onWallpaperCanceled(String originalKey) {
-                galleryLayer = null;
-                applyWallpaper(originalKey);
-                boolean pure = isPureTheme(originalKey);
-                if (wallpaperBlurView != null && !pure && page.equals("settings")) {
-                  wallpaperBlurView.animate().alpha(1f).setDuration(180).start();
-                  wallpaperBlurView.setTranslationY(-px(60));
-                }
-                if (wallpaperView != null && !pure && page.equals("settings")) {
-                  wallpaperView.animate().translationY(-px(60)).setDuration(180).start();
-                }
-                if (scrimView != null && page.equals("settings")) {
-                  scrimView.animate().alpha(0.38f).setDuration(180).start();
-                }
-                if (settingsScroll != null) settingsScroll.setVisibility(View.VISIBLE);
-                if (desktopHint != null) desktopHint.setVisibility(View.VISIBLE);
-                if (clock != null) clock.setVisibility(View.VISIBLE);
-                if (calendarDate != null) calendarDate.setVisibility(View.VISIBLE);
-                if (settingsButton != null) settingsButton.setVisibility(View.VISIBLE);
-
-                desktop.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
-                if (returnTarget != null && returnTarget.isAttachedToWindow()) {
-                  returnTarget.requestFocus();
-                }
-              }
-            },
-            palette);
-
-    root.addView(galleryLayer, new FrameLayout.LayoutParams(-1, -1));
-    galleryLayer.reveal();
-  }
-
-  private void cycleTheme(boolean forward) {
-    String current = prefs.wallpaper();
-    int idx = themeIndex(current);
-    int next =
-        forward
-            ? (idx + 1) % THEME_KEYS.length
-            : (idx - 1 + THEME_KEYS.length) % THEME_KEYS.length;
-    String newKey = THEME_KEYS[next];
-    boolean light = isLightTheme(newKey);
-    prefs.wallpaper(newKey);
-    prefs.lightTheme(light);
-    palette = UiPalette.from(light);
-    setTheme(light ? R.style.AppThemeLight : R.style.AppTheme);
-    selectedSetting = "外观与壁纸";
-    render();
-    toast("已切换为 " + THEME_NAMES[next]);
+  private void updateAppearanceSetting(SettingsRowView row, String key) {
+    String name = themeDisplayName(key);
+    row.previewThumb(WallpaperGalleryView.themeThumbnail(key));
+    row.detail(name);
+    row.setContentDescription("外观与壁纸，当前" + name + "，左右键切换");
   }
 
   private void applyWallpaper(String key) {
@@ -931,18 +822,7 @@ public final class MainActivity extends Activity {
       ambient.drawBackground(false);
     }
     if (page.equals("settings")) {
-      if (galleryLayer != null) {
-        if (wallpaperBlurView != null) wallpaperBlurView.setAlpha(0f);
-        if (wallpaperView != null) wallpaperView.setTranslationY(0f);
-        if (scrimView != null) scrimView.setAlpha(0f);
-      } else {
-        if (wallpaperBlurView != null) {
-          wallpaperBlurView.setAlpha(1f);
-          wallpaperBlurView.setTranslationY(-px(60));
-        }
-        if (wallpaperView != null) wallpaperView.setTranslationY(-px(60));
-        if (scrimView != null) scrimView.setAlpha(0.38f);
-      }
+      updateWallpaperScroll(0);
     }
   }
 
@@ -1002,7 +882,6 @@ public final class MainActivity extends Activity {
         && draftOrder == null
         && movingId == null
         && actionLayer == null
-        && galleryLayer == null
         && !isShowing(renameDialog)
         && !isShowing(updateDialog)
         && !isShowing(airInstallDialog)
@@ -1055,13 +934,8 @@ public final class MainActivity extends Activity {
 
   private void showScreensaver() {
     screensaverTimerArmed = false;
-    if (prefs.screensaverDelaySeconds() != 0 && canStartScreensaver()) {
-      showScreensaver(root.findFocus());
-    }
-  }
-
-  private void showScreensaver(View returnFocus) {
-    screensaverFocus = returnFocus;
+    if (prefs.screensaverDelaySeconds() == 0 || !canStartScreensaver()) return;
+    screensaverFocus = root.findFocus();
     screensaverCardId =
         screensaverFocus instanceof AppCardView && homeWall != null
             ? homeWall.currentKey()
@@ -1213,7 +1087,7 @@ public final class MainActivity extends Activity {
     if (isPureTheme(prefs.wallpaper())) return;
     int headerSpace = px(268);
     float progress =
-        settingsScroll != null
+        "settings".equals(page)
             ? 1f
             : headerSpace > 0 ? Math.min(1f, Math.max(0f, (float) scrollY / headerSpace)) : 0f;
     int maxShift = px(60);
@@ -1241,9 +1115,6 @@ public final class MainActivity extends Activity {
     desktop = new FrameLayout(this);
     root.addView(desktop, new FrameLayout.LayoutParams(-1, -1));
     actionLayer = null;
-    galleryLayer = null;
-    settingsScroll = null;
-    desktopHint = null;
     settingsButton = null;
     searchButton = null;
     pendingRender = false;
@@ -1275,12 +1146,6 @@ public final class MainActivity extends Activity {
     desktop.addView(scrimView, new FrameLayout.LayoutParams(-1, -1));
 
     applyWallpaper(prefs.wallpaper());
-
-    if (page.equals("settings") && !pure) {
-      wallpaperBlurView.setAlpha(1f);
-      wallpaperBlurView.setTranslationY(-px(60));
-      wallpaperView.setTranslationY(-px(60));
-    }
 
     ambient = new AmbientBackgroundView(this, palette);
     ambient.drawBackground(pure);
@@ -1881,7 +1746,6 @@ public final class MainActivity extends Activity {
 
   private void settingsPage() {
     ScrollView sc = new ScrollView(this);
-    settingsScroll = sc;
     sc.setClipChildren(false);
     sc.setClipToPadding(false);
     sc.setVerticalScrollBarEnabled(false);
@@ -1898,7 +1762,6 @@ public final class MainActivity extends Activity {
     Map<String, SettingsRowView> rows = new LinkedHashMap<>();
     LinearLayout desktop = settingsGroup(list, "桌面", false);
     TextView desktopHint = text("", 11, palette.muted);
-    this.desktopHint = desktopHint;
     desktopHint.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
     put(desktopHint, 212, 509, 552, 20);
     SettingsRowView first =
@@ -1951,39 +1814,18 @@ public final class MainActivity extends Activity {
           names.checked(prefs.showAppNames());
         });
     SettingsRowView appearance =
-        settingsRow(
-            desktop,
-            rows,
-            "外观与壁纸",
-            R.drawable.settings_theme,
-            themeDisplayName(prefs.wallpaper()),
-            false);
-    appearance.previewThumb(WallpaperGalleryView.themeThumbnail(prefs.wallpaper()));
-    appearance.setContentDescription(
-        "外观与壁纸，当前" + themeDisplayName(prefs.wallpaper()) + "，按确定展开画廊或左右键切换");
+        settingsRow(desktop, rows, "外观与壁纸", R.drawable.settings_theme, "", false);
+    updateAppearanceSetting(appearance, prefs.wallpaper());
     View.OnFocusChangeListener appearanceFocus = appearance.getOnFocusChangeListener();
     appearance.setOnFocusChangeListener(
         (v, focused) -> {
           appearanceFocus.onFocusChange(v, focused);
-          desktopHint.setText(focused ? "按确定唤起沉浸画廊，或按左右方向键快速切切看" : "");
+          desktopHint.setText(focused ? "左右方向键切换外观与壁纸" : "");
         });
-    appearance.setOnClickListener(v -> openWallpaperGallery(appearance));
-    appearance.setOnKeyListener(
-        (v, code, event) -> {
-          if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            if (code == KeyEvent.KEYCODE_DPAD_RIGHT) {
-              previewInlineTheme(true, appearance, desktopHint);
-              return true;
-            } else if (code == KeyEvent.KEYCODE_DPAD_LEFT) {
-              previewInlineTheme(false, appearance, desktopHint);
-              return true;
-            } else if (code == KeyEvent.KEYCODE_DPAD_CENTER || code == KeyEvent.KEYCODE_ENTER) {
-              openWallpaperGallery(appearance);
-              return true;
-            }
-          }
-          return false;
-        });
+    appearance.stepper(
+        () -> previewInlineTheme(false, appearance, desktopHint),
+        () -> previewInlineTheme(true, appearance, desktopHint));
+
     SettingsRowView screensaver =
         settingsRow(desktop, rows, "桌面屏保", R.drawable.settings_theme, "", false);
     updateScreensaverSetting(screensaver, screensaverDelayIndex());
@@ -1991,28 +1833,11 @@ public final class MainActivity extends Activity {
     screensaver.setOnFocusChangeListener(
         (v, focused) -> {
           screensaverFocus.onFocusChange(v, focused);
-          desktopHint.setText(focused ? "左右键调整等待时间，按确定预览" : "");
+          desktopHint.setText(focused ? "左右键调整等待时间" : "");
         });
-    screensaver.setOnClickListener(
-        v -> {
-          if ("settings".equals(page) && galleryLayer == null && canShowScreensaver()) {
-            showScreensaver(screensaver);
-          }
-        });
-    screensaver.setOnKeyListener(
-        (v, code, event) -> {
-          if (code != KeyEvent.KEYCODE_DPAD_LEFT && code != KeyEvent.KEYCODE_DPAD_RIGHT) {
-            return false;
-          }
-          if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
-            int direction = code == KeyEvent.KEYCODE_DPAD_RIGHT ? 1 : -1;
-            int count = SCREENSAVER_DELAYS.length;
-            int index = (screensaverDelayIndex() + direction + count) % count;
-            prefs.screensaverDelaySeconds(SCREENSAVER_DELAYS[index]);
-            updateScreensaverSetting(screensaver, index);
-          }
-          return true;
-        });
+    screensaver.stepper(
+        () -> stepScreensaverSetting(screensaver, -1),
+        () -> stepScreensaverSetting(screensaver, 1));
     LinearLayout application = settingsGroup(list, "应用", true);
     SettingsRowView system =
         settingsRow(application, rows, "系统设置", R.drawable.settings_settings, "", false);
@@ -2072,10 +1897,17 @@ public final class MainActivity extends Activity {
     return 1;
   }
 
+  private void stepScreensaverSetting(SettingsRowView row, int direction) {
+    int count = SCREENSAVER_DELAYS.length;
+    int index = (screensaverDelayIndex() + direction + count) % count;
+    prefs.screensaverDelaySeconds(SCREENSAVER_DELAYS[index]);
+    updateScreensaverSetting(row, index);
+  }
+
   private void updateScreensaverSetting(SettingsRowView row, int index) {
     String label = SCREENSAVER_DELAY_LABELS[index];
     row.detail(label);
-    row.setContentDescription("桌面屏保，" + label + "，左右键调整等待时间，按确定预览");
+    row.setContentDescription("桌面屏保，" + label + "，左右键调整等待时间");
   }
 
   private void showUpdateDialog() {
@@ -2270,10 +2102,6 @@ public final class MainActivity extends Activity {
     if (screensaverOverlay != null) {
       hideScreensaver(true);
       restartScreensaverTimer();
-      return;
-    }
-    if (galleryLayer != null) {
-      galleryLayer.cancelAndDismiss();
       return;
     }
     if (actionLayer != null) closeMenu(true);

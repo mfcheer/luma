@@ -1,6 +1,7 @@
 package com.jianping.tv.ui;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -18,6 +19,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
+import org.robolectric.util.ReflectionHelpers;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(sdk = 28)
@@ -50,6 +52,32 @@ public class WallpaperGalleryViewTest {
 
     row.preview(0);
     assertEquals(View.GONE, row.thumbContainer().getVisibility());
+  }
+
+  @Test
+  public void stepperDisplaysClickableArrowsAroundValue() {
+    SettingsRowView row =
+        new SettingsRowView(activity, 2f, "桌面屏保", R.drawable.settings_theme, "1 分钟", false, palette);
+    AtomicReference<String> action = new AtomicReference<>();
+    row.stepper(() -> action.set("previous"), () -> action.set("next"));
+
+    View value = ReflectionHelpers.getField(row, "value");
+    View chevron = ReflectionHelpers.getField(row, "chevron");
+    View previous = row.getChildAt(row.indexOfChild(value) - 1);
+    View next = row.getChildAt(row.indexOfChild(value) + 1);
+    assertEquals(View.GONE, chevron.getVisibility());
+    assertFalse(row.isClickable());
+    assertTrue(row.isFocusable());
+    for (View button : new View[] {previous, next}) {
+      assertEquals(View.VISIBLE, button.getVisibility());
+      assertTrue(button.isClickable());
+      assertFalse(button.isFocusable());
+      assertNotNull(((ImageView) button).getDrawable());
+    }
+    assertTrue(previous.performClick());
+    assertEquals("previous", action.get());
+    assertTrue(next.performClick());
+    assertEquals("next", action.get());
   }
 
   @Test

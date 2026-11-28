@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Outline;
 import android.graphics.drawable.GradientDrawable;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.widget.*;
@@ -17,6 +18,7 @@ public final class SettingsRowView extends LinearLayout {
   private final UiPalette palette;
   private final TextView label, value;
   private final ImageView icon, chevron;
+  private ImageView previous, next;
   private final Switch toggle;
   private final FrameLayout thumbContainer;
   private final ImageView previewThumb;
@@ -114,7 +116,12 @@ public final class SettingsRowView extends LinearLayout {
           label.setTextColor(focus ? palette.rowFocusText : palette.text);
           value.setTextColor(focus ? 0xFF596779 : palette.secondary);
           icon.setColorFilter(focus ? palette.rowFocusIcon : palette.icon);
-          chevron.setColorFilter(focus ? 0xFF657386 : palette.secondary);
+          int arrowColor = focus ? 0xFF657386 : palette.secondary;
+          chevron.setColorFilter(arrowColor);
+          if (previous != null) {
+            previous.setColorFilter(arrowColor);
+            next.setColorFilter(arrowColor);
+          }
           GradientDrawable thumbBorder = new GradientDrawable();
           thumbBorder.setCornerRadius(px(6));
           thumbBorder.setStroke(
@@ -129,6 +136,37 @@ public final class SettingsRowView extends LinearLayout {
               .setDuration(170)
               .start();
         });
+  }
+
+  public void stepper(Runnable onPrevious, Runnable onNext) {
+    chevron.setVisibility(GONE);
+    setClickable(false);
+    setSoundEffectsEnabled(false);
+    previous = stepButton(R.drawable.nav_back, title + "，切换到上一项", onPrevious);
+    next = stepButton(R.drawable.nav_forward, title + "，切换到下一项", onNext);
+    addView(previous, indexOfChild(value), new LayoutParams(px(36), -1));
+    addView(next, indexOfChild(value) + 1, new LayoutParams(px(36), -1));
+    setOnKeyListener(
+        (view, key, event) -> {
+          if (key != KeyEvent.KEYCODE_DPAD_LEFT && key != KeyEvent.KEYCODE_DPAD_RIGHT) {
+            return false;
+          }
+          if (event.getAction() == KeyEvent.ACTION_DOWN && event.getRepeatCount() == 0) {
+            (key == KeyEvent.KEYCODE_DPAD_LEFT ? onPrevious : onNext).run();
+          }
+          return true;
+        });
+  }
+
+  private ImageView stepButton(int resource, String description, Runnable action) {
+    ImageView button = new ImageView(getContext());
+    button.setImageResource(resource);
+    button.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
+    button.setColorFilter(isFocused() ? 0xFF657386 : palette.secondary);
+    button.setContentDescription(description);
+    button.setOnClickListener(view -> action.run());
+    button.setFocusable(false);
+    return button;
   }
 
   public void previewThumb(int resId) {

@@ -214,16 +214,9 @@ public class MainActivityScreensaverTest {
   }
 
   @Test
-  public void cyclesPersistedDelaysAndPreviewsEvenWhenAutomaticScreensaverIsOff() {
-    ((View) field("settingsButton")).performClick();
-    idle(350);
+  public void cyclesPersistedDelaysWithoutOpeningScreensaverPreview() {
+    View row = focusSetting("桌面屏保，1 分钟");
     FrameLayout root = field("root");
-    ArrayList<View> matches = new ArrayList<>();
-    root.findViewsWithText(matches, "桌面屏保", View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION);
-    assertEquals(1, matches.size());
-    View row = matches.get(0);
-    assertTrue(row.requestFocus());
-    idle(350);
     assertTrue(row.getContentDescription().toString().contains("1 分钟"));
     press(KeyEvent.KEYCODE_DPAD_LEFT);
     assertTrue(row.getContentDescription().toString().contains("30 秒"));
@@ -233,24 +226,79 @@ public class MainActivityScreensaverTest {
     assertTrue(row.getContentDescription().toString().contains("2 分钟"));
     press(KeyEvent.KEYCODE_DPAD_RIGHT);
     assertEquals(0, new Preferences(activity).screensaverDelaySeconds());
+    assertTrue(describedView(root, "桌面屏保，切换到下一项").performClick());
+    assertEquals(30, new Preferences(activity).screensaverDelaySeconds());
+    assertTrue(describedView(root, "桌面屏保，切换到上一项").performClick());
+    assertEquals(0, new Preferences(activity).screensaverDelaySeconds());
     assertSame(row, root.findFocus());
 
-    press(KeyEvent.KEYCODE_DPAD_CENTER);
-    assertNotNull(field("screensaverOverlay"));
-    assertTrue(isKeepingScreenOn());
-    idle(350);
-    assertEquals(0f, ((View) field("wallpaperBlurView")).getAlpha(), 0f);
-    press(KeyEvent.KEYCODE_BACK);
-    idle(350);
+    assertNoConfirmation(row);
+    assertNull(field("screensaverOverlay"));
     assertFalse(isKeepingScreenOn());
     assertSame(row, root.findFocus());
-    assertEquals(1f, ((View) field("wallpaperBlurView")).getAlpha(), 0f);
-    assertEquals(0.38f, ((View) field("scrimView")).getAlpha(), 0f);
 
     activity.onBackPressed();
     idle(120_500);
     assertNull(field("screensaverOverlay"));
     assertFalse(isKeepingScreenOn());
+  }
+
+  @Test
+  public void cyclesWallpaperWithoutOpeningGallery() {
+    View row = focusSetting("外观与壁纸，当前");
+    FrameLayout root = field("root");
+    press(KeyEvent.KEYCODE_DPAD_RIGHT);
+    assertEquals("big_sur", new Preferences(activity).wallpaper());
+    assertTrue(row.getContentDescription().toString().contains("Big Sur"));
+    assertTrue(describedView(root, "外观与壁纸，切换到上一项").performClick());
+    assertEquals("sonoma", new Preferences(activity).wallpaper());
+    assertTrue(describedView(root, "外观与壁纸，切换到下一项").performClick());
+    assertEquals("big_sur", new Preferences(activity).wallpaper());
+    press(KeyEvent.KEYCODE_DPAD_LEFT);
+    assertEquals("sonoma", new Preferences(activity).wallpaper());
+
+    assertNoConfirmation(row);
+    assertEquals(1, root.getChildCount());
+    assertSame(row, root.findFocus());
+    assertEquals("sonoma", new Preferences(activity).wallpaper());
+
+    press(KeyEvent.KEYCODE_DPAD_LEFT);
+    assertTrue(new Preferences(activity).lightTheme());
+    View lightRow = describedView(field("root"), "外观与壁纸，当前");
+    assertTrue(lightRow.isFocused());
+    assertNoConfirmation(lightRow);
+    press(KeyEvent.KEYCODE_DPAD_RIGHT);
+    assertEquals("sonoma", new Preferences(activity).wallpaper());
+    assertFalse(new Preferences(activity).lightTheme());
+    assertTrue(describedView(field("root"), "外观与壁纸，当前").isFocused());
+    assertEquals(1f, ((View) field("wallpaperBlurView")).getAlpha(), 0f);
+  }
+
+  private View focusSetting(String description) {
+    ((View) field("settingsButton")).performClick();
+    idle(350);
+    View row = describedView(field("root"), description);
+    assertTrue(row.requestFocus());
+    idle(350);
+    return row;
+  }
+
+  private static View describedView(View root, String description) {
+    ArrayList<View> matches = new ArrayList<>();
+    root.findViewsWithText(matches, description, View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION);
+    assertEquals(1, matches.size());
+    return matches.get(0);
+  }
+
+  private void assertNoConfirmation(View row) {
+    assertFalse(row.isClickable());
+    assertFalse(row.hasOnClickListeners());
+    assertFalse(row.isSoundEffectsEnabled());
+    assertFalse(row.getContentDescription().toString().contains("按确定"));
+    press(KeyEvent.KEYCODE_DPAD_CENTER);
+    press(KeyEvent.KEYCODE_ENTER);
+    assertFalse(row.performClick());
+    idle(350);
   }
 
   @Test
